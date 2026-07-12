@@ -9,7 +9,9 @@
 // ============================================================================
 
 const path = require('path');
+const fs = require('fs');
 const express = require('express');
+const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
 
@@ -19,7 +21,50 @@ const PORT = process.env.PORT || 3000;
 const MAX_PLAYERS_PER_ROOM = 20;
 
 const app = express();
+app.use(cors());              // cho phép file game (chạy trên domain khác) gọi API này
+app.use(express.json());      // đọc được JSON trong body của request
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ----------------------------------------------------------------------------
+// Kho lưu trữ dùng chung kiểu key-value — dùng cho tài khoản, bạn bè, chat.
+// Lưu ra file data.json mỗi khi ghi, để dữ liệu còn sống sót qua các lần
+// Railway khởi động lại container (restart/redeploy). Đây vẫn là lưu trữ đơn
+// giản (1 file), phù hợp cho demo/vài trăm người dùng — không phải database
+// thật cho quy mô lớn.
+// ----------------------------------------------------------------------------
+const DATA_FILE = path.join(__dirname, 'data.json');
+let kvStore = {};
+try{
+  if(fs.existsSync(DATA_FILE)){
+    kvStore = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+  }
+}catch(e){
+  console.error('Không đọc được data.json, bắt đầu với kho trống:', e.message);
+}
+let saveQueued = false;
+function persist(){
+  if(saveQueued) return;
+  saveQueued = true;
+  setTimeout(() => {
+    saveQueued = false;
+    fs.writeFile(DATA_FILE, JSON.stringify(kvStore), (err) => {
+      if(err) console.error('Lỗi lưu data.json:', err.message);
+    });
+  }, 250); // gộp các lần ghi liên tiếp lại, tránh ghi đĩa liên tục
+}
+
+app.get('/api/kv/:key', (req, res) => {
+  const key = decodeURIComponent(req.params.key);
+  if(!(key in kvStore)) return res.status(404).json({ error: 'not found' });
+  res.json({ key, value: kvStore[key] });
+});
+
+app.post('/api/kv/:key', (req, res) => {
+  const key = decodeURIComponent(req.params.key);
+  kvStore[key] = req.body ? req.body.value : undefined;
+  persist();
+  res.json({ ok: true });
+});
 
 const server = http.createServer(app);
 const io = new Server(server, {
