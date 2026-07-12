@@ -1,0 +1,18 @@
+{
+  "name": "gtr-server",
+  "version": "1.0.0",
+  "description": "Server thời gian thực cho GTR - có chia phòng (instance) giới hạn số người chơi mỗi phòng",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
