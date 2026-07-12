@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GTR Server — Demo phòng chơi</title>
+<style>
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:-apple-system,'Inter',sans-serif; background:#0B0E14; color:#E8ECF3;
+    min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:24px 16px;
+  }
+  h1{ font-size:20px; margin:0 0 4px; }
+  .sub{ color:#8A93A6; font-size:13px; margin-bottom:20px; }
+  .card{
+    width:100%; max-width:420px; background:#12151D; border:1px solid #232838;
+    border-radius:14px; padding:18px; margin-bottom:14px;
+  }
+  input{
+    width:100%; padding:10px 12px; border-radius:8px; border:1px solid #232838;
+    background:#0B0E14; color:#E8ECF3; font-size:14px; margin-bottom:10px;
+  }
+  button{
+    width:100%; padding:11px; border-radius:8px; border:none; background:#2CF1B0;
+    color:#06110D; font-weight:700; font-size:14px; cursor:pointer;
+  }
+  button:disabled{ opacity:0.5; cursor:not-allowed; }
+  .room-badge{
+    display:inline-flex; align-items:center; gap:6px; background:#1A2130; padding:6px 12px;
+    border-radius:20px; font-size:12.5px; font-family:'JetBrains Mono',monospace; color:#2CF1B0;
+  }
+  .players{ margin-top:12px; font-size:13px; color:#C4CAD8; }
+  .players div{ padding:4px 0; border-bottom:1px solid #1A2130; }
+  #chatBox{
+    height:180px; overflow-y:auto; background:#0B0E14; border:1px solid #232838; border-radius:8px;
+    padding:8px 10px; font-size:12.5px; margin-bottom:10px;
+  }
+  #chatBox div{ margin-bottom:5px; line-height:1.4; }
+  #chatBox b{ color:#2CF1B0; }
+  .hidden{ display:none; }
+</style>
+</head>
+<body>
+
+<h1>GTR Realtime Server</h1>
+<div class="sub">Trang test nhanh: vào phòng, xem ai đang ở cùng, chat thời gian thực.</div>
+
+<div class="card" id="joinCard">
+  <input id="usernameInput" placeholder="Nhập tên của bạn..." maxlength="24">
+  <button id="joinBtn">Vào game</button>
+</div>
+
+<div class="card hidden" id="gameCard">
+  <div class="room-badge" id="roomBadge">—</div>
+  <div class="players" id="playersList"></div>
+</div>
+
+<div class="card hidden" id="chatCard">
+  <div id="chatBox"></div>
+  <input id="chatInput" placeholder="Nhắn gì đó rồi Enter...">
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  let myId = null;
+  const others = new Map();
+
+  const joinCard = document.getElementById('joinCard');
+  const gameCard = document.getElementById('gameCard');
+  const chatCard = document.getElementById('chatCard');
+  const roomBadge = document.getElementById('roomBadge');
+  const playersList = document.getElementById('playersList');
+  const chatBox = document.getElementById('chatBox');
+  const chatInput = document.getElementById('chatInput');
+
+  function renderPlayers(){
+    playersList.innerHTML = `<div><b>${others.size + 1}</b> người trong phòng này</div>` +
+      [...others.values()].map(name => `<div>• ${name}</div>`).join('');
+  }
+
+  document.getElementById('joinBtn').addEventListener('click', () => {
+    const username = document.getElementById('usernameInput').value.trim() || 'Khách';
+    socket.emit('join_game', { username });
+  });
+
+  socket.on('connect', () => { myId = socket.id; });
+
+  socket.on('joined', ({ roomId, playerCount, maxPlayers, players }) => {
+    joinCard.classList.add('hidden');
+    gameCard.classList.remove('hidden');
+    chatCard.classList.remove('hidden');
+    roomBadge.textContent = `📍 ${roomId} — ${playerCount}/${maxPlayers} người`;
+    others.clear();
+    players.forEach(p => others.set(p.id, p.username));
+    renderPlayers();
+  });
+
+  socket.on('player_joined', ({ id, username }) => {
+    others.set(id, username);
+    renderPlayers();
+    const roomText = roomBadge.textContent.split(' — ')[0];
+    roomBadge.textContent = `${roomText} — ${others.size + 1}/${roomBadge.textContent.match(/\/(\d+)/)?.[1] || '?'} người`;
+  });
+
+  socket.on('player_left', ({ id }) => {
+    others.delete(id);
+    renderPlayers();
+  });
+
+  socket.on('chat', ({ username, text }) => {
+    const line = document.createElement('div');
+    line.innerHTML = `<b>${username}:</b> ${text.replace(/</g,'&lt;')}`;
+    chatBox.appendChild(line);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  });
+
+  chatInput.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' && chatInput.value.trim()){
+      socket.emit('chat', chatInput.value.trim());
+      chatInput.value = '';
+    }
+  });
+</script>
+</body>
+  </html>
