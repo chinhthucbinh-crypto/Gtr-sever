@@ -54,12 +54,14 @@ function persist(){
 }
 
 app.get('/api/kv/:key', (req, res) => {
+  res.set('Cache-Control', 'no-store');
   const key = decodeURIComponent(req.params.key);
   if(!(key in kvStore)) return res.status(404).json({ error: 'not found' });
   res.json({ key, value: kvStore[key] });
 });
 
 app.post('/api/kv/:key', (req, res) => {
+  res.set('Cache-Control', 'no-store');
   const key = decodeURIComponent(req.params.key);
   kvStore[key] = req.body ? req.body.value : undefined;
   persist();
@@ -81,6 +83,7 @@ class RoomManager {
     this.nextRoomIndex = 1;
   }
 
+  // Tìm phòng còn chỗ trống, hoặc tạo phòng mới nếu tất cả đã đầy
   assignRoom() {
     for (const [roomId, players] of this.rooms) {
       if (players.size < this.maxPerRoom) return roomId;
@@ -99,6 +102,7 @@ class RoomManager {
     const players = this.rooms.get(roomId);
     if (!players) return;
     players.delete(socketId);
+    // dọn phòng trống để không tốn bộ nhớ / duyệt thừa
     if (players.size === 0) this.rooms.delete(roomId);
   }
 
@@ -116,12 +120,20 @@ class RoomManager {
 }
 
 const roomManager = new RoomManager(MAX_PLAYERS_PER_ROOM);
-const playerState = new Map();
 
+// player state hiện tại theo socket.id, để phát cho người mới vào phòng biết ai đang ở đó
+const playerState = new Map(); // socketId -> { username, x, y, z, roomId }
+
+// ----------------------------------------------------------------------------
+// Endpoint kiểm tra nhanh tình trạng phòng (hữu ích để debug / màn hình admin)
+// ----------------------------------------------------------------------------
 app.get('/api/rooms', (req, res) => {
   res.json({ maxPerRoom: MAX_PLAYERS_PER_ROOM, rooms: roomManager.stats() });
 });
 
+// ----------------------------------------------------------------------------
+// Socket.io — kết nối thời gian thực
+// ----------------------------------------------------------------------------
 io.on('connection', (socket) => {
   let roomId = null;
 
@@ -134,6 +146,7 @@ io.on('connection', (socket) => {
 
     playerState.set(socket.id, { username, x: 0, y: 0, z: 0, roomId });
 
+    // báo cho chính người này biết họ đã vào phòng nào, cùng ai
     const others = [...roomManager.rooms.get(roomId)]
       .filter((id) => id !== socket.id)
       .map((id) => ({ id, ...playerState.get(id) }));
@@ -145,11 +158,13 @@ io.on('connection', (socket) => {
       players: others
     });
 
+    // báo cho những người còn lại trong phòng biết có người mới vào
     socket.to(roomId).emit('player_joined', { id: socket.id, username });
 
     console.log(`[${roomId}] ${username} vào phòng (${roomManager.roomSize(roomId)}/${MAX_PLAYERS_PER_ROOM})`);
   });
 
+  // đồng bộ vị trí người chơi trong game 3D — chỉ gửi trong cùng phòng, không gửi toàn server
   socket.on('move', (pos) => {
     if (!roomId) return;
     const state = playerState.get(socket.id);
@@ -158,6 +173,7 @@ io.on('connection', (socket) => {
     socket.to(roomId).emit('player_moved', { id: socket.id, x: pos.x, y: pos.y, z: pos.z });
   });
 
+  // chat trong phòng
   socket.on('chat', (text) => {
     if (!roomId) return;
     const state = playerState.get(socket.id);
