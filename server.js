@@ -39,10 +39,13 @@ const hasDatabase = !!process.env.DATABASE_URL;
 let pool = null;
 
 if(hasDatabase){
-  const useSSL = !/localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL);
+  const useSSL = !/localhost|127\.0\.0\.1|\.railway\.internal/.test(process.env.DATABASE_URL);
   pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: useSSL ? { rejectUnauthorized: false } : false
+  });
+  pool.on('error', (err) => {
+    console.error('❌ Lỗi kết nối PostgreSQL (idle client):', err.message);
   });
 }
 
@@ -74,6 +77,19 @@ const memKv = new Map();       // key -> value
 // bằng bcrypt NGAY TRÊN SERVER, không bao giờ nhận/so sánh mật khẩu thô đã xử
 // lý sẵn từ phía trình duyệt.
 // ============================================================================
+app.get('/api/health', async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  if(!hasDatabase){
+    return res.json({ ok:true, database: 'memory (không có DATABASE_URL)' });
+  }
+  try{
+    await pool.query('SELECT 1');
+    res.json({ ok:true, database: 'postgres (kết nối OK)' });
+  }catch(e){
+    res.status(500).json({ ok:false, database: 'postgres (LỖI KẾT NỐI)', error: e.message });
+  }
+});
+
 app.post('/api/register', async (req, res) => {
   try{
     const username = (req.body?.username || '').toString().trim().slice(0, 24);
@@ -177,7 +193,7 @@ app.get('/api/accounts', async (req, res) => {
     res.json(out);
   }catch(e){
     console.error('accounts error:', e.message);
-    res.status(500).json({});
+    res.status(500).json({ error: 'server error: ' + e.message });
   }
 });
 
@@ -361,4 +377,4 @@ initDb()
     console.error('Không khởi tạo được database:', e.message);
     process.exit(1);
   });
-        
+         
