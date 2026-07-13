@@ -9,10 +9,11 @@
 // ============================================================================
 
 const path = require('path');
-const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
+const bcrypt = require('bcryptjs');
+const { Pool } = require('pg');
 const { Server } = require('socket.io');
 
 const PORT = process.env.PORT || 3000;
@@ -25,47 +26,201 @@ app.use(cors());              // cho phép file game (chạy trên domain khác)
 app.use(express.json());      // đọc được JSON trong body của request
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ----------------------------------------------------------------------------
-// Kho lưu trữ dùng chung kiểu key-value — dùng cho tài khoản, bạn bè, chat.
-// Lưu ra file data.json mỗi khi ghi, để dữ liệu còn sống sót qua các lần
-// Railway khởi động lại container (restart/redeploy). Đây vẫn là lưu trữ đơn
-// giản (1 file), phù hợp cho demo/vài trăm người dùng — không phải database
-// thật cho quy mô lớn.
-// ----------------------------------------------------------------------------
-const DATA_FILE = path.join(__dirname, 'data.json');
-let kvStore = {};
-try{
-  if(fs.existsSync(DATA_FILE)){
-    kvStore = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-  }
-}catch(e){
-  console.error('Không đọc được data.json, bắt đầu với kho trống:', e.message);
-}
-let saveQueued = false;
-function persist(){
-  if(saveQueued) return;
-  saveQueued = true;
-  setTimeout(() => {
-    saveQueued = false;
-    fs.writeFile(DATA_FILE, JSON.stringify(kvStore), (err) => {
-      if(err) console.error('Lỗi lưu data.json:', err.message);
-    });
-  }, 250); // gộp các lần ghi liên tiếp lại, tránh ghi đĩa liên tục
+// ============================================================================
+// Lớp lưu trữ dữ liệu
+//
+// Nếu Railway có gắn addon PostgreSQL (biến môi trường DATABASE_URL tồn tại),
+// server dùng PostgreSQL thật — dữ liệu KHÔNG mất khi container restart/redeploy.
+// Nếu không có DATABASE_URL (ví dụ đang chạy `npm start` trên máy cá nhân chưa
+// cài Postgres), server tự lùi về lưu tạm trong bộ nhớ (mất khi tắt server) —
+// để bạn vẫn chạy thử được ngay mà không bắt buộc phải cài database trước.
+// ============================================================================
+const hasDatabase = !!process.env.DATABASE_URL;
+let pool = null;
+
+if(hasDatabase){
+  const useSSL = !/localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL);
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: useSSL ? { rejectUnauthorized: false } : false
+  });
 }
 
-app.get('/api/kv/:key', (req, res) => {
-  res.set('Cache-Control', 'no-store');
-  const key = decodeURIComponent(req.params.key);
-  if(!(key in kvStore)) return res.status(404).json({ error: 'not found' });
-  res.json({ key, value: kvStore[key] });
+async function initDb(){
+  if(!hasDatabase) return;
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS accounts (
+      username TEXT PRIMARY KEY,
+      password_hash TEXT NOT NULL,
+      last_seen BIGINT NOT NULL,
+      coins INTEGER NOT NULL DEFAULT 0
+    );
+  `);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS kv_store (
+      key TEXT PRIMARY KEY,
+      value JSONB
+    );
+  `);
+  console.log('✅ Đã kết nối PostgreSQL — dữ liệu sẽ không mất khi server khởi động lại.');
+}
+
+// ---- Bộ nhớ tạm dùng khi KHÔNG có PostgreSQL (chỉ để chạy thử cục bộ) ----
+const memAccounts = new Map(); // username -> { passwordHash, lastSeen, coins }
+const memKv = new Map();       // key -> value
+
+// ============================================================================
+// Accounts: đăng ký / đăng nhập / heartbeat / coins — mật khẩu luôn được băm
+// bằng bcrypt NGAY TRÊN SERVER, không bao giờ nhận/so sánh mật khẩu thô đã xử
+// lý sẵn từ phía trình duyệt.
+// ============================================================================
+app.post('/api/register', async (req, res) => {
+  try{
+    const username = (req.body?.username || '').toString().trim().slice(0, 24);
+    const password = (req.body?.password || '').toString();
+    if(!username || password.length < 4){
+      return res.status(400).json({ ok:false, error:'Tên người dùng hoặc mật khẩu không hợp lệ.' });
+    }
+    const passwordHash = await bcrypt.hash(password, 10);
+    const now = Date.now();
+
+    if(hasDatabase){
+      const exists = await pool.query('SELECT 1 FROM accounts WHERE username=$1', [username]);
+      if(exists.rowCount > 0){
+        return res.status(409).json({ ok:false, error:'Tên người dùng đã tồn tại.' });
+      }
+      await pool.query(
+        'INSERT INTO accounts (username, password_hash, last_seen, coins) VALUES ($1,$2,$3,0)',
+        [username, passwordHash, now]
+      );
+    } else {
+      if(memAccounts.has(username)){
+        return res.status(409).json({ ok:false, error:'Tên người dùng đã tồn tại.' });
+      }
+      memAccounts.set(username, { passwordHash, lastSeen: now, coins: 0 });
+    }
+    res.json({ ok:true });
+  }catch(e){
+    console.error('register error:', e.message);
+    res.status(500).json({ ok:false, error:'Lỗi server, thử lại sau.' });
+  }
 });
 
-app.post('/api/kv/:key', (req, res) => {
+app.post('/api/login', async (req, res) => {
+  try{
+    const username = (req.body?.username || '').toString().trim();
+    const password = (req.body?.password || '').toString();
+
+    let account;
+    if(hasDatabase){
+      const r = await pool.query('SELECT password_hash FROM accounts WHERE username=$1', [username]);
+      account = r.rows[0] ? { passwordHash: r.rows[0].password_hash } : null;
+    } else {
+      account = memAccounts.get(username) || null;
+    }
+    if(!account) return res.status(404).json({ ok:false, error:'Tài khoản không tồn tại.' });
+
+    const match = await bcrypt.compare(password, account.passwordHash);
+    if(!match) return res.status(401).json({ ok:false, error:'Sai mật khẩu.' });
+
+    const now = Date.now();
+    if(hasDatabase){
+      await pool.query('UPDATE accounts SET last_seen=$1 WHERE username=$2', [now, username]);
+    } else {
+      memAccounts.get(username).lastSeen = now;
+    }
+    res.json({ ok:true });
+  }catch(e){
+    console.error('login error:', e.message);
+    res.status(500).json({ ok:false, error:'Lỗi server, thử lại sau.' });
+  }
+});
+
+app.post('/api/heartbeat', async (req, res) => {
+  try{
+    const username = (req.body?.username || '').toString();
+    const now = Date.now();
+    if(hasDatabase){
+      await pool.query('UPDATE accounts SET last_seen=$1 WHERE username=$2', [now, username]);
+    } else if(memAccounts.has(username)){
+      memAccounts.get(username).lastSeen = now;
+    }
+    res.json({ ok:true });
+  }catch(e){ res.status(500).json({ ok:false }); }
+});
+
+app.post('/api/coins', async (req, res) => {
+  try{
+    const username = (req.body?.username || '').toString();
+    const coins = Math.max(0, parseInt(req.body?.coins, 10) || 0);
+    if(hasDatabase){
+      await pool.query('UPDATE accounts SET coins=$1 WHERE username=$2', [coins, username]);
+    } else if(memAccounts.has(username)){
+      memAccounts.get(username).coins = coins;
+    }
+    res.json({ ok:true });
+  }catch(e){ res.status(500).json({ ok:false }); }
+});
+
+// Dữ liệu công khai (KHÔNG bao giờ trả password_hash) — dùng cho bảng xếp hạng,
+// kiểm tra tên đăng nhập tồn tại khi kết bạn, và trạng thái online/offline.
+app.get('/api/accounts', async (req, res) => {
+  try{
+    res.set('Cache-Control', 'no-store');
+    const out = {};
+    if(hasDatabase){
+      const r = await pool.query('SELECT username, last_seen, coins FROM accounts');
+      r.rows.forEach(row => { out[row.username] = { lastSeen: Number(row.last_seen), coins: row.coins }; });
+    } else {
+      memAccounts.forEach((v, k) => { out[k] = { lastSeen: v.lastSeen, coins: v.coins }; });
+    }
+    res.json(out);
+  }catch(e){
+    console.error('accounts error:', e.message);
+    res.status(500).json({});
+  }
+});
+
+// ============================================================================
+// Kho key-value dùng chung cho bạn bè / chat (không nhạy cảm như mật khẩu nên
+// vẫn dùng chung 1 cơ chế đơn giản, giờ backed bởi Postgres thay vì file JSON).
+// ============================================================================
+app.get('/api/kv/:key', async (req, res) => {
   res.set('Cache-Control', 'no-store');
   const key = decodeURIComponent(req.params.key);
-  kvStore[key] = req.body ? req.body.value : undefined;
-  persist();
-  res.json({ ok: true });
+  try{
+    if(hasDatabase){
+      const r = await pool.query('SELECT value FROM kv_store WHERE key=$1', [key]);
+      if(r.rowCount === 0) return res.status(404).json({ error:'not found' });
+      return res.json({ key, value: r.rows[0].value });
+    } else {
+      if(!memKv.has(key)) return res.status(404).json({ error:'not found' });
+      return res.json({ key, value: memKv.get(key) });
+    }
+  }catch(e){
+    console.error('kv get error:', e.message);
+    res.status(500).json({ error:'server error' });
+  }
+});
+
+app.post('/api/kv/:key', async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const key = decodeURIComponent(req.params.key);
+  const value = req.body ? req.body.value : undefined;
+  try{
+    if(hasDatabase){
+      await pool.query(
+        'INSERT INTO kv_store (key, value) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET value=$2',
+        [key, JSON.stringify(value)]
+      );
+    } else {
+      memKv.set(key, value);
+    }
+    res.json({ ok:true });
+  }catch(e){
+    console.error('kv set error:', e.message);
+    res.status(500).json({ ok:false });
+  }
 });
 
 const server = http.createServer(app);
@@ -191,7 +346,19 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`GTR server đang chạy tại http://localhost:${PORT}`);
-  console.log(`Giới hạn ${MAX_PLAYERS_PER_ROOM} người chơi / phòng — tự động tạo phòng mới khi đầy.`);
-});
+initDb()
+  .then(() => {
+    if(!hasDatabase){
+      console.log('⚠️  Không thấy DATABASE_URL — đang chạy với bộ nhớ tạm (dữ liệu mất khi tắt server).');
+      console.log('   Gắn addon PostgreSQL trên Railway để dữ liệu được lưu thật.');
+    }
+    server.listen(PORT, () => {
+      console.log(`GTR server đang chạy tại http://localhost:${PORT}`);
+      console.log(`Giới hạn ${MAX_PLAYERS_PER_ROOM} người chơi / phòng — tự động tạo phòng mới khi đầy.`);
+    });
+  })
+  .catch((e) => {
+    console.error('Không khởi tạo được database:', e.message);
+    process.exit(1);
+  });
+        
