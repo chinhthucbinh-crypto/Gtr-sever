@@ -779,20 +779,20 @@
   #miniGameView .pet-toast-title{ font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; }
   #miniGameView .pet-toast-name{ font-family:'Space Grotesk'; font-weight:700; font-size:14.5px; }
 
-  #miniGameView .backpack-overlay{
+  #miniGameView .backpack-overlay, #liftingView .backpack-overlay{
     position:fixed; inset:0; z-index:60; background:rgba(5,7,11,0.6);
     opacity:0; pointer-events:none; transition:opacity .2s;
   }
-  #miniGameView .backpack-overlay.open{ opacity:1; pointer-events:auto; }
-  #miniGameView .backpack-panel{
+  #miniGameView .backpack-overlay.open, #liftingView .backpack-overlay.open{ opacity:1; pointer-events:auto; }
+  #miniGameView .backpack-panel, #liftingView .backpack-panel{
     position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.95); z-index:61;
     width:360px; max-width:92vw; max-height:78vh; overflow-y:auto;
     background:var(--panel); border:1px solid var(--line); border-radius:16px;
     padding:20px; opacity:0; pointer-events:none; transition:all .2s;
   }
-  #miniGameView .backpack-panel.open{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
-  #miniGameView .backpack-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
-  #miniGameView .backpack-head h3{ font-family:'Space Grotesk'; font-weight:600; font-size:16px; }
+  #miniGameView .backpack-panel.open, #liftingView .backpack-panel.open{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
+  #miniGameView .backpack-head, #liftingView .backpack-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  #miniGameView .backpack-head h3, #liftingView .backpack-head h3{ font-family:'Space Grotesk'; font-weight:600; font-size:16px; }
   #miniGameView .backpack-sub{ font-size:11.5px; color:var(--muted); margin-bottom:16px; }
   #miniGameView .backpack-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
   #miniGameView .backpack-item{ cursor:pointer; text-align:center; padding:6px; border-radius:10px; border:1px solid transparent; }
@@ -802,10 +802,10 @@
   #miniGameView .backpack-name{ font-size:11px; color:var(--cloud); }
   #miniGameView .backpack-state{ font-size:9.5px; color:var(--muted); margin-top:1px; }
   #miniGameView .backpack-empty{ grid-column:1/-1; text-align:center; color:var(--muted); font-size:13px; padding:24px 10px; line-height:1.6; }
-  #miniGameView .backpack-close{ cursor:pointer; color:var(--muted); width:30px; height:30px; display:grid; place-items:center; border-radius:8px; }
-  #miniGameView .backpack-close:hover{ background:var(--panel-2); color:var(--cloud); }
-  #miniGameView .egg-shop-row{ display:flex; gap:10px; margin-bottom:10px; }
-  #miniGameView .egg-shop-stat{
+  #miniGameView .backpack-close, #liftingView .backpack-close{ cursor:pointer; color:var(--muted); width:30px; height:30px; display:grid; place-items:center; border-radius:8px; }
+  #miniGameView .backpack-close:hover, #liftingView .backpack-close:hover{ background:var(--panel-2); color:var(--cloud); }
+  #miniGameView .egg-shop-row, #liftingView .egg-shop-row{ display:flex; gap:10px; margin-bottom:10px; }
+  #miniGameView .egg-shop-stat, #liftingView .egg-shop-stat{
     flex:1; background:var(--panel-2); border:1px solid var(--line); border-radius:9px;
     padding:9px 10px; font-size:12.5px; font-weight:600; color:var(--cloud); text-align:center;
   }
@@ -869,6 +869,18 @@
     transition: transform .12s;
   }
   #liftingView .lift-flex-btn:active{ transform:scale(0.93); }
+  #liftingView .lift-joystick{
+    position:absolute; left:16px; bottom:16px; z-index:5;
+    width:104px; height:104px; border-radius:50%;
+    background:rgba(23,28,39,0.55); border:1px solid var(--line);
+    touch-action:none;
+  }
+  #liftingView .lift-joystick-knob{
+    position:absolute; left:50%; top:50%; width:46px; height:46px; border-radius:50%;
+    background:rgba(44,241,176,0.85); transform:translate(-50%,-50%);
+    box-shadow:0 4px 14px rgba(44,241,176,0.4);
+    pointer-events:none;
+  }
   #liftingView .lift-drag-hint{
     position:absolute; top:12px; left:50%; transform:translateX(-50%);
     font-size:11px; color:var(--muted); background:rgba(18,22,31,0.6);
@@ -1628,8 +1640,9 @@
       <div class="lift-hp-text"><span id="liftHpNow">80</span> / <span id="liftHpMax">80</span> HP</div>
     </div>
     <div class="lift-float-layer" id="liftFloatLayer"></div>
-    <div class="lift-drag-hint" id="liftDragHint">↔ Kéo để xoay góc nhìn</div>
+    <div class="lift-drag-hint" id="liftDragHint">↔↕ Kéo màn hình để xoay góc nhìn</div>
     <div class="lift-flex-btn" id="liftFlexBtn" title="Khoe cơ">💪 FLEX</div>
+    <div class="lift-joystick" id="liftJoystick"><div class="lift-joystick-knob" id="liftJoystickKnob"></div></div>
   </div>
 
   <button class="lift-action-btn" id="liftActionBtn">NÂNG TẠ</button>
@@ -4568,7 +4581,11 @@
   let liftScene, liftCamera, liftRenderer, liftCanvasEl;
   let liftIslandGroup, liftCharParts, liftBarbellGroup, liftMonsterGroup, liftGymProps, liftArenaProps;
   let liftSceneReady = false;
-  let liftDragging = false, liftDragStartX = 0, liftAngleY = 0.45;
+  let liftDragging = false, liftDragStartX = 0, liftDragStartY = 0, liftAngleY = 0.45, liftPitch = 0;
+  let liftCharX = 0, liftCharZ = 0, liftFacing = 0;
+  let liftMoveVec = { x:0, z:0 };
+  let liftLastFrameT = 0;
+  const LIFT_FLOOR_R = 4.7;
   let liftActionKind = null, liftActionStart = 0, liftMonsterHitT = 0;
   let liftMuscleBulges = null;
   function liftPulseFlex(){ liftActionKind = 'flex'; liftActionStart = performance.now(); }
@@ -4797,13 +4814,52 @@
     liftCamera.position.set(0, 2.6, 6.4);
     liftCamera.lookAt(0, 1.1, 0);
 
-    liftCanvasEl.addEventListener('pointerdown', e=>{ liftDragging = true; liftDragStartX = e.clientX; document.getElementById('liftDragHint').style.opacity = '0'; });
+    liftCanvasEl.addEventListener('pointerdown', e=>{
+      liftDragging = true; liftDragStartX = e.clientX; liftDragStartY = e.clientY;
+      document.getElementById('liftDragHint').style.opacity = '0';
+    });
     window.addEventListener('pointerup', ()=>{ liftDragging = false; });
     window.addEventListener('pointermove', e=>{
       if(!liftDragging) return;
       liftAngleY += (e.clientX - liftDragStartX)*0.008;
-      liftDragStartX = e.clientX;
+      liftPitch = Math.max(-0.55, Math.min(0.9, liftPitch + (e.clientY - liftDragStartY)*0.006));
+      liftDragStartX = e.clientX; liftDragStartY = e.clientY;
     });
+
+    // ---- Joystick di chuyển nhân vật quanh phòng gym / đấu trường ----
+    let liftJoyPointerId = null;
+    const liftJoyBase = document.getElementById('liftJoystick');
+    const liftJoyKnob = document.getElementById('liftJoystickKnob');
+    const LIFT_JOY_R = 34;
+    function liftJoyUpdate(e){
+      const rect = liftJoyBase.getBoundingClientRect();
+      const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+      let dx = e.clientX - cx, dy = e.clientY - cy;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if(dist > LIFT_JOY_R){ dx = dx/dist*LIFT_JOY_R; dy = dy/dist*LIFT_JOY_R; }
+      liftJoyKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+      liftMoveVec.x = dx / LIFT_JOY_R;
+      liftMoveVec.z = dy / LIFT_JOY_R;
+    }
+    function liftJoyEnd(){
+      liftJoyPointerId = null;
+      liftMoveVec.x = 0; liftMoveVec.z = 0;
+      liftJoyKnob.style.transform = 'translate(-50%,-50%)';
+    }
+    liftJoyBase.addEventListener('pointerdown', e=>{
+      if(liftJoyPointerId !== null) return;
+      liftJoyPointerId = e.pointerId;
+      liftJoyBase.setPointerCapture(e.pointerId);
+      e.stopPropagation();
+      liftJoyUpdate(e);
+    });
+    liftJoyBase.addEventListener('pointermove', e=>{
+      if(e.pointerId !== liftJoyPointerId) return;
+      e.stopPropagation();
+      liftJoyUpdate(e);
+    });
+    liftJoyBase.addEventListener('pointerup', e=>{ if(e.pointerId === liftJoyPointerId) liftJoyEnd(); });
+    liftJoyBase.addEventListener('pointercancel', e=>{ if(e.pointerId === liftJoyPointerId) liftJoyEnd(); });
 
     liftSceneReady = true;
     onLiftResize();
@@ -4825,15 +4881,49 @@
   function liftAnimate(tMs){
     requestAnimationFrame(liftAnimate);
     if(!document.getElementById('liftingView').classList.contains('open')) return;
-
-    liftIslandGroup.rotation.y = liftAngleY;
-    applyCharacterPose(liftCharParts, 'idle', tMs);
-    liftCharParts.group.scale.setScalar(liftMuscleScale());
+    const dt = Math.min(0.05, Math.max(0, (tMs - (liftLastFrameT||tMs))/1000));
+    liftLastFrameT = tMs;
 
     liftBarbellGroup.visible = (liftMode === 'gym');
     liftMonsterGroup.visible = (liftMode === 'arena');
     liftGymProps.visible = (liftMode === 'gym');
     liftArenaProps.visible = (liftMode === 'arena');
+
+    // ---- di chuyển nhân vật bằng joystick, giới hạn trong sàn phòng gym/đấu trường ----
+    const moving = Math.abs(liftMoveVec.x) > 0.08 || Math.abs(liftMoveVec.z) > 0.08;
+    if(moving){
+      const speed = 2.4;
+      liftCharX += liftMoveVec.x * speed * dt;
+      liftCharZ += liftMoveVec.z * speed * dt;
+      const r = Math.sqrt(liftCharX*liftCharX + liftCharZ*liftCharZ);
+      if(r > LIFT_FLOOR_R){ liftCharX = liftCharX/r*LIFT_FLOOR_R; liftCharZ = liftCharZ/r*LIFT_FLOOR_R; }
+      const targetFacing = Math.atan2(liftMoveVec.x, liftMoveVec.z);
+      let diff = targetFacing - liftFacing;
+      while(diff > Math.PI) diff -= Math.PI*2;
+      while(diff < -Math.PI) diff += Math.PI*2;
+      liftFacing += diff * Math.min(1, dt*10);
+    }
+    liftCharParts.group.position.x = liftCharX;
+    liftCharParts.group.position.z = liftCharZ;
+    liftCharParts.group.rotation.y = liftFacing;
+    applyCharacterPose(liftCharParts, moving && liftActionKind===null ? 'walk' : 'idle', tMs);
+    liftCharParts.group.scale.setScalar(liftMuscleScale());
+
+    // ---- camera xoay quỹ đạo tự do (kéo ngang = yaw, kéo dọc = pitch) quanh nhân vật ----
+    const camDist = 5.6, camBaseH = 2.2;
+    const camH = camBaseH + liftPitch*3.2;
+    liftCamera.position.set(
+      liftCharX + Math.sin(liftAngleY)*camDist,
+      camH,
+      liftCharZ + Math.cos(liftAngleY)*camDist
+    );
+    liftCamera.lookAt(liftCharX, 1.1, liftCharZ);
+
+    // tạ luôn ở ngay trước mặt nhân vật, xoay theo hướng nhìn
+    const fx = Math.sin(liftFacing)*0.55, fz = Math.cos(liftFacing)*0.55;
+    liftBarbellGroup.position.x = liftCharX + fx;
+    liftBarbellGroup.position.z = liftCharZ + fz;
+    liftBarbellGroup.rotation.y = liftFacing;
 
     if(liftActionKind === 'lift'){
       const el = tMs - liftActionStart, dur = 650;
