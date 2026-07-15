@@ -59,6 +59,10 @@ async function initDb(){
       coins INTEGER NOT NULL DEFAULT 0
     );
   `);
+  // Thêm cột quyền admin / trạng thái khóa tài khoản (an toàn khi chạy lại nhiều lần).
+  await pool.query(`ALTER TABLE accounts ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT false;`);
+  await pool.query(`ALTER TABLE accounts ADD COLUMN IF NOT EXISTS banned BOOLEAN NOT NULL DEFAULT false;`);
+  await pool.query(`ALTER TABLE accounts ADD COLUMN IF NOT EXISTS ban_reason TEXT;`);
   await pool.query(`
     CREATE TABLE IF NOT EXISTS kv_store (
       key TEXT PRIMARY KEY,
@@ -66,6 +70,30 @@ async function initDb(){
     );
   `);
   console.log('✅ Đã kết nối PostgreSQL — dữ liệu sẽ không mất khi server khởi động lại.');
+}
+
+// 👉 Danh sách tài khoản admin — đặt biến môi trường ADMIN_USERNAMES trên Railway,
+// cách nhau bằng dấu phẩy, ví dụ: ADMIN_USERNAMES=binh,chinhthuc
+// Mỗi lần tài khoản trong danh sách này đăng nhập/đăng ký, hệ thống tự cấp quyền admin.
+const ADMIN_USERNAMES = (process.env.ADMIN_USERNAMES || '').split(',').map(s=>s.trim()).filter(Boolean);
+
+async function autoPromoteIfAdmin(username){
+  if(!hasDatabase) return;
+  if(ADMIN_USERNAMES.includes(username)){
+    await pool.query('UPDATE accounts SET is_admin=true WHERE username=$1', [username]);
+  }
+}
+
+// Xác thực 1 request admin: kiểm tra đúng mật khẩu VÀ đúng là admin trước khi cho làm bất cứ gì.
+// (Ứng dụng demo này không có hệ thống phiên đăng nhập/token, nên mỗi thao tác admin phải gửi
+// lại đúng mật khẩu — đơn giản nhưng vẫn ngăn được người ngoài giả danh admin.)
+async function verifyAdmin(username, password){
+  if(!hasDatabase || !username || !password) return false;
+  const r = await pool.query('SELECT password_hash, is_admin FROM accounts WHERE username=$1', [username]);
+  if(r.rowCount === 0) return false;
+  const row = r.rows[0];
+  if(!row.is_admin) return false;
+  return bcrypt.compare(password, row.password_hash);
 }
 
 // ---- Bộ nhớ tạm dùng khi KHÔNG có PostgreSQL (chỉ để chạy thử cục bộ) ----
@@ -115,7 +143,8 @@ app.post('/api/register', async (req, res) => {
       }
       memAccounts.set(username, { passwordHash, lastSeen: now, coins: 0 });
     }
-    res.json({ ok:true });
+    await autoPromoteIfAdmin(username);
+    res.json({ ok:true, isAdmin: ADMIN_USERNAMES.includes(username) });
   }catch(e){
     console.error('register error:', e.message);
     res.status(500).json({ ok:false, error:'Lỗi server, thử lại sau.' });
@@ -129,8 +158,13 @@ app.post('/api/login', async (req, res) => {
 
     let account;
     if(hasDatabase){
-      const r = await pool.query('SELECT password_hash FROM accounts WHERE username=$1', [username]);
-      account = r.rows[0] ? { passwordHash: r.rows[0].password_hash } : null;
+      const r = await pool.query('SELECT password_hash, banned, ban_reason, is_admin FROM accounts WHERE username=$1', [username]);
+      account = r.rows[0] ? {
+        passwordHash: r.rows[0].password_hash,
+        banned: r.rows[0].banned,
+        banReason: r.rows[0].ban_reason,
+        isAdmin: r.rows[0].is_admin
+      } : null;
     } else {
       account = memAccounts.get(username) || null;
     }
@@ -139,13 +173,21 @@ app.post('/api/login', async (req, res) => {
     const match = await bcrypt.compare(password, account.passwordHash);
     if(!match) return res.status(401).json({ ok:false, error:'Sai mật khẩu.' });
 
+    if(account.banned){
+      return res.status(403).json({
+        ok:false,
+        error: 'Tài khoản của bạn đã bị khóa vì vi phạm nội quy GTR' + (account.banReason ? `: ${account.banReason}` : '.')
+      });
+    }
+
     const now = Date.now();
     if(hasDatabase){
       await pool.query('UPDATE accounts SET last_seen=$1 WHERE username=$2', [now, username]);
     } else {
       memAccounts.get(username).lastSeen = now;
     }
-    res.json({ ok:true });
+    await autoPromoteIfAdmin(username);
+    res.json({ ok:true, isAdmin: !!account.isAdmin || ADMIN_USERNAMES.includes(username) });
   }catch(e){
     console.error('login error:', e.message);
     res.status(500).json({ ok:false, error:'Lỗi server, thử lại sau.' });
@@ -194,6 +236,114 @@ app.get('/api/accounts', async (req, res) => {
   }catch(e){
     console.error('accounts error:', e.message);
     res.status(500).json({ error: 'server error: ' + e.message });
+  }
+});
+
+// ============================================================================
+// API dành cho quản trị viên (admin). Mỗi request đều phải gửi lại đúng
+// adminUsername + adminPassword để server tự xác thực lại (verifyAdmin) —
+// ứng dụng demo này không có hệ thống phiên đăng nhập/token riêng, nên đây là
+// cách đơn giản nhất để không cho người ngoài giả danh admin.
+// ============================================================================
+
+// Danh sách toàn bộ tài khoản, kèm trạng thái khóa/quyền admin — để hiển thị bảng quản lý người dùng.
+app.post('/api/admin/users', async (req, res) => {
+  try{
+    const { adminUsername, adminPassword } = req.body || {};
+    if(!(await verifyAdmin(adminUsername, adminPassword))){
+      return res.status(403).json({ ok:false, error:'Không có quyền quản trị.' });
+    }
+    const r = await pool.query('SELECT username, last_seen, coins, is_admin, banned, ban_reason FROM accounts ORDER BY last_seen DESC');
+    res.json({ ok:true, users: r.rows.map(row => ({
+      username: row.username, lastSeen: Number(row.last_seen), coins: row.coins,
+      isAdmin: row.is_admin, banned: row.banned, banReason: row.ban_reason
+    })) });
+  }catch(e){
+    console.error('admin/users error:', e.message);
+    res.status(500).json({ ok:false, error:'Lỗi server.' });
+  }
+});
+
+// Khóa hoặc mở khóa 1 tài khoản. body: { adminUsername, adminPassword, targetUsername, banned, reason }
+app.post('/api/admin/ban', async (req, res) => {
+  try{
+    const { adminUsername, adminPassword, targetUsername, banned, reason } = req.body || {};
+    if(!(await verifyAdmin(adminUsername, adminPassword))){
+      return res.status(403).json({ ok:false, error:'Không có quyền quản trị.' });
+    }
+    if(targetUsername === adminUsername){
+      return res.status(400).json({ ok:false, error:'Không thể tự khóa chính mình.' });
+    }
+    await pool.query('UPDATE accounts SET banned=$1, ban_reason=$2 WHERE username=$3', [!!banned, reason || null, targetUsername]);
+    res.json({ ok:true });
+  }catch(e){
+    console.error('admin/ban error:', e.message);
+    res.status(500).json({ ok:false, error:'Lỗi server.' });
+  }
+});
+
+// Danh sách các cuộc trò chuyện đang có (dựa trên các key gtr_chat:* trong kho chung) — để kiểm duyệt.
+app.post('/api/admin/chats', async (req, res) => {
+  try{
+    const { adminUsername, adminPassword } = req.body || {};
+    if(!(await verifyAdmin(adminUsername, adminPassword))){
+      return res.status(403).json({ ok:false, error:'Không có quyền quản trị.' });
+    }
+    const r = await pool.query(`SELECT key, value FROM kv_store WHERE key LIKE 'gtr_chat:%'`);
+    const chats = r.rows.map(row => {
+      const pairKey = row.key.replace('gtr_chat:', '');
+      const messages = Array.isArray(row.value) ? row.value : [];
+      const reportedCount = messages.filter(m => m.reported).length;
+      return {
+        key: row.key,
+        pair: pairKey,
+        messageCount: messages.length,
+        reportedCount,
+        lastMessageAt: messages.length ? messages[messages.length-1].id : 0
+      };
+    }).sort((a,b) => b.lastMessageAt - a.lastMessageAt);
+    res.json({ ok:true, chats });
+  }catch(e){
+    console.error('admin/chats error:', e.message);
+    res.status(500).json({ ok:false, error:'Lỗi server.' });
+  }
+});
+
+// Nội dung đầy đủ của 1 cuộc trò chuyện cụ thể — để đọc kiểm duyệt khi cần.
+app.post('/api/admin/chat-detail', async (req, res) => {
+  try{
+    const { adminUsername, adminPassword, key } = req.body || {};
+    if(!(await verifyAdmin(adminUsername, adminPassword))){
+      return res.status(403).json({ ok:false, error:'Không có quyền quản trị.' });
+    }
+    if(!key || !key.startsWith('gtr_chat:')){
+      return res.status(400).json({ ok:false, error:'Key không hợp lệ.' });
+    }
+    const r = await pool.query('SELECT value FROM kv_store WHERE key=$1', [key]);
+    res.json({ ok:true, messages: r.rows[0] ? r.rows[0].value : [] });
+  }catch(e){
+    console.error('admin/chat-detail error:', e.message);
+    res.status(500).json({ ok:false, error:'Lỗi server.' });
+  }
+});
+
+// Xóa 1 game đã xuất bản khỏi thư viện chung (vi phạm nội quy / game rác).
+app.post('/api/admin/delete-game', async (req, res) => {
+  try{
+    const { adminUsername, adminPassword, gameId } = req.body || {};
+    if(!(await verifyAdmin(adminUsername, adminPassword))){
+      return res.status(403).json({ ok:false, error:'Không có quyền quản trị.' });
+    }
+    const r = await pool.query(`SELECT value FROM kv_store WHERE key='gtr_games'`);
+    const games = r.rows[0] ? r.rows[0].value : {};
+    if(games && games[gameId]){
+      delete games[gameId];
+      await pool.query(`UPDATE kv_store SET value=$1 WHERE key='gtr_games'`, [JSON.stringify(games)]);
+    }
+    res.json({ ok:true });
+  }catch(e){
+    console.error('admin/delete-game error:', e.message);
+    res.status(500).json({ ok:false, error:'Lỗi server.' });
   }
 });
 
