@@ -1132,6 +1132,99 @@
   .avatar-dropdown .tag{ font-size:11px; color:var(--muted); margin-top:2px; }
   .logout-item{ padding:11px 14px; font-size:13px; color:var(--ember); cursor:pointer; font-weight:500; }
   .logout-item:hover{ background:rgba(255,107,74,0.1); }
+
+  /* ===== Màn hình Nội Quy GTR ===== */
+  .rules-overlay{
+    position:fixed; inset:0; z-index:500;
+    background:rgba(5,7,11,0.85); backdrop-filter:blur(6px);
+    display:flex; align-items:center; justify-content:center; padding:20px;
+    opacity:0; pointer-events:none; transition:opacity .2s;
+  }
+  .rules-overlay.show{ opacity:1; pointer-events:auto; }
+  .rules-modal{
+    background:var(--panel); border:1px solid var(--line); border-radius:18px;
+    padding:26px 22px; width:100%; max-width:380px; max-height:82vh; display:flex; flex-direction:column;
+  }
+  .rules-icon{ font-size:38px; text-align:center; margin-bottom:6px; }
+  .rules-modal h2{ font-family:'Space Grotesk'; font-weight:700; font-size:19px; text-align:center; margin-bottom:14px; color:var(--cloud); }
+  .rules-body{ overflow-y:auto; margin-bottom:16px; padding-right:4px; }
+  .rules-body p{ font-size:12.5px; color:var(--muted); line-height:1.6; margin-bottom:10px; }
+  .rules-body p b{ color:var(--cloud); }
+
+  /* ===== Bảng điều khiển quản trị ===== */
+  .admin-overlay{
+    position:fixed; inset:0; z-index:600; background:rgba(5,7,11,0.6);
+    opacity:0; pointer-events:none; transition:opacity .2s;
+  }
+  .admin-overlay.open{ opacity:1; pointer-events:auto; }
+  .admin-panel{
+    position:fixed; top:0; right:0; bottom:0; width:400px; max-width:94vw; z-index:601;
+    background:var(--panel); border-left:1px solid var(--line);
+    transform:translateX(100%); transition:transform .25s ease;
+    display:flex; flex-direction:column;
+  }
+  .admin-panel.open{ transform:translateX(0); }
+  .admin-head{
+    padding:16px 18px; border-bottom:1px solid var(--line); flex-shrink:0;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .admin-head h3{ font-family:'Space Grotesk'; font-weight:700; font-size:15.5px; }
+  .admin-close{ width:30px; height:30px; border-radius:8px; background:var(--panel-2); display:grid; place-items:center; color:var(--muted); cursor:pointer; }
+  .admin-tabs{ display:flex; gap:6px; padding:12px 16px 0; flex-shrink:0; }
+  .admin-tab{
+    flex:1; text-align:center; padding:9px 4px; border-radius:9px; font-size:12px; font-weight:700;
+    color:var(--muted); background:var(--panel-2); cursor:pointer;
+  }
+  .admin-tab.active{ background:var(--signal-dim); color:var(--signal); }
+  .admin-body{ flex:1; overflow-y:auto; padding:14px 16px 30px; }
+  .admin-empty{ text-align:center; color:var(--muted); font-size:12.5px; padding:30px 10px; }
+
+  .admin-user-row{
+    display:flex; align-items:center; gap:10px; padding:10px 8px; border-radius:10px; margin-bottom:4px;
+  }
+  .admin-user-row:hover{ background:var(--panel-2); }
+  .admin-user-avatar{
+    width:34px; height:34px; border-radius:9px; background:linear-gradient(135deg, var(--violet), var(--signal));
+    display:grid; place-items:center; font-weight:700; font-size:12.5px; color:#06110D; flex-shrink:0;
+  }
+  .admin-user-info{ flex:1; min-width:0; }
+  .admin-user-name{ font-size:13px; font-weight:600; color:var(--cloud); display:flex; align-items:center; gap:6px; }
+  .admin-user-meta{ font-size:11px; color:var(--muted); margin-top:1px; }
+  .admin-badge{ font-size:9.5px; font-weight:700; padding:2px 6px; border-radius:5px; }
+  .admin-badge.admin{ background:rgba(140,124,255,0.18); color:var(--violet); }
+  .admin-badge.banned{ background:rgba(255,107,74,0.18); color:var(--ember); }
+  .admin-ban-btn{
+    padding:7px 11px; border-radius:8px; border:1px solid var(--line); background:var(--panel-2);
+    color:var(--cloud); font-size:11.5px; font-weight:700; cursor:pointer; flex-shrink:0;
+  }
+  .admin-ban-btn.danger{ border-color:rgba(255,107,74,0.4); color:var(--ember); }
+
+  .admin-chat-row{
+    padding:11px 10px; border-radius:10px; margin-bottom:4px; cursor:pointer;
+    display:flex; align-items:center; gap:10px;
+  }
+  .admin-chat-row:hover{ background:var(--panel-2); }
+  .admin-chat-pair{ font-size:12.5px; font-weight:600; color:var(--cloud); flex:1; }
+  .admin-chat-count{ font-size:11px; color:var(--muted); }
+  .admin-chat-flag{ font-size:11px; color:var(--ember); font-weight:700; }
+
+  .admin-game-row{
+    display:flex; align-items:center; gap:10px; padding:10px 8px; border-radius:10px; margin-bottom:4px;
+  }
+  .admin-game-row:hover{ background:var(--panel-2); }
+  .admin-game-info{ flex:1; min-width:0; }
+  .admin-game-name{ font-size:13px; font-weight:600; color:var(--cloud); }
+  .admin-game-meta{ font-size:11px; color:var(--muted); margin-top:1px; }
+  .admin-del-btn{
+    padding:7px 11px; border-radius:8px; border:1px solid rgba(255,107,74,0.4); background:transparent;
+    color:var(--ember); font-size:11.5px; font-weight:700; cursor:pointer; flex-shrink:0;
+  }
+
+  .admin-msg-bubble{ padding:8px 12px; border-radius:10px; margin-bottom:8px; font-size:12.5px; max-width:85%; }
+  .admin-msg-bubble.from-a{ background:var(--panel-2); }
+  .admin-msg-bubble.from-b{ background:var(--signal-dim); margin-left:auto; }
+  .admin-msg-sender{ font-size:10px; color:var(--muted); margin-bottom:2px; font-weight:700; }
+  .admin-msg-reported{ color:var(--ember); font-size:10px; font-weight:700; margin-top:2px; }
 </style>
 </head>
 <body>
@@ -1216,6 +1309,9 @@
     </div>
     <div class="icon-btn" id="leaderboardBtn">
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4a1 1 0 0 0-1 1c0 2.5 1.8 4.5 4 4.9"/><path d="M17 6h3a1 1 0 0 1 1 1c0 2.5-1.8 4.5-4 4.9"/></svg>
+    </div>
+    <div class="icon-btn" id="adminBtn" style="display:none;" title="Quản trị">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>
     </div>
     <div class="avatar-wrap">
       <div class="avatar-btn" id="avatarBtn">?</div>
@@ -1670,6 +1766,54 @@
   </div>
 </div>
 
+<!-- ===== Màn hình Nội Quy GTR — hiện 1 lần ngay sau khi đăng ký tài khoản mới ===== -->
+<div class="rules-overlay" id="rulesOverlay">
+  <div class="rules-modal">
+    <div class="rules-icon">📜</div>
+    <h2>Nội Quy GTR</h2>
+    <div class="rules-body">
+      <p><b>1. Tôn trọng người chơi khác.</b> Không quấy rối, đe dọa, phân biệt đối xử hay dùng ngôn từ thù ghét trong chat hoặc tên tài khoản.</p>
+      <p><b>2. Không gian lận.</b> Không khai thác lỗi để lấy coin/vật phẩm bất thường, không dùng phần mềm hỗ trợ trái phép.</p>
+      <p><b>3. Nội dung phù hợp.</b> Game bạn tạo và xuất bản trong Studio không được chứa nội dung bạo lực cực đoan, khiêu dâm, hoặc vi phạm pháp luật.</p>
+      <p><b>4. Không spam/game rác.</b> Game xuất bản phải là nội dung thật, không phải bản sao trống hoặc phá hoại thư viện chung.</p>
+      <p><b>5. Hậu quả vi phạm.</b> Đội ngũ quản trị GTR có quyền xóa nội dung vi phạm và khóa tài khoản mà không cần báo trước, dựa trên các nội quy trên.</p>
+    </div>
+    <button class="btn btn-primary" id="rulesAgreeBtn" style="width:100%;">Tôi đã đọc và đồng ý</button>
+  </div>
+</div>
+
+<!-- ===== Bảng điều khiển quản trị viên ===== -->
+<div class="admin-overlay" id="adminOverlay"></div>
+<div class="admin-panel" id="adminPanel">
+  <div class="admin-head">
+    <h3>🛡️ Quản trị GTR</h3>
+    <div class="admin-close" id="adminCloseBtn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </div>
+  </div>
+  <div class="admin-tabs">
+    <div class="admin-tab active" data-admintab="users">👤 Người dùng</div>
+    <div class="admin-tab" data-admintab="chats">💬 Hội thoại</div>
+    <div class="admin-tab" data-admintab="games">🎮 Game</div>
+  </div>
+  <div class="admin-body">
+    <div id="adminUsersPanel"><div class="admin-empty">Đang tải...</div></div>
+    <div id="adminChatsPanel" style="display:none;"><div class="admin-empty">Đang tải...</div></div>
+    <div id="adminGamesPanel" style="display:none;"><div class="admin-empty">Đang tải...</div></div>
+  </div>
+</div>
+
+<div class="admin-overlay" id="adminChatDetailOverlay"></div>
+<div class="admin-panel" id="adminChatDetailPanel">
+  <div class="admin-head">
+    <h3 id="adminChatDetailTitle">Hội thoại</h3>
+    <div class="admin-close" id="adminChatDetailCloseBtn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </div>
+  </div>
+  <div class="admin-body" id="adminChatDetailBody"></div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" async></script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" async></script>
 <script defer>
@@ -1799,6 +1943,9 @@
 
   function showAuthError(msg){ authError.textContent = msg; authError.classList.add('show'); }
 
+  let isAdmin = false;
+  let sessionPassword = ''; // giữ tạm trong phiên để xác thực lại mỗi thao tác admin — không lưu vĩnh viễn ở đâu cả
+
   async function submitAuth(){
     authError.classList.remove('show');
     const username = document.getElementById('authUsername').value.trim();
@@ -1812,17 +1959,22 @@
     authSubmitBtn.textContent = 'Đang xử lý...';
 
     try{
-      if(authMode === 'register'){
+      let result;
+      const wasRegister = authMode === 'register';
+      if(wasRegister){
         const confirmPassword = document.getElementById('authConfirmPassword').value;
         if(password !== confirmPassword){ showAuthError('Mật khẩu nhập lại không khớp.'); return; }
-        const result = await apiRegister(username, password);
+        result = await apiRegister(username, password);
         if(!result.ok){ showAuthError(result.error || 'Không đăng ký được, thử lại.'); return; }
       } else {
-        const result = await apiLogin(username, password);
+        result = await apiLogin(username, password);
         if(!result.ok){ showAuthError(result.error || 'Không đăng nhập được, thử lại.'); return; }
       }
+      isAdmin = !!result.isAdmin;
+      sessionPassword = password;
       await loadAccountsDB(); // lấy lastSeen/coins mới nhất để bạn bè/xếp hạng hiện đúng ngay
       enterApp(username);
+      if(wasRegister) showRulesModal();
     } finally {
       authSubmitBtn.disabled = false;
       authSubmitBtn.textContent = originalLabel;
@@ -1850,6 +2002,8 @@
     }, 20000);
 
     loadGameLibrary();
+
+    document.getElementById('adminBtn').style.display = isAdmin ? '' : 'none';
   }
 
   // ---- Avatar dropdown open/close + logout ----
@@ -2091,6 +2245,182 @@
     leaderboardDrawer.classList.remove('open'); lbOverlay.classList.remove('open');
   }
   document.getElementById('leaderboardSideLink').addEventListener('click', openLeaderboard);
+
+  // ========== Màn hình Nội Quy GTR — hiện 1 lần ngay sau khi đăng ký ==========
+  function showRulesModal(){
+    document.getElementById('rulesOverlay').classList.add('show');
+  }
+  document.getElementById('rulesAgreeBtn').addEventListener('click', ()=>{
+    document.getElementById('rulesOverlay').classList.remove('show');
+  });
+
+  // ========== Bảng điều khiển quản trị (Admin) ==========
+  async function adminApi(path, extraBody){
+    try{
+      const res = await fetch(`${API_BASE}${path}`, {
+        method: 'POST', cache: 'no-store',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminUsername: currentUsername, adminPassword: sessionPassword, ...extraBody })
+      });
+      return await res.json();
+    }catch(e){
+      return { ok:false, error:'Không kết nối được server.' };
+    }
+  }
+
+  function openAdminPanel(){
+    document.getElementById('adminOverlay').classList.add('open');
+    document.getElementById('adminPanel').classList.add('open');
+    loadAdminUsers();
+  }
+  function closeAdminPanel(){
+    document.getElementById('adminOverlay').classList.remove('open');
+    document.getElementById('adminPanel').classList.remove('open');
+  }
+  document.getElementById('adminBtn').addEventListener('click', openAdminPanel);
+  document.getElementById('adminCloseBtn').addEventListener('click', closeAdminPanel);
+  document.getElementById('adminOverlay').addEventListener('click', closeAdminPanel);
+
+  document.querySelectorAll('.admin-tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      const which = tab.dataset.admintab;
+      document.getElementById('adminUsersPanel').style.display = which === 'users' ? '' : 'none';
+      document.getElementById('adminChatsPanel').style.display = which === 'chats' ? '' : 'none';
+      document.getElementById('adminGamesPanel').style.display = which === 'games' ? '' : 'none';
+      if(which === 'users') loadAdminUsers();
+      if(which === 'chats') loadAdminChats();
+      if(which === 'games') loadAdminGames();
+    });
+  });
+
+  // ---- Tab: Người dùng ----
+  async function loadAdminUsers(){
+    const panel = document.getElementById('adminUsersPanel');
+    panel.innerHTML = '<div class="admin-empty">Đang tải...</div>';
+    const result = await adminApi('/api/admin/users');
+    if(!result.ok){ panel.innerHTML = `<div class="admin-empty">${escapeHtml(result.error || 'Không tải được danh sách.')}</div>`; return; }
+    if(result.users.length === 0){ panel.innerHTML = '<div class="admin-empty">Chưa có người dùng nào.</div>'; return; }
+    panel.innerHTML = result.users.map(u => {
+      const safeName = escapeHtml(u.username);
+      const initial = safeName.charAt(0).toUpperCase();
+      const badges = [
+        u.isAdmin ? '<span class="admin-badge admin">ADMIN</span>' : '',
+        u.banned ? '<span class="admin-badge banned">ĐÃ KHÓA</span>' : ''
+      ].join('');
+      const banBtnLabel = u.banned ? 'Mở khóa' : 'Khóa';
+      const banBtnClass = u.banned ? '' : 'danger';
+      const banBtnHtml = u.username === currentUsername
+        ? '<span style="font-size:11px; color:var(--muted);">Bạn</span>'
+        : `<button class="admin-ban-btn ${banBtnClass}" onclick="adminToggleBan('${safeName.replace(/'/g,"\\'")}', ${!u.banned})">${banBtnLabel}</button>`;
+      return `
+      <div class="admin-user-row">
+        <div class="admin-user-avatar">${initial}</div>
+        <div class="admin-user-info">
+          <div class="admin-user-name">${safeName} ${badges}</div>
+          <div class="admin-user-meta">${u.coins.toLocaleString('en-US')} coin · online gần nhất ${formatRelativeTime(u.lastSeen)}</div>
+        </div>
+        ${banBtnHtml}
+      </div>`;
+    }).join('');
+  }
+  function formatRelativeTime(ts){
+    const diffMin = Math.floor((Date.now() - ts) / 60000);
+    if(diffMin < 2) return 'vừa xong';
+    if(diffMin < 60) return `${diffMin} phút trước`;
+    const diffH = Math.floor(diffMin/60);
+    if(diffH < 24) return `${diffH} giờ trước`;
+    return `${Math.floor(diffH/24)} ngày trước`;
+  }
+  async function adminToggleBan(targetUsername, banned){
+    let reason = null;
+    if(banned){
+      reason = prompt(`Lý do khóa tài khoản "${targetUsername}" (không bắt buộc):`) || null;
+    }
+    const result = await adminApi('/api/admin/ban', { targetUsername, banned, reason });
+    if(!result.ok){ showRewardToast(`❌ ${result.error || 'Không thực hiện được.'}`); return; }
+    showRewardToast(banned ? `🔒 Đã khóa tài khoản ${targetUsername}.` : `🔓 Đã mở khóa tài khoản ${targetUsername}.`);
+    loadAdminUsers();
+  }
+
+  // ---- Tab: Hội thoại ----
+  async function loadAdminChats(){
+    const panel = document.getElementById('adminChatsPanel');
+    panel.innerHTML = '<div class="admin-empty">Đang tải...</div>';
+    const result = await adminApi('/api/admin/chats');
+    if(!result.ok){ panel.innerHTML = `<div class="admin-empty">${escapeHtml(result.error || 'Không tải được danh sách.')}</div>`; return; }
+    if(result.chats.length === 0){ panel.innerHTML = '<div class="admin-empty">Chưa có cuộc trò chuyện nào.</div>'; return; }
+    panel.innerHTML = result.chats.map(c => {
+      const safePair = escapeHtml(c.pair.replace('|', '  ↔  '));
+      const flag = c.reportedCount > 0 ? `<div class="admin-chat-flag">🚩 ${c.reportedCount} tin bị báo cáo</div>` : '';
+      return `
+      <div class="admin-chat-row" onclick="adminViewChat('${c.key.replace(/'/g,"\\'")}', '${safePair.replace(/'/g,"\\'")}')">
+        <div style="flex:1; min-width:0;">
+          <div class="admin-chat-pair">${safePair}</div>
+          <div class="admin-chat-count">${c.messageCount} tin nhắn</div>
+          ${flag}
+        </div>
+      </div>`;
+    }).join('');
+  }
+  async function adminViewChat(key, pairLabel){
+    document.getElementById('adminChatDetailTitle').textContent = pairLabel;
+    document.getElementById('adminChatDetailOverlay').classList.add('open');
+    document.getElementById('adminChatDetailPanel').classList.add('open');
+    const body = document.getElementById('adminChatDetailBody');
+    body.innerHTML = '<div class="admin-empty">Đang tải...</div>';
+    const result = await adminApi('/api/admin/chat-detail', { key });
+    if(!result.ok){ body.innerHTML = `<div class="admin-empty">${escapeHtml(result.error || 'Không tải được.')}</div>`; return; }
+    if(!result.messages || result.messages.length === 0){ body.innerHTML = '<div class="admin-empty">Chưa có tin nhắn.</div>'; return; }
+    const [userA] = pairLabel.split('  ↔  ');
+    body.innerHTML = result.messages.map(m => {
+      const side = m.from === userA.trim() ? 'from-a' : 'from-b';
+      return `
+      <div class="admin-msg-bubble ${side}">
+        <div class="admin-msg-sender">${escapeHtml(m.from)}</div>
+        ${escapeHtml(m.text)}
+        ${m.reported ? '<div class="admin-msg-reported">🚩 Đã bị báo cáo</div>' : ''}
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('adminChatDetailCloseBtn').addEventListener('click', ()=>{
+    document.getElementById('adminChatDetailOverlay').classList.remove('open');
+    document.getElementById('adminChatDetailPanel').classList.remove('open');
+  });
+  document.getElementById('adminChatDetailOverlay').addEventListener('click', ()=>{
+    document.getElementById('adminChatDetailOverlay').classList.remove('open');
+    document.getElementById('adminChatDetailPanel').classList.remove('open');
+  });
+
+  // ---- Tab: Game (kiểm duyệt / xóa game vi phạm hoặc game rác) ----
+  async function loadAdminGames(){
+    const panel = document.getElementById('adminGamesPanel');
+    panel.innerHTML = '<div class="admin-empty">Đang tải...</div>';
+    const games = (await serverGet('gtr_games')) || {};
+    const list = Object.values(games).sort((a,b)=> b.createdAt - a.createdAt);
+    if(list.length === 0){ panel.innerHTML = '<div class="admin-empty">Chưa có game nào do cộng đồng xuất bản.</div>'; return; }
+    panel.innerHTML = list.map(g => {
+      const safeName = escapeHtml(g.name);
+      const safeCreator = escapeHtml(g.creator);
+      return `
+      <div class="admin-game-row">
+        <div class="admin-game-info">
+          <div class="admin-game-name">${safeName}</div>
+          <div class="admin-game-meta">by ${safeCreator} · ${new Date(g.createdAt).toLocaleDateString('vi-VN')}</div>
+        </div>
+        <button class="admin-del-btn" onclick="adminDeleteGame('${g.id}', '${safeName.replace(/'/g,"\\'")}')">Xóa</button>
+      </div>`;
+    }).join('');
+  }
+  async function adminDeleteGame(gameId, name){
+    if(!confirm(`Xóa game "${name}" khỏi thư viện chung? Hành động này không thể hoàn tác.`)) return;
+    const result = await adminApi('/api/admin/delete-game', { gameId });
+    if(!result.ok){ showRewardToast(`❌ ${result.error || 'Không xóa được.'}`); return; }
+    showRewardToast(`🗑️ Đã xóa game "${name}".`);
+    loadAdminGames();
+    loadGameLibrary();
+  }
 
   // ========== Thư viện trò chơi: game mặc định + mọi game đã xuất bản từ Studio ==========
   let allLibraryGames = []; // [{ id, name, creator, isDefault, createdAt }]
