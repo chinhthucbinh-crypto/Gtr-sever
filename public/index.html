@@ -2,7 +2,8 @@
 <html lang="vi" style="background:#0B0E14;">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="format-detection" content="telephone=no">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#0B0E14">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -4278,45 +4279,82 @@
   window.addEventListener('pointerup', joyEnd);
   window.addEventListener('pointercancel', joyEnd);
 
-  // ===================== Camera orbit (360° drag-to-look) =====================
+  // ===================== Camera orbit (360° drag-to-look + pinch-to-zoom) =====================
   let camYaw = Math.PI;      // horizontal orbit angle
   let camPitch = 0.55;       // vertical tilt (radians above horizon-ish)
-  let lookPointerId = null;
-  let lookStartX = 0, lookStartY = 0;
   const lookLayer = document.getElementById('lookLayer');
-  const camDist = 11, camMinDist = 6, camMaxDist = 16;
+  let camDist = 11;
+  const camMinDist = 5, camMaxDist = 18;
+
+  // tracks every finger currently down on the look layer, keyed by pointerId —
+  // this is what makes both single-finger rotate AND two-finger pinch-zoom work reliably
+  const lookPointers = new Map();
+  let pinchStartDist = null;
+  let pinchStartCamDist = camDist;
+
+  function pointerDistance(){
+    const pts = [...lookPointers.values()];
+    if(pts.length < 2) return null;
+    const dx = pts[0].x - pts[1].x, dy = pts[0].y - pts[1].y;
+    return Math.sqrt(dx*dx + dy*dy);
+  }
 
   let lastTapBonusAt = 0;
   function lookStart(e){
-    if(lookPointerId !== null) return;
-    lookPointerId = e.pointerId;
-    lookStartX = e.clientX; lookStartY = e.clientY;
     lookLayer.setPointerCapture(e.pointerId);
+    lookPointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
 
-    // each tap on the screen gives a small +0.1 run bonus
-    const now = performance.now();
-    if(now - lastTapBonusAt > 60){
-      lastTapBonusAt = now;
-      runState.runs = Math.round((runState.runs + 0.1) * 10) / 10;
-      saveRunState();
-      updateStatHUD();
+    if(lookPointers.size === 2){
+      pinchStartDist = pointerDistance();
+      pinchStartCamDist = camDist;
+    }
+
+    // single-finger tap gives a small +0.1 run bonus (skip when this is the 2nd finger of a pinch)
+    if(lookPointers.size === 1){
+      const now = performance.now();
+      if(now - lastTapBonusAt > 60){
+        lastTapBonusAt = now;
+        runState.runs = Math.round((runState.runs + 0.1) * 10) / 10;
+        saveRunState();
+        updateStatHUD();
+      }
     }
   }
   function lookMove(e){
-    if(e.pointerId !== lookPointerId) return;
-    const dx = e.clientX - lookStartX, dy = e.clientY - lookStartY;
-    lookStartX = e.clientX; lookStartY = e.clientY;
+    if(!lookPointers.has(e.pointerId)) return;
+    const prev = lookPointers.get(e.pointerId);
+    const cur = { x:e.clientX, y:e.clientY };
+    lookPointers.set(e.pointerId, cur);
+
+    if(lookPointers.size >= 2){
+      // two fingers down: pinch-to-zoom, ignore rotation this frame
+      const dist = pointerDistance();
+      if(dist && pinchStartDist){
+        const ratio = pinchStartDist / dist; // fingers apart -> ratio<1 -> zoom in (smaller camDist)
+        camDist = Math.max(camMinDist, Math.min(camMaxDist, pinchStartCamDist * ratio));
+      }
+      return;
+    }
+
+    // exactly one finger: rotate the camera around the player
+    const dx = cur.x - prev.x, dy = cur.y - prev.y;
     camYaw -= dx * 0.006;
     camPitch = Math.max(0.15, Math.min(1.35, camPitch - dy * 0.004));
   }
   function lookEnd(e){
-    if(e.pointerId !== lookPointerId) return;
-    lookPointerId = null;
+    lookPointers.delete(e.pointerId);
+    if(lookPointers.size < 2){ pinchStartDist = null; }
   }
   lookLayer.addEventListener('pointerdown', lookStart);
   window.addEventListener('pointermove', lookMove);
   window.addEventListener('pointerup', lookEnd);
   window.addEventListener('pointercancel', lookEnd);
+
+  // mouse wheel zoom for desktop testing
+  lookLayer.addEventListener('wheel', (e)=>{
+    e.preventDefault();
+    camDist = Math.max(camMinDist, Math.min(camMaxDist, camDist + e.deltaY * 0.01));
+  }, { passive:false });
 
   // Keyboard fallback for desktop testing: WASD/arrows drive the joystick vector,
   // Q/E rotate the camera like a drag would.
