@@ -851,25 +851,32 @@
     flex:1; position:relative; display:flex; align-items:center; justify-content:center;
     min-height:0;
   }
-  #liftingView .lift-scene{
-    display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center;
+  #liftingView .lift-canvas-wrap{ position:absolute; inset:0; }
+  #liftingView .lift-canvas-wrap canvas{ width:100%; height:100%; display:block; touch-action:none; }
+  #liftingView .lift-info-pill{
+    position:absolute; left:50%; bottom:14px; transform:translateX(-50%);
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    background:rgba(18,22,31,0.72); backdrop-filter:blur(6px);
+    border:1px solid var(--line); border-radius:14px; padding:10px 20px 12px;
+    pointer-events:none; text-align:center;
   }
-  #liftingView .lift-char{ font-size:64px; filter:drop-shadow(0 8px 20px rgba(0,0,0,0.5)); }
-  #liftingView .lift-weight-emoji{
-    font-size:88px; filter:drop-shadow(0 10px 24px rgba(0,0,0,0.5));
-    animation: liftBob 1.6s ease-in-out infinite;
+  #liftingView .lift-flex-btn{
+    position:absolute; top:14px; right:14px; z-index:5;
+    background:linear-gradient(135deg, var(--ember), #FFB84A);
+    color:#1a0a05; font-family:'Space Grotesk'; font-weight:800; font-size:13px;
+    padding:9px 14px; border-radius:10px; cursor:pointer;
+    box-shadow:0 6px 18px rgba(255,107,74,0.35);
+    transition: transform .12s;
   }
-  @keyframes liftBob{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
+  #liftingView .lift-flex-btn:active{ transform:scale(0.93); }
+  #liftingView .lift-drag-hint{
+    position:absolute; top:12px; left:50%; transform:translateX(-50%);
+    font-size:11px; color:var(--muted); background:rgba(18,22,31,0.6);
+    padding:5px 10px; border-radius:100px; pointer-events:none; opacity:0.85;
+  }
   #liftingView .lift-weight-name{ font-family:'Space Grotesk'; font-weight:700; font-size:17px; }
   #liftingView .lift-power-label{ font-size:12.5px; color:var(--muted); }
 
-  #liftingView .lift-monster-emoji{
-    font-size:96px; filter:drop-shadow(0 10px 24px rgba(0,0,0,0.5));
-    animation: monsterIdle 2.2s ease-in-out infinite;
-  }
-  @keyframes monsterIdle{ 0%,100%{ transform:translateY(0) scale(1); } 50%{ transform:translateY(-4px) scale(1.03); } }
-  #liftingView .lift-monster-emoji.hit{ animation: monsterHit 0.25s ease; }
-  @keyframes monsterHit{ 0%{ transform:translateX(0); filter:brightness(2) drop-shadow(0 10px 24px rgba(0,0,0,0.5)); } 50%{ transform:translateX(-8px); } 100%{ transform:translateX(0); } }
   #liftingView .lift-monster-name{ font-family:'Space Grotesk'; font-weight:700; font-size:17px; }
   #liftingView .lift-hp-track{ width:220px; height:12px; border-radius:8px; background:var(--panel-2); border:1px solid var(--line); overflow:hidden; }
   #liftingView .lift-hp-fill{ height:100%; width:100%; background:linear-gradient(90deg,#E15A5A,#FF8C42); transition:width .2s; }
@@ -1599,6 +1606,7 @@
 
   <div class="lift-stat-bar">
     <div class="lift-stat-chip"><span class="stat-ic">💪</span><span id="liftStrength">0</span></div>
+    <div class="lift-stat-chip"><span class="stat-ic">🌟</span><span id="liftRebirth">—</span></div>
     <div class="lift-stat-chip"><span class="stat-ic">🪙</span><span id="liftCoins">0</span></div>
     <div class="lift-stat-chip" id="liftShopBtn"><span class="stat-ic">🛒</span>Cửa hàng</div>
   </div>
@@ -1609,19 +1617,19 @@
   </div>
 
   <div class="lift-stage">
-    <div class="lift-scene" id="liftGymScene">
-      <div class="lift-char">🧍</div>
-      <div class="lift-weight-emoji" id="liftWeightEmoji">🏋️</div>
+    <div class="lift-canvas-wrap" id="liftCanvasWrap"><canvas id="liftCanvas"></canvas></div>
+    <div class="lift-info-pill" id="liftGymInfo">
       <div class="lift-weight-name" id="liftWeightName">Tạ Gỗ</div>
       <div class="lift-power-label">+<span id="liftWeightPower">1</span> sức mạnh / lần nâng</div>
     </div>
-    <div class="lift-scene" id="liftArenaScene" style="display:none;">
-      <div class="lift-monster-emoji" id="liftMonsterEmoji">🟢</div>
+    <div class="lift-info-pill" id="liftArenaInfo" style="display:none;">
       <div class="lift-monster-name" id="liftMonsterName">Slime Xanh</div>
       <div class="lift-hp-track"><div class="lift-hp-fill" id="liftHpFill"></div></div>
       <div class="lift-hp-text"><span id="liftHpNow">80</span> / <span id="liftHpMax">80</span> HP</div>
     </div>
     <div class="lift-float-layer" id="liftFloatLayer"></div>
+    <div class="lift-drag-hint" id="liftDragHint">↔ Kéo để xoay góc nhìn</div>
+    <div class="lift-flex-btn" id="liftFlexBtn" title="Khoe cơ">💪 FLEX</div>
   </div>
 
   <button class="lift-action-btn" id="liftActionBtn">NÂNG TẠ</button>
@@ -1643,6 +1651,7 @@
     <div class="lift-shop-tabs">
       <div class="lift-shop-tab active" data-tab="weights">🏋️ Tạ</div>
       <div class="lift-shop-tab" data-tab="pets">🐾 Pet</div>
+      <div class="lift-shop-tab" data-tab="rebirth">🌟 Đại Hóa</div>
     </div>
     <div class="lift-shop-grid" id="liftShopGrid"></div>
   </div>
@@ -4338,7 +4347,7 @@
     { name:'Rồng Cổ Đại',   emoji:'🐲', hp:3000, reward:500 },
   ];
 
-  let liftState = { baseStrength:0, ownedWeights:['w1'], equippedWeight:'w1', ownedPets:[] };
+  let liftState = { baseStrength:0, ownedWeights:['w1'], equippedWeight:'w1', ownedPets:[], rebirths:0 };
   let liftMonsterCycle = 0;
   let liftMonsterIdx = 0;
   let liftMonsterHpNow = MONSTERS[0].hp;
@@ -4351,12 +4360,27 @@
       return sum + (p ? p.bonus : 0);
     }, 0);
   }
-  function liftTotalStrength(){ return liftState.baseStrength + liftPetBonusSum(); }
+  // Đại Hóa (rebirth) — kiểu Roblox "Muscle Legends": hi sinh sức mạnh gốc để nhận hệ số nhân vĩnh viễn.
+  function liftRebirthMultiplier(){ return 1 + liftState.rebirths*0.5; }
+  function liftRebirthCost(){ return Math.round(2000 * Math.pow(2.1, liftState.rebirths)); }
+  function liftTotalStrength(){ return Math.round((liftState.baseStrength + liftPetBonusSum()) * liftRebirthMultiplier()); }
   function liftEquippedWeight(){ return WEIGHTS.find(w => w.id === liftState.equippedWeight) || WEIGHTS[0]; }
+
+  function doRebirth(){
+    if(liftState.baseStrength < liftRebirthCost()){
+      liftToast(`Cần ${liftRebirthCost().toLocaleString('en-US')} sức mạnh gốc để Đại Hóa (đang có ${Math.round(liftState.baseStrength).toLocaleString('en-US')}).`);
+      return;
+    }
+    liftState.rebirths += 1;
+    liftState.baseStrength = 0;
+    saveLiftState(); renderLiftHUD(); renderLiftShop();
+    liftToast(`🌟 ĐẠI HÓA lần ${liftState.rebirths}! Sức mạnh nhân x${liftRebirthMultiplier().toFixed(1)} vĩnh viễn!`);
+    if(liftSceneReady) liftPulseFlex();
+  }
 
   async function loadLiftState(){
     const saved = await serverGet(`gtr_lifting:${currentUsername}`);
-    if(saved) liftState = Object.assign({ baseStrength:0, ownedWeights:['w1'], equippedWeight:'w1', ownedPets:[] }, saved);
+    if(saved) liftState = Object.assign({ baseStrength:0, ownedWeights:['w1'], equippedWeight:'w1', ownedPets:[], rebirths:0 }, saved);
     renderLiftHUD();
   }
   function saveLiftState(){
@@ -4367,9 +4391,11 @@
     document.getElementById('liftStrength').textContent = liftTotalStrength().toLocaleString('en-US');
     document.getElementById('liftCoins').textContent = account.coins.toLocaleString('en-US');
     const w = liftEquippedWeight();
-    document.getElementById('liftWeightEmoji').textContent = w.emoji;
     document.getElementById('liftWeightName').textContent = w.name;
     document.getElementById('liftWeightPower').textContent = w.power;
+    const rbEl = document.getElementById('liftRebirth');
+    if(rbEl) rbEl.textContent = liftState.rebirths > 0 ? `x${liftRebirthMultiplier().toFixed(1)}` : '—';
+    if(liftSceneReady) updateBarbellLook();
   }
 
   function liftFloatText(text){
@@ -4395,25 +4421,26 @@
     saveLiftState();
     renderLiftHUD();
     liftFloatText('+'+w.power+' 💪');
-    const charEl = document.querySelector('#liftGymScene .lift-weight-emoji');
-    charEl.style.animation = 'none'; void charEl.offsetWidth; charEl.style.animation = '';
+    if(liftSceneReady){ liftActionKind = 'lift'; liftActionStart = performance.now(); }
   }
 
   function currentMonster(){ return MONSTERS[liftMonsterIdx]; }
   function renderMonster(){
     const m = currentMonster();
-    document.getElementById('liftMonsterEmoji').textContent = m.emoji;
     document.getElementById('liftMonsterName').textContent = m.name + (liftMonsterCycle>0 ? ` (vòng ${liftMonsterCycle+1})` : '');
     document.getElementById('liftHpMax').textContent = Math.round(m.hp * (1+liftMonsterCycle*0.6)).toLocaleString('en-US');
     document.getElementById('liftHpNow').textContent = Math.round(liftMonsterHpNow).toLocaleString('en-US');
     document.getElementById('liftHpFill').style.width = Math.max(0, (liftMonsterHpNow/(m.hp*(1+liftMonsterCycle*0.6)))*100) + '%';
+    if(liftSceneReady) updateMonsterLook();
   }
   function doAttack(){
     const dmg = Math.max(1, liftTotalStrength());
     liftMonsterHpNow -= dmg;
     liftFloatText('-'+dmg.toLocaleString('en-US'));
-    const emojiEl = document.getElementById('liftMonsterEmoji');
-    emojiEl.classList.remove('hit'); void emojiEl.offsetWidth; emojiEl.classList.add('hit');
+    if(liftSceneReady){
+      liftActionKind = 'attack'; liftActionStart = performance.now();
+      liftMonsterHitT = performance.now();
+    }
     if(liftMonsterHpNow <= 0){
       const m = currentMonster();
       const reward = Math.round(m.reward * (1+liftMonsterCycle*0.6));
@@ -4435,13 +4462,17 @@
     btn.addEventListener('click', ()=>{
       liftMode = btn.dataset.mode;
       document.querySelectorAll('#liftingView .lift-mode-btn').forEach(b=>b.classList.toggle('active', b===btn));
-      document.getElementById('liftGymScene').style.display = liftMode==='gym' ? 'flex' : 'none';
-      document.getElementById('liftArenaScene').style.display = liftMode==='arena' ? 'flex' : 'none';
+      document.getElementById('liftGymInfo').style.display = liftMode==='gym' ? 'flex' : 'none';
+      document.getElementById('liftArenaInfo').style.display = liftMode==='arena' ? 'flex' : 'none';
       document.getElementById('liftActionBtn').textContent = liftMode==='gym' ? 'NÂNG TẠ' : 'TẤN CÔNG';
       if(liftMode==='arena') renderMonster();
     });
   });
   document.getElementById('liftBackChip').addEventListener('click', ()=>closeEmbeddedView('liftingView'));
+  document.getElementById('liftFlexBtn').addEventListener('click', ()=>{
+    liftToast('💥 Cơ bắp cuồn cuộn!');
+    if(liftSceneReady) liftPulseFlex();
+  });
 
   // ---- Shop: buy/equip weights, buy pets ----
   let liftShopTab = 'weights';
@@ -4461,7 +4492,7 @@
           <div class="lift-shop-price ${owned?'owned-tag':''}">${owned ? (equipped?'Đang dùng':'Đã sở hữu — bấm để dùng') : '🪙 '+w.price.toLocaleString('en-US')}</div>
         </div>`;
       }).join('');
-    } else {
+    } else if(liftShopTab === 'pets'){
       grid.innerHTML = LIFT_PETS.map(p=>{
         const owned = liftState.ownedPets.includes(p.id);
         return `
@@ -4472,12 +4503,23 @@
           <div class="lift-shop-price ${owned?'owned-tag':''}">${owned ? 'Đã sở hữu' : '🪙 '+p.price.toLocaleString('en-US')}</div>
         </div>`;
       }).join('');
+    } else {
+      const cost = liftRebirthCost();
+      const canDo = liftState.baseStrength >= cost;
+      grid.innerHTML = `
+        <div class="lift-shop-item ${canDo?'':''}" data-kind="rebirth" data-id="go" style="grid-column:1 / -1;">
+          <div class="lift-shop-emoji">🌟</div>
+          <div class="lift-shop-name">Đại Hóa Cơ Bắp — lần ${liftState.rebirths+1}</div>
+          <div class="lift-shop-desc">Reset sức mạnh gốc về 0, đổi lấy hệ số nhân vĩnh viễn x${(1+(liftState.rebirths+1)*0.5).toFixed(1)} (hiện tại x${liftRebirthMultiplier().toFixed(1)}). Vũ khí, pet và coin được giữ nguyên.</div>
+          <div class="lift-shop-price ${canDo?'':'owned-tag'}">${canDo ? 'Bấm để Đại Hóa ngay' : 'Cần '+cost.toLocaleString('en-US')+' sức mạnh gốc (đang có '+Math.round(liftState.baseStrength).toLocaleString('en-US')+')'}</div>
+        </div>`;
     }
     grid.querySelectorAll('.lift-shop-item').forEach(el=>{
       el.addEventListener('click', ()=>onLiftShopItemClick(el.dataset.kind, el.dataset.id));
     });
   }
   function onLiftShopItemClick(kind, id){
+    if(kind === 'rebirth'){ doRebirth(); return; }
     if(kind === 'weight'){
       const w = WEIGHTS.find(x=>x.id===id);
       const owned = liftState.ownedWeights.includes(id);
@@ -4521,13 +4563,339 @@
   document.getElementById('liftShopOverlay').addEventListener('click', closeLiftShop);
   document.getElementById('liftShopClose').addEventListener('click', closeLiftShop);
 
+  // ---- 3D scene: player's character on a tropical island, lifting a real barbell or
+  // fighting a 3D monster. Reuses the same blocky GTR character builder used everywhere else. ----
+  let liftScene, liftCamera, liftRenderer, liftCanvasEl;
+  let liftIslandGroup, liftCharParts, liftBarbellGroup, liftMonsterGroup, liftGymProps, liftArenaProps;
+  let liftSceneReady = false;
+  let liftDragging = false, liftDragStartX = 0, liftAngleY = 0.45;
+  let liftActionKind = null, liftActionStart = 0, liftMonsterHitT = 0;
+  let liftMuscleBulges = null;
+  function liftPulseFlex(){ liftActionKind = 'flex'; liftActionStart = performance.now(); }
+
+  // Thêm phần "cơ bắp" phồng lên trên tay/ngực nhân vật — hiệu ứng đặc trưng của các game
+  // thể hình kiểu Roblox (Muscle Legends...), phồng to dần theo sức mạnh đã tích lũy.
+  function addMuscleBulges(parts){
+    const skinMat = parts.skinTorso;
+    const bicepGeo = new THREE.SphereGeometry(1, 14, 12);
+    const bicepMatL = new THREE.MeshStandardMaterial({ color: skinMat.color.getHex(), roughness:0.4, metalness:0.08 });
+    const bicepMatR = bicepMatL.clone();
+    const bicepL = new THREE.Mesh(bicepGeo, bicepMatL);
+    const bicepR = new THREE.Mesh(bicepGeo, bicepMatR);
+    bicepL.position.set(0, 0.18, 0.05); bicepR.position.set(0, 0.18, 0.05);
+    bicepL.scale.setScalar(0.001); bicepR.scale.setScalar(0.001);
+    parts.armL.add(bicepL); parts.armR.add(bicepR);
+
+    const pecGeo = new THREE.SphereGeometry(1, 14, 12);
+    const pecMatL = new THREE.MeshStandardMaterial({ color: skinMat.color.getHex(), roughness:0.4, metalness:0.08 });
+    const pecMatR = pecMatL.clone();
+    const pecL = new THREE.Mesh(pecGeo, pecMatL);
+    const pecR = new THREE.Mesh(pecGeo, pecMatR);
+    pecL.position.set(-0.26, 0.28, 0.29); pecR.position.set(0.26, 0.28, 0.29);
+    pecL.scale.setScalar(0.001); pecR.scale.setScalar(0.001);
+    parts.torso.add(pecL); parts.torso.add(pecR);
+
+    return { bicepL, bicepR, pecL, pecR };
+  }
+  function updateMuscleBulges(bulges, tMs){
+    if(!bulges) return;
+    const m = liftMuscleScale(); // 1 .. 1.7
+    let grow = Math.max(0, m - 1) / 0.7; // 0 .. 1
+    if(liftActionKind === 'flex'){
+      const el = tMs - liftActionStart, dur = 900;
+      if(el < dur) grow = Math.min(1, grow + Math.sin((el/dur)*Math.PI)*0.6);
+      else liftActionKind = null;
+    }
+    const bicepR = 0.1 + grow*0.34;
+    const pecR = 0.08 + grow*0.26;
+    bulges.bicepL.scale.setScalar(bicepR);
+    bulges.bicepR.scale.setScalar(bicepR);
+    bulges.pecL.scale.setScalar(pecR);
+    bulges.pecR.scale.setScalar(pecR);
+  }
+
+  function liftMuscleScale(){
+    // the more strength you earn, the bigger/buffer your character gets — capped so it stays readable
+    const s = liftTotalStrength();
+    return Math.min(1.7, 1 + Math.log10(s+1)*0.16);
+  }
+
+  async function liftLoadOutfitColors(){
+    try{
+      const saved = await serverGet(`gtr_outfit:${currentUsername}`);
+      if(saved) return { headColor:toHexInt(saved.head), torsoColor:toHexInt(saved.torso), limbColor:toHexInt(saved.limb) };
+    }catch(e){}
+    return { headColor:0xF2E82E, torsoColor:0x29D3EA, limbColor:0x2ECC55 };
+  }
+
+  function buildLiftBarbell(){
+    const g = new THREE.Group();
+    const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,1.5,10), new THREE.MeshStandardMaterial({ color:0x8891A3, roughness:0.35, metalness:0.6 }));
+    bar.rotation.z = Math.PI/2; g.add(bar);
+    const plateGeo = new THREE.CylinderGeometry(0.32,0.32,0.14,20);
+    const matL = new THREE.MeshStandardMaterial({ color:0x7a5230, roughness:0.5, metalness:0.2 });
+    const matR = matL.clone();
+    const pL = new THREE.Mesh(plateGeo, matL); pL.position.x = -0.68; pL.rotation.z = Math.PI/2; g.add(pL);
+    const pR = new THREE.Mesh(plateGeo, matR); pR.position.x = 0.68; pR.rotation.z = Math.PI/2; g.add(pR);
+    g.userData.plateMats = [matL, matR];
+    return g;
+  }
+  const LIFT_WEIGHT_TIER_COLOR = { w1:0x8a5a34, w2:0x555b66, w3:0x9aa4b3, w4:0xD4AF37, w5:0x7FE8E0, w6:0x8C7CFF };
+  function updateBarbellLook(){
+    const w = liftEquippedWeight();
+    const color = LIFT_WEIGHT_TIER_COLOR[w.id] || 0x8a5a34;
+    const scale = 1 + Math.min(0.9, w.power/60);
+    liftBarbellGroup.userData.plateMats.forEach(m=>m.color.setHex(color));
+    liftBarbellGroup.scale.set(1, scale, scale);
+  }
+
+  function buildLiftMonster(){
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.62, 18, 14), new THREE.MeshStandardMaterial({ color:0x4CD964, roughness:0.55 }));
+    body.scale.set(1, 0.85, 1);
+    g.add(body);
+    const eyeMat = new THREE.MeshStandardMaterial({ color:0x0B0E14 });
+    const eyeGeo = new THREE.SphereGeometry(0.075, 8, 8);
+    const eL = new THREE.Mesh(eyeGeo, eyeMat); eL.position.set(-0.19, 0.12, 0.52); g.add(eL);
+    const eR = new THREE.Mesh(eyeGeo, eyeMat); eR.position.set(0.19, 0.12, 0.52); g.add(eR);
+    g.userData.body = body;
+    return g;
+  }
+  const LIFT_MONSTER_COLORS = [0x4CD964, 0xB25FE0, 0x6B6B6B, 0xE0574C];
+  function updateMonsterLook(){
+    const body = liftMonsterGroup.userData.body;
+    body.material.color.setHex(LIFT_MONSTER_COLORS[liftMonsterIdx % LIFT_MONSTER_COLORS.length]);
+    const scale = 1 + liftMonsterIdx*0.35 + liftMonsterCycle*0.2;
+    liftMonsterGroup.scale.setScalar(Math.min(2.6, scale));
+  }
+
+  // ---- Roblox-muscle-style props: một phòng gym neon và một đấu trường có dây thừng ----
+  function buildLiftDumbbell(x, z, rotY){
+    const g = new THREE.Group();
+    const barMat = new THREE.MeshStandardMaterial({ color:0x8891A3, roughness:0.3, metalness:0.7 });
+    const ballMat = new THREE.MeshStandardMaterial({ color:0x1a1e26, roughness:0.5, metalness:0.3 });
+    const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.045,0.55,10), barMat);
+    bar.rotation.z = Math.PI/2; g.add(bar);
+    const ballGeo = new THREE.SphereGeometry(0.15, 12, 10);
+    const bL = new THREE.Mesh(ballGeo, ballMat); bL.position.x = -0.3; g.add(bL);
+    const bR = new THREE.Mesh(ballGeo, ballMat); bR.position.x = 0.3; g.add(bR);
+    g.position.set(x, 0.15, z); g.rotation.y = rotY || 0;
+    return g;
+  }
+  function buildLiftWeightRack(){
+    const g = new THREE.Group();
+    const postMat = new THREE.MeshStandardMaterial({ color:0x2a2f3a, roughness:0.6, metalness:0.4 });
+    [-0.55, 0.55].forEach(x=>{
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.08,1.5,0.08), postMat);
+      post.position.set(x, 0.75, 0); g.add(post);
+    });
+    const base = new THREE.Mesh(new THREE.BoxGeometry(1.3,0.08,0.5), postMat);
+    base.position.y = 0.04; g.add(base);
+    const plateColors = [0xD4AF37,0x9aa4b3,0x555b66,0x7FE8E0];
+    plateColors.forEach((c,i)=>{
+      const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.34,0.34,0.09,18), new THREE.MeshStandardMaterial({ color:c, roughness:0.4, metalness:0.5 }));
+      plate.rotation.z = Math.PI/2;
+      plate.position.set(0, 0.35 + i*0.28, 0);
+      g.add(plate);
+    });
+    return g;
+  }
+  function buildLiftMirrorWall(){
+    const g = new THREE.Group();
+    const panel = new THREE.Mesh(new THREE.BoxGeometry(6.4, 2.7, 0.12), new THREE.MeshStandardMaterial({ color:0x9fd7ff, roughness:0.08, metalness:0.85, emissive:0x1a3a4a, emissiveIntensity:0.15 }));
+    panel.position.set(0, 1.5, -3.3);
+    g.add(panel);
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(6.6, 2.85, 0.06), new THREE.MeshStandardMaterial({ color:0x1c2130, roughness:0.6 }));
+    frame.position.set(0, 1.5, -3.36);
+    g.add(frame);
+    return g;
+  }
+  function buildGymProps(){
+    const g = new THREE.Group();
+    const floor = new THREE.Mesh(new THREE.CylinderGeometry(5.6, 5.6, 0.8, 36), new THREE.MeshStandardMaterial({ color:0x1c2028, roughness:0.85 }));
+    floor.position.y = -0.4; g.add(floor);
+    const mat = new THREE.Mesh(new THREE.CylinderGeometry(2.1, 2.1, 0.06, 28), new THREE.MeshStandardMaterial({ color:0xE0574C, roughness:0.7 }));
+    mat.position.y = 0.03; g.add(mat);
+
+    g.add(buildLiftMirrorWall());
+
+    const rackL = buildLiftWeightRack(); rackL.position.set(-3.9, 0, -1.4); g.add(rackL);
+    const rackR = buildLiftWeightRack(); rackR.position.set(3.9, 0, -1.4); rackR.rotation.y = Math.PI; g.add(rackR);
+
+    g.add(buildLiftDumbbell(-1.6, 1.9, 0.4));
+    g.add(buildLiftDumbbell(1.7, 2.0, -0.5));
+
+    const deck = new THREE.Mesh(new THREE.CylinderGeometry(1.9,1.9,0.18,24), new THREE.MeshStandardMaterial({ color:0x2a2f3a, roughness:0.6, metalness:0.2 }));
+    deck.position.y = 0.5; g.add(deck);
+    return g;
+  }
+  function buildLiftRopePost(x, z){
+    const g = new THREE.Group();
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.07,1.35,10), new THREE.MeshStandardMaterial({ color:0xB03A2E, roughness:0.5 }));
+    post.position.y = 0.68; g.add(post);
+    const cap = new THREE.Mesh(new THREE.SphereGeometry(0.11,10,8), new THREE.MeshStandardMaterial({ color:0xFFD166, roughness:0.4 }));
+    cap.position.y = 1.36; g.add(cap);
+    g.position.set(x, 0, z);
+    return g;
+  }
+  function buildArenaProps(){
+    const g = new THREE.Group();
+    const floor = new THREE.Mesh(new THREE.CylinderGeometry(5.6, 5.6, 0.8, 36), new THREE.MeshStandardMaterial({ color:0x14121a, roughness:0.85 }));
+    floor.position.y = -0.4; g.add(floor);
+    const ring = new THREE.Mesh(new THREE.CylinderGeometry(3.1, 3.1, 0.22, 4), new THREE.MeshStandardMaterial({ color:0x1E1B26, roughness:0.7 }));
+    ring.position.y = 0.11; ring.rotation.y = Math.PI/4; g.add(ring);
+    const mat = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.05, 4.2), new THREE.MeshStandardMaterial({ color:0x7A1F2B, roughness:0.75 }));
+    mat.position.y = 0.245; mat.rotation.y = Math.PI/4; g.add(mat);
+
+    const postDist = 2.55;
+    [[postDist,postDist],[-postDist,postDist],[postDist,-postDist],[-postDist,-postDist]].forEach(([x,z])=>{
+      g.add(buildLiftRopePost(x,z));
+    });
+
+    const deck = new THREE.Mesh(new THREE.CylinderGeometry(1.4,1.4,0.18,24), new THREE.MeshStandardMaterial({ color:0x2a1520, roughness:0.6 }));
+    deck.position.y = 0.5; g.add(deck);
+    return g;
+  }
+
+  async function initLiftScene(){
+    liftCanvasEl = document.getElementById('liftCanvas');
+    liftScene = new THREE.Scene();
+    liftScene.background = new THREE.Color(0x0B0E14);
+    liftScene.fog = new THREE.Fog(0x0B0E14, 10, 26);
+
+    liftCamera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+    liftRenderer = new THREE.WebGLRenderer({ canvas:liftCanvasEl, antialias:true });
+    liftRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    liftScene.add(new THREE.AmbientLight(0xbfe0ff, 0.8));
+    const sun = new THREE.DirectionalLight(0xfff2d0, 1.0);
+    sun.position.set(5, 9, 4);
+    liftScene.add(sun);
+
+    liftIslandGroup = new THREE.Group();
+    liftScene.add(liftIslandGroup);
+
+    liftGymProps = buildGymProps();
+    liftIslandGroup.add(liftGymProps);
+    liftArenaProps = buildArenaProps();
+    liftIslandGroup.add(liftArenaProps);
+
+    const outfitColors = await liftLoadOutfitColors();
+    liftCharParts = buildGtrCharacter(outfitColors);
+    liftCharParts.group.position.y = 0.59;
+    liftMuscleBulges = addMuscleBulges(liftCharParts);
+    liftIslandGroup.add(liftCharParts.group);
+
+    liftBarbellGroup = buildLiftBarbell();
+    liftBarbellGroup.position.set(0, 1.35, 0.55);
+    liftIslandGroup.add(liftBarbellGroup);
+
+    liftMonsterGroup = buildLiftMonster();
+    liftMonsterGroup.position.set(0, 0.4, -2.6);
+    liftIslandGroup.add(liftMonsterGroup);
+
+    liftCamera.position.set(0, 2.6, 6.4);
+    liftCamera.lookAt(0, 1.1, 0);
+
+    liftCanvasEl.addEventListener('pointerdown', e=>{ liftDragging = true; liftDragStartX = e.clientX; document.getElementById('liftDragHint').style.opacity = '0'; });
+    window.addEventListener('pointerup', ()=>{ liftDragging = false; });
+    window.addEventListener('pointermove', e=>{
+      if(!liftDragging) return;
+      liftAngleY += (e.clientX - liftDragStartX)*0.008;
+      liftDragStartX = e.clientX;
+    });
+
+    liftSceneReady = true;
+    onLiftResize();
+    window.addEventListener('resize', onLiftResize);
+    updateBarbellLook();
+    updateMonsterLook();
+    requestAnimationFrame(liftAnimate);
+  }
+
+  function onLiftResize(){
+    if(!liftSceneReady) return;
+    const wrap = document.getElementById('liftCanvasWrap');
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    if(w<=0 || h<=0) return;
+    liftCamera.aspect = w/h; liftCamera.updateProjectionMatrix();
+    liftRenderer.setSize(w, h);
+  }
+
+  function liftAnimate(tMs){
+    requestAnimationFrame(liftAnimate);
+    if(!document.getElementById('liftingView').classList.contains('open')) return;
+
+    liftIslandGroup.rotation.y = liftAngleY;
+    applyCharacterPose(liftCharParts, 'idle', tMs);
+    liftCharParts.group.scale.setScalar(liftMuscleScale());
+
+    liftBarbellGroup.visible = (liftMode === 'gym');
+    liftMonsterGroup.visible = (liftMode === 'arena');
+    liftGymProps.visible = (liftMode === 'gym');
+    liftArenaProps.visible = (liftMode === 'arena');
+
+    if(liftActionKind === 'lift'){
+      const el = tMs - liftActionStart, dur = 650;
+      if(el >= dur){ liftActionKind = null; liftBarbellGroup.position.y = 1.35; }
+      else{
+        const curl = Math.sin((el/dur)*Math.PI);
+        liftCharParts.armL.rotation.x = -curl*2.2;
+        liftCharParts.armR.rotation.x = -curl*2.2;
+        liftBarbellGroup.position.y = 1.35 + curl*0.75;
+      }
+    } else if(liftMode === 'gym'){
+      liftBarbellGroup.position.y = 1.35;
+    }
+
+    if(liftActionKind === 'attack'){
+      const el = tMs - liftActionStart, dur = 380;
+      if(el >= dur){ liftActionKind = null; }
+      else{
+        const punch = Math.sin((el/dur)*Math.PI);
+        liftCharParts.armR.rotation.x = -punch*2.6;
+      }
+    }
+
+    if(liftActionKind === 'flex'){
+      // pose "double biceps" kinh điển của các game thể hình Roblox
+      const el = tMs - liftActionStart, dur = 900;
+      const k = el < dur ? Math.sin(Math.min(1, el/dur)*Math.PI*0.5) : 1;
+      liftCharParts.armL.rotation.x = -1.7*k; liftCharParts.armR.rotation.x = -1.7*k;
+      liftCharParts.armL.rotation.z = 0.55*k; liftCharParts.armR.rotation.z = -0.55*k;
+    }
+    updateMuscleBulges(liftMuscleBulges, tMs);
+
+    if(liftMonsterHitT > 0){
+      const el = tMs - liftMonsterHitT, dur = 220;
+      if(el < dur){
+        const k = 1 - el/dur;
+        liftMonsterGroup.position.x = Math.sin(el*0.25)*0.12*k;
+        liftMonsterGroup.userData.body.material.emissive = new THREE.Color(0xffffff);
+        liftMonsterGroup.userData.body.material.emissiveIntensity = k*0.8;
+      } else {
+        liftMonsterGroup.position.x = 0;
+        liftMonsterGroup.userData.body.material.emissiveIntensity = 0;
+        liftMonsterHitT = 0;
+      }
+    }
+
+    liftRenderer.render(liftScene, liftCamera);
+  }
+
   function openLiftingGame(){
     document.getElementById('liftingView').classList.add('open');
-    if(!liftInitialized){
-      liftInitialized = true;
-      loadLiftState();
-      renderMonster();
-    }
+    if(liftInitialized) return;
+    liftInitialized = true;
+    function boot(){ loadLiftState().then(()=>{ renderMonster(); initLiftScene(); }); }
+    if(typeof THREE === 'undefined'){
+      let tries = 0;
+      const waitTimer = setInterval(()=>{
+        tries++;
+        if(typeof THREE !== 'undefined'){ clearInterval(waitTimer); boot(); }
+        else if(tries > 50){ clearInterval(waitTimer); liftToast('❌ Không tải được đồ họa 3D. Kiểm tra mạng và thử lại.'); }
+      }, 200);
+    } else boot();
   }
 
   // ========== Embedded Studio / Mini-game (lazy-init on first open, shared login state) ==========
