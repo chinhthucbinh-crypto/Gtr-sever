@@ -70,6 +70,7 @@
     background:rgba(11,14,20,0.94);
     backdrop-filter: blur(6px);
     border-bottom:1px solid var(--line);
+    overflow:hidden; max-width:100vw;
   }
   .logo{
     display:flex; align-items:center; gap:10px;
@@ -103,7 +104,18 @@
   }
   .searchbar input::placeholder{ color:#5B6577; }
 
-  nav.primary{ display:flex; align-items:center; gap:6px; margin-left:auto; flex-shrink:0;}
+  nav.primary{
+    display:flex; align-items:center; gap:6px; margin-left:auto; flex-shrink:1;
+    overflow-x:auto; overflow-y:hidden; scrollbar-width:none; -ms-overflow-style:none;
+    max-width:100%;
+  }
+  nav.primary::-webkit-scrollbar{ display:none; }
+  nav.primary > *{ flex-shrink:0; }
+  @media (max-width:420px){
+    nav.primary{ gap:4px; }
+    .icon-btn{ width:34px; height:34px; }
+    .coin-pill{ padding:6px 9px 6px 8px; font-size:12px; }
+  }
   .icon-btn{
     width:38px; height:38px; border-radius:9px;
     display:grid; place-items:center;
@@ -4339,7 +4351,7 @@
     // exactly one finger: rotate the camera around the player
     const dx = cur.x - prev.x, dy = cur.y - prev.y;
     camYaw -= dx * 0.006;
-    camPitch = Math.max(0.15, Math.min(1.35, camPitch - dy * 0.004));
+    camPitch = Math.max(0.15, Math.min(1.35, camPitch + dy * 0.004));
   }
   function lookEnd(e){
     lookPointers.delete(e.pointerId);
