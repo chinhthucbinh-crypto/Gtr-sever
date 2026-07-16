@@ -1146,6 +1146,23 @@
   .logout-item{ padding:11px 14px; font-size:13px; color:var(--ember); cursor:pointer; font-weight:500; }
   .logout-item:hover{ background:rgba(255,107,74,0.1); }
 
+  /* Avatar trôi nổi cố định ở góc dưới màn hình — tránh nằm ở góc trên bên phải
+     (khu vực khó bấm chính xác trên di động, dễ bị kẹt sau thanh trình duyệt/notch). */
+  .avatar-wrap{
+    position:fixed !important;
+    right:16px; bottom:16px;
+    z-index:150;
+  }
+  .avatar-btn{
+    width:50px; height:50px; border-radius:50%;
+    font-size:17px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.5), 0 0 0 3px var(--void);
+  }
+  @media (max-width:420px){
+    .avatar-wrap{ right:12px; bottom:12px; }
+    .avatar-btn{ width:46px; height:46px; font-size:16px; }
+  }
+
   /* ===== Màn hình Nội Quy GTR ===== */
   .rules-overlay{
     position:fixed; inset:0; z-index:500;
@@ -1326,19 +1343,23 @@
     <div class="icon-btn" id="adminBtn" style="display:none;" title="Quản trị">
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>
     </div>
-    <div class="avatar-wrap">
-      <div class="avatar-btn" id="avatarBtn">?</div>
-      <div class="avatar-dropdown" id="avatarDropdown">
-        <div class="who">
-          <div class="name" id="whoName">—</div>
-          <div class="tag">Tài khoản GTR</div>
-        </div>
-        <div class="logout-item" id="outfitBtn" style="color:var(--signal);">Cửa hàng trang phục</div>
-        <div class="logout-item" id="logoutBtn">Đăng xuất</div>
-      </div>
-    </div>
   </nav>
 </header>
+
+<!-- Avatar đặt ngoài <header> (header có backdrop-filter nên phần tử fixed bên trong nó
+     sẽ bị "nhốt" trong header thay vì bám theo màn hình). Nhờ vậy trên di động avatar
+     có thể trôi nổi cố định phía dưới, dễ bấm hơn thay vì kẹt ở góc trên bên phải. -->
+<div class="avatar-wrap">
+  <div class="avatar-btn" id="avatarBtn">?</div>
+  <div class="avatar-dropdown" id="avatarDropdown">
+    <div class="who">
+      <div class="name" id="whoName">—</div>
+      <div class="tag">Tài khoản GTR</div>
+    </div>
+    <div class="logout-item" id="outfitBtn" style="color:var(--signal);">Cửa hàng trang phục</div>
+    <div class="logout-item" id="logoutBtn">Đăng xuất</div>
+  </div>
+</div>
 
 <div class="disclaimer">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
@@ -2027,7 +2048,10 @@
     const willOpen = !avatarDropdown.classList.contains('open');
     if(willOpen){
       const r = avatarBtn.getBoundingClientRect();
-      avatarDropdown.style.top = (r.bottom + 8) + 'px';
+      // Nút avatar giờ nằm cố định gần đáy màn hình, nên menu mở LÊN TRÊN nút
+      // thay vì xuống dưới (tránh bị tràn ra ngoài màn hình).
+      avatarDropdown.style.bottom = (window.innerHeight - r.top + 8) + 'px';
+      avatarDropdown.style.top = 'auto';
       avatarDropdown.style.right = (window.innerWidth - r.right) + 'px';
     }
     avatarDropdown.classList.toggle('open');
