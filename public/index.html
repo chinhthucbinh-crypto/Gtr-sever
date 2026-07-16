@@ -622,9 +622,12 @@
   }
   #studioView canvas { display:block; touch-action:none; }
   #studioView .topbar {
-    display:flex; align-items:center; gap:14px; padding:10px 16px;
+    display:flex; align-items:center; gap:10px; padding:10px 16px;
     background:var(--panel-2); border-bottom:1px solid var(--line); flex-shrink:0; z-index:10;
+    overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;
   }
+  #studioView .topbar::-webkit-scrollbar{ display:none; }
+  #studioView .topbar .btn{ flex-shrink:0; white-space:nowrap; }
   #studioView .back-btn { width:34px; height:34px; border-radius:8px; display:grid; place-items:center; color:var(--muted); cursor:pointer; border:1px solid var(--line); }
   #studioView .back-btn:hover { color:var(--cloud); border-color:var(--signal); }
   #studioView .logo-mini { display:flex; align-items:center; gap:8px; font-family:'Space Grotesk'; font-weight:700; font-size:15px; flex-shrink:0;}
@@ -648,7 +651,46 @@
   #studioView .tool[data-tool="ramp"] .swatch { background:#E15A5A; clip-path:polygon(0 100%,100% 100%,100% 0);}
   #studioView .tool[data-tool="tree"] .swatch { background:#4FAE6B; }
   #studioView .tool[data-tool="spawn"] .swatch { background:var(--signal); }
+  #studioView .tool[data-tool="finish"] .swatch { background:repeating-conic-gradient(#EDF1F7 0% 25%, #12161F 0% 50%) 0 0/10px 10px; }
+  #studioView .tool[data-tool="coin"] .swatch { background:#FFD166; border-radius:50%; box-shadow:inset 0 0 0 2px rgba(0,0,0,0.25);}
+  #studioView .tool[data-tool="trap"] .swatch { background:#E15A5A; clip-path:polygon(50% 0%, 0% 100%, 100% 100%); }
+  #studioView .tool[data-tool="wall"] .swatch { background:#6B7280; border-radius:2px; }
   #studioView .tool[data-tool="erase"] .swatch { background:transparent; border:1.5px dashed var(--muted); }
+  #studioView .tool-divider{ height:1px; background:var(--line); margin:8px 4px; }
+
+  /* ===== Modal cài đặt trò chơi (mô tả, độ khó, ảnh đại diện) ===== */
+  #studioView .modal-overlay{
+    position:fixed; inset:0; background:rgba(6,8,12,0.72); z-index:200;
+    display:none; align-items:center; justify-content:center; padding:20px;
+  }
+  #studioView .modal-overlay.open{ display:flex; }
+  #studioView .modal-card{
+    width:100%; max-width:380px; max-height:88vh; overflow-y:auto;
+    background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:20px;
+  }
+  #studioView .modal-card h3{ font-family:'Space Grotesk'; font-size:16px; margin-bottom:14px; }
+  #studioView .modal-field{ margin-bottom:14px; }
+  #studioView .modal-field label{ display:block; font-size:11.5px; color:var(--muted); margin-bottom:6px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; }
+  #studioView .modal-field textarea, #studioView .modal-field select{
+    width:100%; background:var(--panel-2); border:1px solid var(--line); border-radius:9px;
+    color:var(--cloud); font-family:'Inter'; font-size:13.5px; padding:9px 11px; outline:none; resize:vertical;
+  }
+  #studioView .modal-field textarea:focus, #studioView .modal-field select:focus{ border-color:var(--signal); }
+  #studioView .thumb-upload{
+    display:flex; align-items:center; gap:12px;
+  }
+  #studioView .thumb-preview{
+    width:88px; height:64px; border-radius:9px; background:var(--panel-2); border:1px solid var(--line);
+    flex-shrink:0; overflow:hidden; display:grid; place-items:center; color:var(--muted); font-size:10.5px; text-align:center;
+  }
+  #studioView .thumb-preview img{ width:100%; height:100%; object-fit:cover; }
+  #studioView .thumb-upload-btn{
+    font-size:12.5px; font-weight:600; padding:8px 13px; border-radius:8px; border:1px solid var(--line);
+    background:transparent; color:var(--cloud); cursor:pointer;
+  }
+  #studioView .thumb-upload-btn:hover{ border-color:var(--signal); }
+  #studioView .modal-actions{ display:flex; gap:10px; margin-top:6px; }
+  #studioView .modal-actions .btn{ flex:1; text-align:center; }
   #studioView .hint { font-size:11px; color:var(--muted); line-height:1.6; padding:10px 8px; margin-top:6px; border-top:1px solid var(--line); }
   #studioView .viewport { flex:1; position:relative; }
   #studioView .drag-hint {
@@ -1602,7 +1644,10 @@
   <div class="logo-mini"><div class="mark"></div>GTR Studio</div>
   <input class="proj-name" id="projName" value="Trò chơi chưa đặt tên">
   <div class="spacer"></div>
+  <button class="btn btn-ghost" id="settingsBtn">⚙️ Cài đặt</button>
   <button class="btn btn-ghost" id="clearBtn">Xóa hết</button>
+  <button class="btn btn-ghost" id="draftBtn">Lưu nháp</button>
+  <button class="btn btn-ghost" id="playtestBtn">▶ Chơi thử</button>
   <button class="btn btn-primary" id="publishBtn">Xuất bản trò chơi</button>
 </div>
 
@@ -1612,10 +1657,17 @@
     <div class="tool active" data-tool="cube"><div class="swatch"></div>Khối vuông</div>
     <div class="tool" data-tool="sphere"><div class="swatch"></div>Hình cầu</div>
     <div class="tool" data-tool="ramp"><div class="swatch"></div>Dốc nghiêng</div>
+    <div class="tool" data-tool="wall"><div class="swatch"></div>Tường chắn</div>
     <div class="tool" data-tool="tree"><div class="swatch"></div>Cây</div>
+    <div class="tool-divider"></div>
+    <h4>Lối chơi</h4>
     <div class="tool" data-tool="spawn"><div class="swatch"></div>Điểm xuất phát</div>
+    <div class="tool" data-tool="finish"><div class="swatch"></div>Vạch đích</div>
+    <div class="tool" data-tool="coin"><div class="swatch"></div>Xu thưởng</div>
+    <div class="tool" data-tool="trap"><div class="swatch"></div>Bẫy gai</div>
+    <div class="tool-divider"></div>
     <div class="tool" data-tool="erase"><div class="swatch"></div>Xóa ô</div>
-    <div class="hint">Chạm vào lưới để đặt khối 3D. Chạm vào khối đã đặt để chọn và chỉnh sửa. Kéo ngang màn hình để xoay góc nhìn.</div>
+    <div class="hint">Chạm vào lưới để đặt khối 3D. Chạm vào khối đã đặt để chọn và chỉnh sửa. Kéo ngang màn hình để xoay góc nhìn.<br><br>Mỗi màn cần ít nhất 1 <b>Điểm xuất phát</b> và 1 <b>Vạch đích</b> trước khi xuất bản.</div>
   </aside>
 
   <div class="viewport" id="viewport">
@@ -1634,6 +1686,37 @@
 </div>
 
 <div class="toast" id="toast"><span id="toastMsg"></span></div>
+
+<!-- Modal cài đặt: mô tả, độ khó, ảnh đại diện tùy chỉnh -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal-card">
+    <h3>Cài đặt trò chơi</h3>
+    <div class="modal-field">
+      <label>Ảnh đại diện (thumbnail)</label>
+      <div class="thumb-upload">
+        <div class="thumb-preview" id="thumbPreview">Chưa có ảnh</div>
+        <button class="thumb-upload-btn" id="thumbUploadBtn" type="button">Tải ảnh lên</button>
+        <input type="file" id="thumbFileInput" accept="image/*" style="display:none;">
+      </div>
+    </div>
+    <div class="modal-field">
+      <label>Mô tả ngắn</label>
+      <textarea id="gameDescInput" rows="3" maxlength="200" placeholder="Ví dụ: Vượt chướng ngại vật, nhảy qua bẫy gai và về đích thật nhanh!"></textarea>
+    </div>
+    <div class="modal-field">
+      <label>Độ khó</label>
+      <select id="gameDifficultyInput">
+        <option value="easy">Dễ</option>
+        <option value="medium" selected>Vừa</option>
+        <option value="hard">Khó</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="settingsCloseBtn">Đóng</button>
+      <button class="btn btn-primary" id="settingsSaveBtn">Lưu cài đặt</button>
+    </div>
+  </div>
+</div>
 </div>
 
 <div id="miniGameView">
@@ -2486,7 +2569,10 @@
     allLibraryGames = [
       { id:null, name:'Game Tốc Độ', creator:'GTR', isDefault:true, kind:'speed', createdAt:0 },
       { id:'lifting', name:'Nâng Tạ', creator:'GTR', isDefault:true, kind:'lifting', createdAt:0 },
-      ...publishedList.map(g => ({ id:g.id, name:g.name, creator:g.creator, isDefault:false, kind:'speed', createdAt:g.createdAt }))
+      ...publishedList.map(g => ({
+        id:g.id, name:g.name, creator:g.creator, isDefault:false, kind:'speed', createdAt:g.createdAt,
+        description:g.description||'', difficulty:g.difficulty||'medium', thumbnailData:g.thumbnailData||null
+      }))
     ];
     renderGameLibrary(document.getElementById('gameLibrarySearch').value);
   }
@@ -2561,16 +2647,17 @@
       const safeCreator = escapeHtml(g.creator);
       const gradient = GRADIENTS[i % GRADIENTS.length];
       const badge = g.isDefault ? 'Mặc định' : 'Cộng đồng';
+      const diffLabel = { easy:'Dễ', medium:'Vừa', hard:'Khó' }[g.difficulty] || null;
       let art, openCall, tag;
       if(g.kind === 'lifting'){
         art = liftingGameArt();
         openCall = `openLiftingGame(); return false;`;
         tag = 'Nâng tạ';
       } else {
-        art = speedGameArt();
+        art = g.thumbnailData ? `<img src="${g.thumbnailData}" alt="${safeName}" style="width:100%; height:100%; object-fit:cover;">` : speedGameArt();
         const gameIdAttr = g.id === null ? 'null' : `'${g.id}'`;
         openCall = `openMiniGame(${gameIdAttr}); return false;`;
-        tag = '3D · Đua tốc độ';
+        tag = diffLabel ? `3D · ${diffLabel}` : '3D · Đua tốc độ';
       }
       return `
       <a class="card" href="#" onclick="${openCall}" style="text-decoration:none; color:inherit;">
@@ -2583,7 +2670,7 @@
           </div>
         </div>
         <div class="title">${safeName}</div>
-        <div class="sub">by ${safeCreator}</div>
+        <div class="sub">${g.description ? escapeHtml(g.description) : ('by ' + safeCreator)}</div>
       </a>`;
     }).join('');
   }
@@ -3258,6 +3345,7 @@
     cube:   ['#5B8DEF','#8C7CFF','#4FAE6B','#F2B84B','#E15A5A'],
     sphere: ['#F2B84B','#5B8DEF','#E15A5A','#4FAE6B','#8C7CFF'],
     ramp:   ['#E15A5A','#5B8DEF','#F2B84B','#4FAE6B','#8C7CFF'],
+    wall:   ['#6B7280','#4B5563','#7C5A3A','#5B8DEF','#8C7CFF'],
   };
   function hexToInt(hex){ return parseInt(hex.replace('#',''), 16); }
 
@@ -3301,6 +3389,48 @@
       beam.position.y = 0.8;
       g.add(ring, beam);
       return g;
+    }
+    if(type === 'finish'){
+      const g = new THREE.Group();
+      const poleMat = new THREE.MeshStandardMaterial({color:0xEDF1F7, roughness:0.5});
+      const poleL = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,2.2,8), poleMat);
+      poleL.position.set(-0.7,1.1,0); poleL.castShadow = true;
+      const poleR = poleL.clone(); poleR.position.x = 0.7;
+      const flagCanvas = document.createElement('canvas'); flagCanvas.width=16; flagCanvas.height=16;
+      const fctx = flagCanvas.getContext('2d');
+      for(let yy=0;yy<4;yy++)for(let xx=0;xx<4;xx++){ fctx.fillStyle=(xx+yy)%2===0?'#0B0E14':'#EDF1F7'; fctx.fillRect(xx*4,yy*4,4,4); }
+      const flagTex = new THREE.CanvasTexture(flagCanvas);
+      const flag = new THREE.Mesh(new THREE.BoxGeometry(1.5,0.9,0.04), new THREE.MeshStandardMaterial({map:flagTex}));
+      flag.position.set(0,1.85,0); flag.castShadow = true;
+      g.add(poleL, poleR, flag);
+      return g;
+    }
+    if(type === 'coin'){
+      const g = new THREE.Group();
+      const coin = new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.4,0.09,20), new THREE.MeshStandardMaterial({color:0xFFD166, metalness:0.6, roughness:0.25, emissive:0x5a3d05, emissiveIntensity:0.35}));
+      coin.rotation.z = Math.PI/2; coin.position.y = 0.9; coin.castShadow = true;
+      g.add(coin);
+      return g;
+    }
+    if(type === 'trap'){
+      const g = new THREE.Group();
+      const spikeMat = new THREE.MeshStandardMaterial({color:0xE15A5A, roughness:0.5, emissive:0x3a0a08, emissiveIntensity:0.3});
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(CELL*0.44,CELL*0.44,0.1,8), new THREE.MeshStandardMaterial({color:0x3a1a1a, roughness:0.9}));
+      base.position.y = 0.05; g.add(base);
+      for(let i=0;i<5;i++){
+        const spike = new THREE.Mesh(new THREE.ConeGeometry(0.13,0.6,6), spikeMat);
+        const ang = (i/5)*Math.PI*2, r = 0.35;
+        spike.position.set(Math.cos(ang)*r*(i===0?0:1), 0.3, Math.sin(ang)*r*(i===0?0:1));
+        if(i===0) spike.position.set(0,0.35,0);
+        spike.castShadow = true;
+        g.add(spike);
+      }
+      return g;
+    }
+    if(type === 'wall'){
+      const m = new THREE.Mesh(new THREE.BoxGeometry(CELL*0.94, CELL*1.7, CELL*0.3), new THREE.MeshStandardMaterial({color, roughness:0.85}));
+      m.position.y = CELL*0.85; m.castShadow = true; m.receiveShadow = true;
+      return m;
     }
   }
 
@@ -3423,7 +3553,7 @@
       propsPanel.innerHTML = `<h4>Thuộc tính</h4><div class="prop-empty">Chưa chọn khối nào. Chạm vào một khối trong khung cảnh để xem và chỉnh sửa.</div>`;
       return;
     }
-    const names = {cube:'Khối vuông', sphere:'Hình cầu', ramp:'Dốc nghiêng', tree:'Cây', spawn:'Điểm xuất phát'};
+    const names = {cube:'Khối vuông', sphere:'Hình cầu', ramp:'Dốc nghiêng', tree:'Cây', spawn:'Điểm xuất phát', finish:'Vạch đích', coin:'Xu thưởng', trap:'Bẫy gai', wall:'Tường chắn'};
     let colorHtml = '';
     if(TYPE_COLORS[obj.type]){
       colorHtml = `<div class="prop-row"><div class="prop-label">Màu sắc</div><div class="color-row">
@@ -3476,6 +3606,120 @@
     try{ const res = await window.storage.get(key, shared); return res && res.value ? JSON.parse(res.value) : null; }
     catch(e){ return null; }
   }
+  async function storageDelete(key, shared){
+    try{ await window.storage.delete(key, shared); return true; }
+    catch(e){ return false; }
+  }
+
+  // ===================== Cài đặt trò chơi: ảnh đại diện tùy chỉnh (mô tả/độ khó đọc trực tiếp từ form) =====================
+  let gameMeta = { thumbnailData: null };
+  function currentDescription(){ return document.getElementById('gameDescInput').value.trim(); }
+  function currentDifficulty(){ return document.getElementById('gameDifficultyInput').value; }
+
+  function resizeImageFile(file, maxW, maxH, quality){
+    return new Promise((resolve, reject)=>{
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        const img = new Image();
+        img.onload = ()=>{
+          let w = img.width, h = img.height;
+          const scale = Math.min(1, maxW/w, maxH/h);
+          w = Math.max(1, Math.round(w*scale)); h = Math.max(1, Math.round(h*scale));
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = () => reject(new Error('img'));
+        img.src = reader.result;
+      };
+      reader.onerror = () => reject(new Error('read'));
+      reader.readAsDataURL(file);
+    });
+  }
+  function renderThumbPreview(){
+    const el = document.getElementById('thumbPreview');
+    el.innerHTML = gameMeta.thumbnailData ? `<img src="${gameMeta.thumbnailData}" alt="thumbnail">` : 'Chưa có ảnh';
+  }
+  document.getElementById('settingsBtn').addEventListener('click', ()=>{
+    renderThumbPreview();
+    document.getElementById('settingsModal').classList.add('open');
+  });
+  document.getElementById('settingsCloseBtn').addEventListener('click', ()=>{
+    document.getElementById('settingsModal').classList.remove('open');
+  });
+  document.getElementById('settingsSaveBtn').addEventListener('click', ()=>{
+    document.getElementById('settingsModal').classList.remove('open');
+    showToast('Đã lưu cài đặt trò chơi');
+  });
+  document.getElementById('thumbUploadBtn').addEventListener('click', ()=>{
+    document.getElementById('thumbFileInput').click();
+  });
+  document.getElementById('thumbFileInput').addEventListener('change', async (e)=>{
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if(!file) return;
+    if(!file.type.startsWith('image/')){ showToast('Vui lòng chọn một tệp hình ảnh'); return; }
+    try{
+      gameMeta.thumbnailData = await resizeImageFile(file, 480, 320, 0.75);
+      renderThumbPreview();
+      showToast('✅ Đã cập nhật ảnh đại diện');
+    } catch(err){
+      showToast('Không thể tải ảnh này, hãy thử ảnh khác');
+    }
+  });
+
+  // ===================== Lưu / khôi phục bản nháp (chỉ trên tài khoản của bạn) =====================
+  function serializeLevel(){
+    return {
+      name: document.getElementById('projName').value.trim() || 'Trò chơi chưa đặt tên',
+      description: currentDescription(),
+      difficulty: currentDifficulty(),
+      thumbnailData: gameMeta.thumbnailData,
+      objects: objects.map(o=>({ type:o.type, gx:o.gx, gz:o.gz, color:o.color }))
+    };
+  }
+  function rebuildFromLevel(level){
+    objects.forEach(o=>scene.remove(o.mesh));
+    objects = []; selectedId = null;
+    document.getElementById('projName').value = level.name || 'Trò chơi chưa đặt tên';
+    document.getElementById('gameDescInput').value = level.description || '';
+    document.getElementById('gameDifficultyInput').value = level.difficulty || 'medium';
+    gameMeta.thumbnailData = level.thumbnailData || null;
+    (level.objects || []).forEach(o=>{
+      const mesh = buildMesh(o.type, o.color);
+      if(!mesh) return;
+      const pos = cellToWorld(o.gx, o.gz);
+      mesh.position.x = pos.x; mesh.position.z = pos.z;
+      scene.add(mesh);
+      objects.push({ id:idSeq++, type:o.type, gx:o.gx, gz:o.gz, color:o.color, mesh });
+    });
+    updateStatus(); renderProps();
+  }
+  document.getElementById('draftBtn').addEventListener('click', async ()=>{
+    if(!currentUsername){ showToast('Bạn cần đăng nhập trước khi lưu nháp'); return; }
+    const ok = await storageSet(`gtr_draft:${currentUsername}`, serializeLevel(), false);
+    showToast(ok ? '💾 Đã lưu bản nháp trên tài khoản của bạn' : 'Không thể lưu nháp lúc này, hãy thử lại');
+  });
+  (async function loadDraftOnOpen(){
+    if(!currentUsername) return;
+    const level = await storageGet(`gtr_draft:${currentUsername}`, false);
+    if(level && (level.objects||[]).length){
+      rebuildFromLevel(level);
+      showToast('📂 Đã khôi phục bản nháp gần nhất của bạn');
+    }
+  })();
+
+  // ===================== Chơi thử (playtest) ngay trong trình duyệt, không cần xuất bản =====================
+  document.getElementById('playtestBtn').addEventListener('click', ()=>{
+    if(objects.length === 0){ showToast('Hãy thêm ít nhất một khối trước khi chơi thử'); return; }
+    if(!objects.some(o=>o.type==='spawn')){ showToast('Hãy đặt ít nhất 1 Điểm xuất phát trước khi chơi thử'); return; }
+    window.__gtrPlaytestLevel = serializeLevel();
+    // đảm bảo mini-game luôn khởi tạo lại từ đầu mỗi lần chơi thử, kể cả khi vẫn dùng
+    // cùng một "id" chơi thử như lần trước (nếu không, engine sẽ tưởng game không đổi và bỏ qua).
+    currentMiniGameId = undefined;
+    openMiniGame('__playtest__');
+  });
 
   document.getElementById('publishBtn').addEventListener('click', async ()=>{
     if(objects.length === 0){ showToast('Hãy thêm ít nhất một khối trước khi xuất bản'); return; }
@@ -3483,20 +3727,27 @@
       showToast('Bạn cần đăng nhập trên trang chủ GTR trước khi xuất bản. Hãy quay lại và mở Studio từ trang chủ sau khi đăng nhập.');
       return;
     }
-    const name = document.getElementById('projName').value.trim() || 'Trò chơi chưa đặt tên';
+    if(!objects.some(o=>o.type==='spawn')){ showToast('Mỗi trò chơi cần ít nhất 1 Điểm xuất phát — hãy đặt trước khi xuất bản.'); return; }
+    if(!objects.some(o=>o.type==='finish')){ showToast('Mỗi trò chơi cần ít nhất 1 Vạch đích — hãy đặt trước khi xuất bản.'); return; }
+    const level = serializeLevel();
     const gameId = 'g' + Date.now();
     const gameData = {
       id: gameId,
-      name,
+      name: level.name,
       creator: currentUsername,
       createdAt: Date.now(),
-      objects: objects.map(o=>({ type:o.type, gx:o.gx, gz:o.gz, color:o.color }))
+      description: level.description,
+      difficulty: level.difficulty,
+      thumbnailData: level.thumbnailData,
+      objects: level.objects
     };
     const games = (await serverGet('gtr_games')) || {};
     games[gameId] = gameData;
     const ok = await serverSet('gtr_games', games);
     if(ok){
-      showToast(`Đã xuất bản "${name}"! <a href="#" onclick="openMiniGame('${gameId}'); return false;">Chơi thử ngay</a>`);
+      showToast(`Đã xuất bản "${level.name}"! <a href="#" onclick="openMiniGame('${gameId}'); return false;">Chơi thử ngay</a>`);
+      storageDelete(`gtr_draft:${currentUsername}`, false);
+      if(typeof loadGameLibrary === 'function') loadGameLibrary();
     } else {
       showToast('Đã lưu bản dựng cục bộ, nhưng không thể đăng lên thư viện chung lúc này. Hãy thử lại sau.');
     }
@@ -4584,6 +4835,44 @@
       }
     }
 
+    // studio-built obstacles (cube/sphere/wall) — block the player and knock them back
+    for(const ob of obstacles){
+      const dx = ob.mesh.position.x - player.position.x, dz = ob.mesh.position.z - player.position.z;
+      if(Math.sqrt(dx*dx+dz*dz) < ob.radius && player.position.y < (ob.blockHeight||1.6)){
+        knockback(ob.msg || '💥 Va vào chướng ngại vật!');
+      }
+    }
+    // studio-built coins — collectible, same reward as track diamonds
+    for(let i=studioCoins.length-1;i>=0;i--){
+      const c = studioCoins[i];
+      c.mesh.rotation.z += 0.08;
+      const dx = c.mesh.position.x - player.position.x, dz = c.mesh.position.z - player.position.z;
+      if(Math.sqrt(dx*dx+dz*dz) < 1.0){
+        scene.remove(c.mesh);
+        studioCoins.splice(i,1);
+        collectDiamond();
+      }
+    }
+    // studio-built traps — hurts progress, sends you back to the last checkpoint
+    for(const t of studioTraps){
+      const dx = t.mesh.position.x - player.position.x, dz = t.mesh.position.z - player.position.z;
+      if(Math.sqrt(dx*dx+dz*dz) < 0.9 && player.position.y < 0.6){
+        knockback('🩸 Trúng bẫy gai! Cẩn thận hơn nhé.');
+      }
+    }
+    // studio-built finish line — completes the run as soon as it's reached
+    if(!customFinishReached){
+      for(const f of studioFinishPoints){
+        const dx = f.x - player.position.x, dz = f.z - player.position.z;
+        if(Math.sqrt(dx*dx+dz*dz) < 1.6){
+          customFinishReached = true;
+          showToast('🏁 Bạn đã về đích màn chơi tùy chỉnh!');
+          completeRun();
+          break;
+        }
+      }
+    }
+
     // obstacle course: update moving hazards and check collisions
     for(const ob of raceObstacles){
       if(ob.type === 'spinner'){
@@ -4690,31 +4979,108 @@
       ring.rotation.x = Math.PI/2; ring.position.y = 0.08;
       g.add(ring); return g;
     }
+    if(type==='finish'){
+      const g = new THREE.Group();
+      const poleMat = new THREE.MeshStandardMaterial({color:0xEDF1F7, roughness:0.5});
+      const poleL = new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,2.6,8), poleMat);
+      poleL.position.set(-0.9,1.3,0); poleL.castShadow = true;
+      const poleR = poleL.clone(); poleR.position.x = 0.9;
+      const flagCanvas = document.createElement('canvas'); flagCanvas.width=16; flagCanvas.height=16;
+      const fctx = flagCanvas.getContext('2d');
+      for(let yy=0;yy<4;yy++) for(let xx=0;xx<4;xx++){ fctx.fillStyle=(xx+yy)%2===0?'#0B0E14':'#EDF1F7'; fctx.fillRect(xx*4,yy*4,4,4); }
+      const flagTex = new THREE.CanvasTexture(flagCanvas);
+      const flag = new THREE.Mesh(new THREE.BoxGeometry(1.9,1.1,0.05), new THREE.MeshStandardMaterial({map:flagTex}));
+      flag.position.set(0,2.2,0); flag.castShadow = true;
+      g.add(poleL, poleR, flag); return g;
+    }
+    if(type==='coin'){
+      const m = new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.42,0.1,20), new THREE.MeshStandardMaterial({color:0xFFD166, metalness:0.6, roughness:0.25, emissive:0x5a3d05, emissiveIntensity:0.4}));
+      m.rotation.z = Math.PI/2; m.position.y = 0.9; m.castShadow = true; return m;
+    }
+    if(type==='trap'){
+      const g = new THREE.Group();
+      const spikeMat = new THREE.MeshStandardMaterial({color:0xE15A5A, roughness:0.5, emissive:0x3a0a08, emissiveIntensity:0.3});
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(0.85,0.85,0.12,8), new THREE.MeshStandardMaterial({color:0x3a1a1a, roughness:0.9}));
+      base.position.y = 0.06; g.add(base);
+      for(let i=0;i<5;i++){
+        const spike = new THREE.Mesh(new THREE.ConeGeometry(0.16,0.7,6), spikeMat);
+        const ang = (i/5)*Math.PI*2, r = i===0?0:0.4;
+        spike.position.set(Math.cos(ang)*r, 0.36, Math.sin(ang)*r);
+        spike.castShadow = true;
+        g.add(spike);
+      }
+      return g;
+    }
+    if(type==='wall'){
+      const m = new THREE.Mesh(new THREE.BoxGeometry(1.85, 3.2, 0.5), new THREE.MeshStandardMaterial({color, roughness:0.85}));
+      m.position.y = 1.6; m.castShadow = true; m.receiveShadow = true; return m;
+    }
   }
 
+  // studio-built gameplay elements collected while loading
+  const studioCoins = [];
+  const studioTraps = [];
+  const studioFinishPoints = [];
+  let customFinishReached = false;
+
   async function loadPublishedGame(){
-    if(!loadedGameId) return;
-    const games = await storageGetSafe('gtr_games', true);
-    const game = games ? games[loadedGameId] : null;
+    const isPlaytest = (loadedGameId === '__playtest__');
+    let game = null;
+    if(isPlaytest){
+      game = window.__gtrPlaytestLevel || null;
+      window.__gtrPlaytestLevel = null;
+    } else {
+      if(!loadedGameId) return;
+      const games = await storageGetSafe('gtr_games', true);
+      game = games ? games[loadedGameId] : null;
+    }
     if(!game){
-      document.querySelector('.title-chip').textContent = 'Không tìm thấy trò chơi này';
+      document.querySelector('.title-chip').textContent = isPlaytest ? 'Không có bản nháp để chơi thử' : 'Không tìm thấy trò chơi này';
       return;
     }
-    document.querySelector('.title-chip').textContent = game.name + ' · by ' + game.creator;
+    const diffLabel = { easy:'Dễ', medium:'Vừa', hard:'Khó' }[game.difficulty] || null;
+    const titleSuffix = isPlaytest ? ' · Chơi thử' : (' · by ' + game.creator);
+    document.querySelector('.title-chip').textContent = game.name + titleSuffix + (diffLabel ? (' · ' + diffLabel) : '');
+    if(game.description){
+      setTimeout(()=>showToast('📝 ' + game.description), 1300);
+    }
+
     let spawnFound = false;
-    game.objects.forEach(o=>{
+    (game.objects || []).forEach(o=>{
       const mesh = buildPublishedBlock(o.type, o.color);
       if(!mesh) return;
-      const pos = studioCellToWorld(o.gx, o.gz);
-      mesh.position.x = pos.x; mesh.position.z = pos.z;
-      scene.add(mesh);
-      if(o.type === 'cube' || o.type === 'sphere'){
-        obstacles.push({ mesh, radius: 1.1 });
+
+      if(o.type === 'spawn'){
+        // spawn keeps the original small-area mapping near the start line so the race
+        // still begins where the track's start ring/zones expect it to.
+        const pos = studioCellToWorld(o.gx, o.gz);
+        mesh.position.x = pos.x; mesh.position.z = pos.z;
+        scene.add(mesh);
+        if(!spawnFound){
+          spawnFound = true;
+          player.position.x = pos.x;
+          player.position.z = pos.z;
+        }
+        return;
       }
-      if(o.type === 'spawn' && !spawnFound){
-        spawnFound = true;
-        player.position.x = pos.x;
-        player.position.z = pos.z;
+
+      // everything else is spread across the *entire* track length so a creator's build
+      // is actually part of the run, instead of being clustered decoration near the start.
+      const worldX = (o.gx/15 - 0.5) * (TRACK_W - 2.2);
+      const worldZ = 8 + (o.gz/15) * (TRACK_LEN - 16);
+      mesh.position.x = worldX; mesh.position.z = worldZ;
+      scene.add(mesh);
+
+      if(o.type === 'cube' || o.type === 'sphere'){
+        obstacles.push({ mesh, radius: 1.05, blockHeight: 1.6, msg:'💥 Va vào chướng ngại vật!' });
+      } else if(o.type === 'wall'){
+        obstacles.push({ mesh, radius: 1.3, blockHeight: 3.4, msg:'🧱 Bị tường chắn cản lại!' });
+      } else if(o.type === 'coin'){
+        studioCoins.push({ mesh });
+      } else if(o.type === 'trap'){
+        studioTraps.push({ mesh });
+      } else if(o.type === 'finish'){
+        studioFinishPoints.push({ x: worldX, z: worldZ });
       }
     });
   }
