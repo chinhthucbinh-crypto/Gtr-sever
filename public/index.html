@@ -1399,6 +1399,7 @@
       <div class="tag">Tài khoản GTR</div>
     </div>
     <div class="logout-item" id="outfitBtn" style="color:var(--signal);">Cửa hàng trang phục</div>
+    <div class="logout-item" id="complaintBtn">📢 Gửi khiếu nại</div>
     <div class="logout-item" id="logoutBtn">Đăng xuất</div>
   </div>
 </div>
@@ -1912,11 +1913,13 @@
     <div class="admin-tab active" data-admintab="users">👤 Người dùng</div>
     <div class="admin-tab" data-admintab="chats">💬 Hội thoại</div>
     <div class="admin-tab" data-admintab="games">🎮 Game</div>
+    <div class="admin-tab" data-admintab="complaints">📢 Khiếu nại</div>
   </div>
   <div class="admin-body">
     <div id="adminUsersPanel"><div class="admin-empty">Đang tải...</div></div>
     <div id="adminChatsPanel" style="display:none;"><div class="admin-empty">Đang tải...</div></div>
     <div id="adminGamesPanel" style="display:none;"><div class="admin-empty">Đang tải...</div></div>
+    <div id="adminComplaintsPanel" style="display:none;"><div class="admin-empty">Đang tải...</div></div>
   </div>
 </div>
 
@@ -1929,6 +1932,37 @@
     </div>
   </div>
   <div class="admin-body" id="adminChatDetailBody"></div>
+</div>
+
+<!-- ===== Gửi khiếu nại lên admin ===== -->
+<div class="rules-overlay" id="complaintOverlay">
+  <div class="rules-modal" style="max-width:340px;">
+    <div class="rules-icon">📢</div>
+    <h2>Gửi khiếu nại</h2>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:11.5px; color:var(--muted); font-weight:700; display:block; margin-bottom:6px;">LOẠI KHIẾU NẠI</label>
+      <select id="complaintType" style="width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cloud); font-size:13px; font-family:inherit;">
+        <option value="player">Người chơi khác cư xử không đúng mực</option>
+        <option value="ban">Tôi cho rằng tài khoản bị khóa oan</option>
+        <option value="content">Nội dung/game vi phạm nội quy</option>
+        <option value="other">Vấn đề khác</option>
+      </select>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:11.5px; color:var(--muted); font-weight:700; display:block; margin-bottom:6px;">TÊN NGƯỜI/GAME LIÊN QUAN (nếu có)</label>
+      <input id="complaintTarget" type="text" placeholder="Ví dụ: tên tài khoản..."
+        style="width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cloud); font-size:13px; font-family:inherit;">
+    </div>
+    <div style="margin-bottom:18px;">
+      <label style="font-size:11.5px; color:var(--muted); font-weight:700; display:block; margin-bottom:6px;">NỘI DUNG KHIẾU NẠI</label>
+      <textarea id="complaintContent" rows="4" placeholder="Mô tả chi tiết vấn đề bạn gặp phải..."
+        style="width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cloud); font-size:13px; font-family:inherit; resize:vertical;"></textarea>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn btn-ghost" id="complaintCancelBtn" style="flex:1;">Hủy</button>
+      <button class="btn btn-primary" id="complaintSubmitBtn" style="flex:1;">Gửi khiếu nại</button>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" async></script>
@@ -2421,9 +2455,11 @@
       document.getElementById('adminUsersPanel').style.display = which === 'users' ? '' : 'none';
       document.getElementById('adminChatsPanel').style.display = which === 'chats' ? '' : 'none';
       document.getElementById('adminGamesPanel').style.display = which === 'games' ? '' : 'none';
+      document.getElementById('adminComplaintsPanel').style.display = which === 'complaints' ? '' : 'none';
       if(which === 'users') loadAdminUsers();
       if(which === 'chats') loadAdminChats();
       if(which === 'games') loadAdminGames();
+      if(which === 'complaints') loadAdminComplaints();
     });
   });
 
@@ -2552,6 +2588,83 @@
     showRewardToast(`🗑️ Đã xóa game "${name}".`);
     loadAdminGames();
     loadGameLibrary();
+  }
+
+  // ========== Khiếu nại: người dùng gửi lên, admin xem & xử lý ==========
+  const COMPLAINT_TYPE_LABELS = {
+    player: 'Người chơi khác cư xử không đúng mực',
+    ban: 'Cho rằng bị khóa tài khoản oan',
+    content: 'Nội dung/game vi phạm nội quy',
+    other: 'Vấn đề khác'
+  };
+  function openComplaintModal(){
+    document.getElementById('avatarDropdown').classList.remove('open');
+    document.getElementById('complaintType').value = 'player';
+    document.getElementById('complaintTarget').value = '';
+    document.getElementById('complaintContent').value = '';
+    document.getElementById('complaintOverlay').classList.add('show');
+  }
+  document.getElementById('complaintBtn').addEventListener('click', openComplaintModal);
+  document.getElementById('complaintCancelBtn').addEventListener('click', ()=>{
+    document.getElementById('complaintOverlay').classList.remove('show');
+  });
+  document.getElementById('complaintSubmitBtn').addEventListener('click', async ()=>{
+    const type = document.getElementById('complaintType').value;
+    const target = document.getElementById('complaintTarget').value.trim();
+    const content = document.getElementById('complaintContent').value.trim();
+    if(!content){ showRewardToast('⚠️ Vui lòng mô tả nội dung khiếu nại.'); return; }
+    const btn = document.getElementById('complaintSubmitBtn');
+    btn.disabled = true; btn.textContent = 'Đang gửi...';
+    try{
+      const list = (await serverGet('gtr_complaints')) || [];
+      list.push({
+        id: Date.now(),
+        from: currentUsername,
+        type, target: target || null, content,
+        createdAt: Date.now(), status: 'pending'
+      });
+      await serverSet('gtr_complaints', list);
+      document.getElementById('complaintOverlay').classList.remove('show');
+      showRewardToast('✅ Đã gửi khiếu nại tới đội ngũ quản trị GTR. Cảm ơn bạn đã phản hồi!');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Gửi khiếu nại';
+    }
+  });
+
+  // ---- Tab: Khiếu nại (admin) ----
+  async function loadAdminComplaints(){
+    const panel = document.getElementById('adminComplaintsPanel');
+    panel.innerHTML = '<div class="admin-empty">Đang tải...</div>';
+    const list = (await serverGet('gtr_complaints')) || [];
+    if(list.length === 0){ panel.innerHTML = '<div class="admin-empty">Chưa có khiếu nại nào.</div>'; return; }
+    const sorted = [...list].sort((a,b)=> (a.status==='pending'?0:1) - (b.status==='pending'?0:1) || b.createdAt - a.createdAt);
+    panel.innerHTML = sorted.map(c => {
+      const safeFrom = escapeHtml(c.from);
+      const safeTarget = c.target ? escapeHtml(c.target) : null;
+      const safeContent = escapeHtml(c.content);
+      const typeLabel = COMPLAINT_TYPE_LABELS[c.type] || 'Khác';
+      const pending = c.status !== 'resolved';
+      return `
+      <div class="admin-user-row" style="align-items:flex-start; flex-direction:column; gap:6px; padding:12px 10px;">
+        <div style="display:flex; align-items:center; gap:8px; width:100%;">
+          <span class="admin-badge ${pending ? 'banned' : 'admin'}">${pending ? 'CHỜ XỬ LÝ' : 'ĐÃ XỬ LÝ'}</span>
+          <span style="font-size:11.5px; color:var(--muted);">${typeLabel}</span>
+        </div>
+        <div style="font-size:12.5px; color:var(--cloud);">
+          <b>Từ:</b> ${safeFrom}${safeTarget ? ` · <b>Về:</b> ${safeTarget}` : ''}
+        </div>
+        <div style="font-size:12.5px; color:var(--muted); line-height:1.5;">${safeContent}</div>
+        <div style="font-size:10.5px; color:var(--muted);">${new Date(c.createdAt).toLocaleString('vi-VN')}</div>
+        ${pending ? `<button class="admin-ban-btn" style="align-self:flex-end;" onclick="adminResolveComplaint(${c.id})">Đánh dấu đã xử lý</button>` : ''}
+      </div>`;
+    }).join('');
+  }
+  async function adminResolveComplaint(id){
+    const list = (await serverGet('gtr_complaints')) || [];
+    const target = list.find(c => c.id === id);
+    if(target) target.status = 'resolved';
+    await serverSet('gtr_complaints', list);
+    loadAdminComplaints();
   }
 
   // ========== Thư viện trò chơi: game mặc định + mọi game đã xuất bản từ Studio ==========
@@ -4505,11 +4618,6 @@
 
   function completeRun(){
     runState.runs += 1;
-    if(diamondsThisRun > 0){
-      account.coins += diamondsThisRun;
-      saveAccount();
-      renderAccount();
-    }
     let timeMsg = '';
     if(raceStartTime !== null){
       const elapsed = (performance.now() - raceStartTime)/1000;
@@ -4524,7 +4632,7 @@
     raceStartTime = null;
     saveRunState();
     updateStatHUD();
-    showToast(`🏁 Hoàn thành lượt chạy #${runState.runs}!${timeMsg} +${diamondsThisRun} kim cương → GTR-Coin.`);
+    showToast(`🏁 Hoàn thành lượt chạy #${runState.runs}!${timeMsg} +${diamondsThisRun} 💎 Xu Tốc Độ.`);
     diamondsThisRun = 0;
     maxZoneReached = -1;
     checkpointZ = 2;
@@ -5142,7 +5250,7 @@
     { name:'Rồng Cổ Đại',   emoji:'🐲', hp:3000, reward:500 },
   ];
 
-  let liftState = { baseStrength:0, ownedWeights:['w1'], equippedWeight:'w1', ownedPets:[], rebirths:0 };
+  let liftState = { baseStrength:0, ownedWeights:['w1'], equippedWeight:'w1', ownedPets:[], rebirths:0, gold:0 };
   let liftMonsterCycle = 0;
   let liftMonsterIdx = 0;
   let liftMonsterHpNow = MONSTERS[0].hp;
@@ -5175,7 +5283,7 @@
 
   async function loadLiftState(){
     const saved = await serverGet(`gtr_lifting:${currentUsername}`);
-    if(saved) liftState = Object.assign({ baseStrength:0, ownedWeights:['w1'], equippedWeight:'w1', ownedPets:[], rebirths:0 }, saved);
+    if(saved) liftState = Object.assign({ baseStrength:0, ownedWeights:['w1'], equippedWeight:'w1', ownedPets:[], rebirths:0, gold:0 }, saved);
     renderLiftHUD();
   }
   function saveLiftState(){
@@ -5184,7 +5292,7 @@
 
   function renderLiftHUD(){
     document.getElementById('liftStrength').textContent = liftTotalStrength().toLocaleString('en-US');
-    document.getElementById('liftCoins').textContent = account.coins.toLocaleString('en-US');
+    document.getElementById('liftCoins').textContent = liftState.gold.toLocaleString('en-US');
     const w = liftEquippedWeight();
     document.getElementById('liftWeightName').textContent = w.name;
     document.getElementById('liftWeightPower').textContent = w.power;
@@ -5239,9 +5347,9 @@
     if(liftMonsterHpNow <= 0){
       const m = currentMonster();
       const reward = Math.round(m.reward * (1+liftMonsterCycle*0.6));
-      account.coins += reward;
-      saveAccount(); renderAccount();
-      liftToast(`🏆 Đã hạ ${m.name}! +${reward} GTR-Coin`);
+      liftState.gold += reward;
+      saveLiftState(); renderLiftHUD();
+      liftToast(`🏆 Đã hạ ${m.name}! +${reward} 🪙 Xu Tạ`);
       liftMonsterIdx++;
       if(liftMonsterIdx >= MONSTERS.length){ liftMonsterIdx = 0; liftMonsterCycle++; }
       liftMonsterHpNow = MONSTERS[liftMonsterIdx].hp * (1+liftMonsterCycle*0.6);
@@ -5272,7 +5380,7 @@
   // ---- Shop: buy/equip weights, buy pets ----
   let liftShopTab = 'weights';
   function renderLiftShop(){
-    document.getElementById('liftShopCoins').textContent = account.coins.toLocaleString('en-US');
+    document.getElementById('liftShopCoins').textContent = liftState.gold.toLocaleString('en-US');
     document.getElementById('liftShopStrength').textContent = liftTotalStrength().toLocaleString('en-US');
     const grid = document.getElementById('liftShopGrid');
     if(liftShopTab === 'weights'){
@@ -5323,8 +5431,8 @@
         saveLiftState(); renderLiftHUD(); renderLiftShop();
         return;
       }
-      if(account.coins < w.price){ liftToast(`Cần thêm ${(w.price-account.coins).toLocaleString('en-US')} coin nữa.`); return; }
-      account.coins -= w.price; saveAccount(); renderAccount();
+      if(liftState.gold < w.price){ liftToast(`Cần thêm ${(w.price-liftState.gold).toLocaleString('en-US')} 🪙 Xu Tạ nữa (đánh quái để kiếm thêm).`); return; }
+      liftState.gold -= w.price;
       liftState.ownedWeights.push(id);
       liftState.equippedWeight = id;
       saveLiftState(); renderLiftHUD(); renderLiftShop();
@@ -5332,8 +5440,8 @@
     } else {
       const p = LIFT_PETS.find(x=>x.id===id);
       if(liftState.ownedPets.includes(id)){ liftToast(`Bạn đã có ${p.name} rồi.`); return; }
-      if(account.coins < p.price){ liftToast(`Cần thêm ${(p.price-account.coins).toLocaleString('en-US')} coin nữa.`); return; }
-      account.coins -= p.price; saveAccount(); renderAccount();
+      if(liftState.gold < p.price){ liftToast(`Cần thêm ${(p.price-liftState.gold).toLocaleString('en-US')} 🪙 Xu Tạ nữa (đánh quái để kiếm thêm).`); return; }
+      liftState.gold -= p.price;
       liftState.ownedPets.push(id);
       saveLiftState(); renderLiftHUD(); renderLiftShop();
       liftToast(`🐾 Đã mua ${p.name}! +${p.bonus} sức mạnh vĩnh viễn.`);
