@@ -2482,6 +2482,7 @@
       const banBtnHtml = u.username === currentUsername
         ? '<span style="font-size:11px; color:var(--muted);">Bạn</span>'
         : `<button class="admin-ban-btn ${banBtnClass}" onclick="adminToggleBan('${safeName.replace(/'/g,"\\'")}', ${!u.banned})">${banBtnLabel}</button>`;
+      const editCoinsBtn = `<button class="admin-ban-btn" onclick="adminEditCoins('${safeName.replace(/'/g,"\\'")}', ${u.coins})">💰 Sửa coin</button>`;
       return `
       <div class="admin-user-row">
         <div class="admin-user-avatar">${initial}</div>
@@ -2489,9 +2490,23 @@
           <div class="admin-user-name">${safeName} ${badges}</div>
           <div class="admin-user-meta">${u.coins.toLocaleString('en-US')} coin · online gần nhất ${formatRelativeTime(u.lastSeen)}</div>
         </div>
-        ${banBtnHtml}
+        <div style="display:flex; flex-direction:column; gap:5px; align-items:flex-end;">
+          ${editCoinsBtn}
+          ${banBtnHtml}
+        </div>
       </div>`;
     }).join('');
+  }
+  async function adminEditCoins(targetUsername, currentCoins){
+    const input = prompt(`Số GTR-Coin mới cho "${targetUsername}" (hiện tại: ${currentCoins}):`, currentCoins);
+    if(input === null) return; // bấm Hủy
+    const coins = parseInt(input, 10);
+    if(isNaN(coins) || coins < 0){ showRewardToast('⚠️ Số coin không hợp lệ.'); return; }
+    const message = prompt('Nhắn gửi kèm theo cho người chơi này (để trống nếu không cần):', '') || '';
+    const result = await adminApi('/api/admin/set-coins', { targetUsername, coins, message: message.trim() || null });
+    if(!result.ok){ showRewardToast(`❌ ${result.error || 'Không thực hiện được.'}`); return; }
+    showRewardToast(`💰 Đã cập nhật ${targetUsername} thành ${coins.toLocaleString('en-US')} coin${message.trim() ? ' + gửi thông báo' : ''}.`);
+    loadAdminUsers();
   }
   function formatRelativeTime(ts){
     const diffMin = Math.floor((Date.now() - ts) / 60000);
@@ -4913,8 +4928,9 @@
         const remaining = Math.max(0, TIME_LIMIT_SEC - elapsed);
         statTimeEl.textContent = formatRaceTime(remaining);
       }
-      const kmProgress = Math.max(0, Math.min(1, player.position.z/TRACK_LEN)) * TOTAL_DISPLAY_KM;
-      statDistanceEl.textContent = `${kmProgress.toFixed(1)}/${TOTAL_DISPLAY_KM}km`;
+      const effectiveKm = Math.round((customTrackEndZ/TRACK_LEN) * TOTAL_DISPLAY_KM * 10) / 10;
+      const kmProgress = Math.max(0, Math.min(1, player.position.z/customTrackEndZ)) * effectiveKm;
+      statDistanceEl.textContent = `${kmProgress.toFixed(1)}/${effectiveKm}km`;
     }
     if(raceStartTime !== null && (nowMs-raceStartTime)/1000 >= TIME_LIMIT_SEC){ failRunTimeout(); }
 
@@ -5016,7 +5032,7 @@
     crossZone(zoneIdx);
 
     // finish line -> complete the run
-    if(player.position.z >= TRACK_LEN - 2){
+    if(player.position.z >= customTrackEndZ - 2){
       completeRun();
     }
 
@@ -5130,6 +5146,7 @@
   const studioTraps = [];
   const studioFinishPoints = [];
   let customFinishReached = false;
+  let customTrackEndZ = TRACK_LEN; // rút ngắn lại nếu là game cộng đồng tự tạo, không dùng hết cả 100km mặc định
 
   async function loadPublishedGame(){
     const isPlaytest = (loadedGameId === '__playtest__');
@@ -5154,6 +5171,7 @@
     }
 
     let spawnFound = false;
+    let maxObjZ = 0;
     (game.objects || []).forEach(o=>{
       const mesh = buildPublishedBlock(o.type, o.color);
       if(!mesh) return;
@@ -5178,6 +5196,7 @@
       const worldZ = 8 + (o.gz/15) * (TRACK_LEN - 16);
       mesh.position.x = worldX; mesh.position.z = worldZ;
       scene.add(mesh);
+      maxObjZ = Math.max(maxObjZ, worldZ);
 
       if(o.type === 'cube' || o.type === 'sphere'){
         obstacles.push({ mesh, radius: 1.05, blockHeight: 1.6, msg:'💥 Va vào chướng ngại vật!' });
@@ -5191,6 +5210,13 @@
         studioFinishPoints.push({ x: worldX, z: worldZ });
       }
     });
+
+    // Game cộng đồng tự tạo không nên buộc người chơi chạy hết cả 100km mặc định —
+    // nếu người tạo không tự đặt vạch đích riêng, tự tính vạch đích ngay sau khối cuối
+    // cùng họ đã xây, để trải nghiệm đúng với những gì họ thực sự tạo ra.
+    if(!isPlaytest && loadedGameId && studioFinishPoints.length === 0 && maxObjZ > 0){
+      customTrackEndZ = Math.min(TRACK_LEN, maxObjZ + 14);
+    }
   }
 
   // ===================== Load saved outfit (best-effort, keeps appearance consistent) =====================
