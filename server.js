@@ -282,6 +282,44 @@ app.post('/api/admin/ban', async (req, res) => {
   }
 });
 
+// Chỉnh số dư GTR-Coin của 1 người chơi, kèm thông báo tùy chọn gửi thẳng vào hộp thư của họ.
+// body: { adminUsername, adminPassword, targetUsername, coins, message }
+app.post('/api/admin/set-coins', async (req, res) => {
+  try{
+    const { adminUsername, adminPassword, targetUsername, message } = req.body || {};
+    const coins = Math.max(0, parseInt(req.body?.coins, 10) || 0);
+    if(!(await verifyAdmin(adminUsername, adminPassword))){
+      return res.status(403).json({ ok:false, error:'Không có quyền quản trị.' });
+    }
+    const exists = await pool.query('SELECT 1 FROM accounts WHERE username=$1', [targetUsername]);
+    if(exists.rowCount === 0){
+      return res.status(404).json({ ok:false, error:'Không tìm thấy người chơi này.' });
+    }
+    await pool.query('UPDATE accounts SET coins=$1 WHERE username=$2', [coins, targetUsername]);
+
+    if(message){
+      const key = `gtr_account:${targetUsername}`;
+      const r = await pool.query('SELECT value FROM kv_store WHERE key=$1', [key]);
+      const account = r.rows[0] ? r.rows[0].value : { coins, lastClaim: null, notifications: [] };
+      account.notifications = account.notifications || [];
+      account.notifications.unshift({
+        id: Date.now(),
+        text: `🛡️ Thông báo từ quản trị viên: ${message}`,
+        time: new Date().toLocaleTimeString('vi-VN', { hour:'2-digit', minute:'2-digit', timeZone:'Asia/Ho_Chi_Minh' }),
+        read: false
+      });
+      await pool.query(
+        'INSERT INTO kv_store (key, value) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET value=$2',
+        [key, JSON.stringify(account)]
+      );
+    }
+    res.json({ ok:true });
+  }catch(e){
+    console.error('admin/set-coins error:', e.message);
+    res.status(500).json({ ok:false, error:'Lỗi server.' });
+  }
+});
+
 // Danh sách các cuộc trò chuyện đang có (dựa trên các key gtr_chat:* trong kho chung) — để kiểm duyệt.
 app.post('/api/admin/chats', async (req, res) => {
   try{
