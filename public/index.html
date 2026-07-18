@@ -746,14 +746,14 @@
     background:linear-gradient(rgba(11,14,20,0.75), transparent);
     pointer-events:none;
   }
-  #miniGameView .hud-top > * { pointer-events:auto; }
-  #miniGameView .back-chip {
+  #miniGameView .hud-top > *, #gardenView .hud-top > * { pointer-events:auto; }
+  #miniGameView .back-chip, #gardenView .back-chip {
     width:36px; height:36px; border-radius:10px;
     background:rgba(18,22,31,0.75); border:1px solid var(--line);
     display:grid; place-items:center; color:var(--cloud); cursor:pointer;
     backdrop-filter: blur(6px);
   }
-  #miniGameView .title-chip {
+  #miniGameView .title-chip, #gardenView .title-chip {
     font-family:'Space Grotesk'; font-weight:700; font-size:14.5px;
     background:rgba(18,22,31,0.75); border:1px solid var(--line);
     padding:8px 14px; border-radius:10px; backdrop-filter: blur(6px);
@@ -766,7 +766,7 @@
     font-family:'JetBrains Mono'; font-weight:600; font-size:13.5px; color:#FFD166;
   }
   #miniGameView .coin-chip svg { width:15px; height:15px; }
-  #miniGameView .stat-bar{
+  #miniGameView .stat-bar, #gardenView .stat-bar{
     position:fixed; top:56px; left:0; right:0; z-index:20;
     display:flex; flex-wrap:wrap; justify-content:center; gap:8px; padding:0 14px; row-gap:6px;
     pointer-events:none;
@@ -814,13 +814,13 @@
   #miniGameView .death-content p{ font-size:12.5px; color:rgba(255,255,255,0.75); margin-bottom:14px; }
   #miniGameView .death-timer{ font-family:'JetBrains Mono'; font-size:30px; font-weight:700; color:#fff; }
   #miniGameView .stat-chip.time-chip{ color:var(--signal); }
-  #miniGameView .stat-chip{
+  #miniGameView .stat-chip, #gardenView .stat-chip{
     display:flex; align-items:center; gap:5px;
     background:rgba(18,22,31,0.78); border:1px solid var(--line);
     padding:6px 11px; border-radius:100px; backdrop-filter:blur(6px);
     font-family:'JetBrains Mono'; font-weight:700; font-size:12.5px; color:var(--cloud);
   }
-  #miniGameView .stat-ic{ font-size:13px; }
+  #miniGameView .stat-ic, #gardenView .stat-ic{ font-size:13px; }
   #miniGameView #backpackBtn, #miniGameView #eggShopBtn{ pointer-events:auto; cursor:pointer; }
   #miniGameView .pet-toast{
     position:fixed; top:100px; left:50%; transform:translateX(-50%) translateY(-14px) scale(0.9);
@@ -834,19 +834,19 @@
   #miniGameView .pet-toast-title{ font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; }
   #miniGameView .pet-toast-name{ font-family:'Space Grotesk'; font-weight:700; font-size:14.5px; }
 
-  #miniGameView .backpack-overlay, #liftingView .backpack-overlay{
+  #miniGameView .backpack-overlay, #liftingView .backpack-overlay, #gardenView .backpack-overlay{
     position:fixed; inset:0; z-index:60; background:rgba(5,7,11,0.6);
     opacity:0; pointer-events:none; transition:opacity .2s;
   }
   #miniGameView .backpack-overlay.open, #liftingView .backpack-overlay.open{ opacity:1; pointer-events:auto; }
-  #miniGameView .backpack-panel, #liftingView .backpack-panel{
+  #miniGameView .backpack-panel, #liftingView .backpack-panel, #gardenView .backpack-panel{
     position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.95); z-index:61;
     width:360px; max-width:92vw; max-height:78vh; overflow-y:auto;
     background:var(--panel); border:1px solid var(--line); border-radius:16px;
     padding:20px; opacity:0; pointer-events:none; transition:all .2s;
   }
   #miniGameView .backpack-panel.open, #liftingView .backpack-panel.open{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
-  #miniGameView .backpack-head, #liftingView .backpack-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  #miniGameView .backpack-head, #liftingView .backpack-head, #gardenView .backpack-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
   #miniGameView .backpack-head h3, #liftingView .backpack-head h3{ font-family:'Space Grotesk'; font-weight:600; font-size:16px; }
   #miniGameView .backpack-sub{ font-size:11.5px; color:var(--muted); margin-bottom:16px; }
   #miniGameView .backpack-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
@@ -857,10 +857,10 @@
   #miniGameView .backpack-name{ font-size:11px; color:var(--cloud); }
   #miniGameView .backpack-state{ font-size:9.5px; color:var(--muted); margin-top:1px; }
   #miniGameView .backpack-empty{ grid-column:1/-1; text-align:center; color:var(--muted); font-size:13px; padding:24px 10px; line-height:1.6; }
-  #miniGameView .backpack-close, #liftingView .backpack-close{ cursor:pointer; color:var(--muted); width:30px; height:30px; display:grid; place-items:center; border-radius:8px; }
+  #miniGameView .backpack-close, #liftingView .backpack-close, #gardenView .backpack-close{ cursor:pointer; color:var(--muted); width:30px; height:30px; display:grid; place-items:center; border-radius:8px; }
   #miniGameView .backpack-close:hover, #liftingView .backpack-close:hover{ background:var(--panel-2); color:var(--cloud); }
-  #miniGameView .egg-shop-row, #liftingView .egg-shop-row{ display:flex; gap:10px; margin-bottom:10px; }
-  #miniGameView .egg-shop-stat, #liftingView .egg-shop-stat{
+  #miniGameView .egg-shop-row, #liftingView .egg-shop-row, #gardenView .egg-shop-row{ display:flex; gap:10px; margin-bottom:10px; }
+  #miniGameView .egg-shop-stat, #liftingView .egg-shop-stat, #gardenView .egg-shop-stat{
     flex:1; background:var(--panel-2); border:1px solid var(--line); border-radius:9px;
     padding:9px 10px; font-size:12.5px; font-weight:600; color:var(--cloud); text-align:center;
   }
@@ -875,6 +875,19 @@
     flex-direction:column; color:var(--cloud); font-family:'Inter', sans-serif;
   }
   #liftingView.open{ display:flex !important; }
+
+  #gardenView{
+    display:none !important; position:fixed; inset:0; z-index:410;
+    background:#0B0E14; color:var(--cloud); font-family:'Inter', sans-serif;
+  }
+  #gardenView.open{ display:block !important; }
+  #gardenView canvas{ display:block; }
+  #gardenView .garden-seed-chip{
+    position:fixed; top:100px; left:50%; transform:translateX(-50%); z-index:19;
+    background:rgba(18,22,31,0.78); border:1px solid var(--line); backdrop-filter:blur(6px);
+    padding:7px 14px; border-radius:100px; font-size:12.5px; font-weight:600; color:var(--cloud);
+  }
+  #gardenView .garden-seed-chip .stat-ic{ margin-right:4px; }
 
   #liftingView .lift-hud-top{
     display:flex; align-items:center; gap:12px; padding:14px 16px;
@@ -980,30 +993,30 @@
     background:var(--panel-2); border:1px solid var(--line); font-size:13px; font-weight:700; color:var(--muted);
   }
   #liftingView .lift-shop-tab.active{ background:var(--signal); color:#06120D; border-color:var(--signal); }
-  #liftingView .lift-shop-grid{ display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; }
-  #liftingView .lift-shop-item{
+  #liftingView .lift-shop-grid, #gardenView .lift-shop-grid{ display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; }
+  #liftingView .lift-shop-item, #gardenView .lift-shop-item{
     background:var(--panel-2); border:1px solid var(--line); border-radius:14px; padding:14px 10px;
     text-align:center; cursor:pointer;
   }
   #liftingView .lift-shop-item.owned{ border-color:rgba(44,241,176,0.4); background:var(--signal-dim); }
   #liftingView .lift-shop-item.equipped{ border-color:var(--signal); box-shadow:0 0 0 1px var(--signal); }
-  #liftingView .lift-shop-emoji{ font-size:36px; margin-bottom:6px; }
-  #liftingView .lift-shop-name{ font-family:'Space Grotesk'; font-weight:700; font-size:13.5px; }
-  #liftingView .lift-shop-desc{ font-size:11px; color:var(--muted); margin:3px 0 8px; }
-  #liftingView .lift-shop-price{
+  #liftingView .lift-shop-emoji, #gardenView .lift-shop-emoji{ font-size:36px; margin-bottom:6px; }
+  #liftingView .lift-shop-name, #gardenView .lift-shop-name{ font-family:'Space Grotesk'; font-weight:700; font-size:13.5px; }
+  #liftingView .lift-shop-desc, #gardenView .lift-shop-desc{ font-size:11px; color:var(--muted); margin:3px 0 8px; }
+  #liftingView .lift-shop-price, #gardenView .lift-shop-price{
     font-family:'JetBrains Mono'; font-weight:700; font-size:12.5px; color:#FFD166;
     background:rgba(255,209,102,0.1); border-radius:100px; padding:5px 10px; display:inline-block;
   }
   #liftingView .lift-shop-price.owned-tag{ color:var(--signal); background:var(--signal-dim); }
-  #miniGameView /* ===== Joystick (Roblox-style translucent white) ===== */
-  .joystick-base {
+  /* ===== Joystick (Roblox-style translucent white) ===== */
+  #miniGameView .joystick-base, #gardenView .joystick-base {
     position:fixed; left:26px; bottom:30px; z-index:20;
     width:132px; height:132px; border-radius:50%;
     background:rgba(255,255,255,0.16); border:2px solid rgba(255,255,255,0.55);
     backdrop-filter: blur(2px);
     touch-action:none;
   }
-  #miniGameView .joystick-knob {
+  #miniGameView .joystick-knob, #gardenView .joystick-knob {
     position:absolute; top:50%; left:50%;
     width:56px; height:56px; border-radius:50%;
     background:rgba(255,255,255,0.85); border:1.5px solid rgba(255,255,255,0.9);
@@ -1011,8 +1024,8 @@
     transform:translate(-50%,-50%);
     transition: background .1s;
   }
-  #miniGameView .joystick-knob.active { background:rgba(255,255,255,0.98); }
-  #miniGameView .look-layer {
+  #miniGameView .joystick-knob.active, #gardenView .joystick-knob.active { background:rgba(255,255,255,0.98); }
+  #miniGameView .look-layer, #gardenView .look-layer {
     position:fixed; inset:0; z-index:15; touch-action:none;
   }
   #miniGameView /* ===== Camera rotate hint / jump button ===== */
@@ -1052,15 +1065,15 @@
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
     transition: opacity .4s;
   }
-  #miniGameView .load-gate.hidden { opacity:0; pointer-events:none; }
-  #miniGameView .load-mark {
+  #miniGameView .load-gate.hidden, #gardenView .load-gate.hidden { opacity:0; pointer-events:none; }
+  #miniGameView .load-mark, #gardenView .load-mark {
     width:48px; height:48px;
     background: conic-gradient(from 210deg, var(--signal), var(--violet), var(--ember), var(--signal));
     clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
     animation: spinY 1.4s linear infinite;
   }
   @keyframes spinY{ to{ transform:rotate(360deg); } }
-  #miniGameView .load-text { font-family:'Space Grotesk'; font-weight:600; font-size:14px; color:var(--muted); }
+  #miniGameView .load-text, #gardenView .load-text { font-family:'Space Grotesk'; font-weight:600; font-size:14px; color:var(--muted); }
   #miniGameView /* ===== Collect toast ===== */
   .mini-toast {
     position:fixed; top:64px; left:50%; transform:translateX(-50%) translateY(-10px);
@@ -1068,7 +1081,7 @@
     padding:8px 16px; border-radius:20px; font-size:13px; font-weight:600;
     opacity:0; transition: all .25s; z-index:25; backdrop-filter: blur(6px);
   }
-  #miniGameView .mini-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  #miniGameView .mini-toast.show, #gardenView .mini-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
 
   /* ===== Embedded Studio / Mini-game full-screen views ===== */
@@ -1250,6 +1263,10 @@
   .admin-tab.active{ background:var(--signal-dim); color:var(--signal); }
   .admin-body{ flex:1; overflow-y:auto; padding:14px 16px 30px; }
   .admin-empty{ text-align:center; color:var(--muted); font-size:12.5px; padding:30px 10px; }
+  .admin-broadcast-box{
+    background:linear-gradient(135deg, rgba(140,124,255,0.1), rgba(44,241,176,0.06));
+    border:1px solid var(--line); border-radius:14px; padding:14px; margin-bottom:16px;
+  }
 
   .admin-user-row{
     display:flex; align-items:center; gap:10px; padding:10px 8px; border-radius:10px; margin-bottom:4px;
@@ -1916,6 +1933,19 @@
     <div class="admin-tab" data-admintab="complaints">📢 Khiếu nại</div>
   </div>
   <div class="admin-body">
+    <div class="admin-broadcast-box" id="adminBroadcastBox">
+      <div style="font-size:12.5px; font-weight:700; color:var(--cloud); margin-bottom:8px;">📢 Gửi cho TẤT CẢ người chơi</div>
+      <div style="display:flex; gap:6px; margin-bottom:8px;">
+        <select id="broadcastMode" style="flex:1; padding:9px 8px; border-radius:8px; border:1px solid var(--line); background:var(--panel-2); color:var(--cloud); font-size:12px; font-family:inherit;">
+          <option value="add">Cộng thêm coin</option>
+          <option value="set">Đặt lại đúng bằng</option>
+        </select>
+        <input id="broadcastAmount" type="number" placeholder="Số coin" style="width:100px; padding:9px 10px; border-radius:8px; border:1px solid var(--line); background:var(--panel-2); color:var(--cloud); font-size:12px; font-family:inherit;">
+      </div>
+      <textarea id="broadcastMessage" rows="2" placeholder="Nội dung thông báo gửi kèm (để trống nếu chỉ chỉnh coin)..."
+        style="width:100%; padding:9px 10px; border-radius:8px; border:1px solid var(--line); background:var(--panel-2); color:var(--cloud); font-size:12px; font-family:inherit; resize:vertical; margin-bottom:8px;"></textarea>
+      <button class="btn btn-primary" id="broadcastSubmitBtn" style="width:100%; padding:10px;">Gửi cho tất cả</button>
+    </div>
     <div id="adminUsersPanel"><div class="admin-empty">Đang tải...</div></div>
     <div id="adminChatsPanel" style="display:none;"><div class="admin-empty">Đang tải...</div></div>
     <div id="adminGamesPanel" style="display:none;"><div class="admin-empty">Đang tải...</div></div>
@@ -1962,6 +1992,52 @@
       <button class="btn btn-ghost" id="complaintCancelBtn" style="flex:1;">Hủy</button>
       <button class="btn btn-primary" id="complaintSubmitBtn" style="flex:1;">Gửi khiếu nại</button>
     </div>
+  </div>
+</div>
+
+<div id="gardenView">
+  <div class="load-gate" id="gardenLoadGate">
+    <div class="load-mark"></div>
+    <div class="load-text">Đang tải Vườn Cây 3D...</div>
+  </div>
+
+  <div class="hud-top">
+    <div class="back-chip" id="gardenBackChip">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </div>
+    <div class="title-chip">🌱 Vườn Cây 3D</div>
+  </div>
+
+  <div class="stat-bar" id="gardenStatBar">
+    <div class="stat-chip"><span class="stat-ic">🪙</span><span id="gardenCoins">0</span></div>
+    <div class="stat-chip"><span class="stat-ic">🌾</span><span id="gardenHarvests">0</span></div>
+    <div class="stat-chip" id="gardenShopBtn"><span class="stat-ic">🛒</span>Hạt giống</div>
+  </div>
+
+  <div class="garden-seed-chip" id="gardenSeedChip">
+    <span class="stat-ic">🌱</span> Đang cầm: <span id="gardenEquippedSeedName">Cà Rốt</span>
+  </div>
+
+  <div class="look-layer" id="gardenLookLayer"></div>
+
+  <div class="joystick-base" id="gardenJoystickBase">
+    <div class="joystick-knob" id="gardenJoystickKnob"></div>
+  </div>
+
+  <div class="mini-toast" id="gardenToast"></div>
+
+  <div class="backpack-overlay" id="gardenShopOverlay"></div>
+  <div class="backpack-panel lift-shop-panel" id="gardenShopPanel">
+    <div class="backpack-head">
+      <h3>🛒 Cửa hàng hạt giống</h3>
+      <div class="backpack-close" id="gardenShopClose">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+    </div>
+    <div class="egg-shop-row">
+      <div class="egg-shop-stat"><span class="stat-ic">🪙</span> <span id="gardenShopCoins">0</span> coin</div>
+    </div>
+    <div class="lift-shop-grid" id="gardenShopGrid"></div>
   </div>
 </div>
 
@@ -2456,6 +2532,7 @@
       document.getElementById('adminChatsPanel').style.display = which === 'chats' ? '' : 'none';
       document.getElementById('adminGamesPanel').style.display = which === 'games' ? '' : 'none';
       document.getElementById('adminComplaintsPanel').style.display = which === 'complaints' ? '' : 'none';
+      document.getElementById('adminBroadcastBox').style.display = which === 'users' ? '' : 'none';
       if(which === 'users') loadAdminUsers();
       if(which === 'chats') loadAdminChats();
       if(which === 'games') loadAdminGames();
@@ -2499,7 +2576,7 @@
   }
   async function adminEditCoins(targetUsername, currentCoins){
     const input = prompt(`Số GTR-Coin mới cho "${targetUsername}" (hiện tại: ${currentCoins}):`, currentCoins);
-    if(input === null) return; // bấm Hủy
+    if(input === null) return;
     const coins = parseInt(input, 10);
     if(isNaN(coins) || coins < 0){ showRewardToast('⚠️ Số coin không hợp lệ.'); return; }
     const message = prompt('Nhắn gửi kèm theo cho người chơi này (để trống nếu không cần):', '') || '';
@@ -2508,6 +2585,27 @@
     showRewardToast(`💰 Đã cập nhật ${targetUsername} thành ${coins.toLocaleString('en-US')} coin${message.trim() ? ' + gửi thông báo' : ''}.`);
     loadAdminUsers();
   }
+  document.getElementById('broadcastSubmitBtn').addEventListener('click', async ()=>{
+    const mode = document.getElementById('broadcastMode').value;
+    const amountRaw = document.getElementById('broadcastAmount').value;
+    const message = document.getElementById('broadcastMessage').value.trim();
+    const amount = parseInt(amountRaw, 10);
+    if(amountRaw === '' || isNaN(amount)){ showRewardToast('⚠️ Nhập số coin hợp lệ.'); return; }
+    const modeLabel = mode === 'set' ? `đặt lại đúng bằng ${amount.toLocaleString('en-US')}` : `cộng thêm ${amount.toLocaleString('en-US')}`;
+    if(!confirm(`Áp dụng cho TẤT CẢ người chơi: ${modeLabel} coin${message ? ', kèm thông báo' : ''}. Tiếp tục?`)) return;
+    const btn = document.getElementById('broadcastSubmitBtn');
+    btn.disabled = true; btn.textContent = 'Đang gửi...';
+    try{
+      const result = await adminApi('/api/admin/broadcast', { mode, amount, message: message || null });
+      if(!result.ok){ showRewardToast(`❌ ${result.error || 'Không thực hiện được.'}`); return; }
+      showRewardToast(`📢 Đã áp dụng cho ${result.affected} người chơi.`);
+      document.getElementById('broadcastAmount').value = '';
+      document.getElementById('broadcastMessage').value = '';
+      loadAdminUsers();
+    } finally {
+      btn.disabled = false; btn.textContent = 'Gửi cho tất cả';
+    }
+  });
   function formatRelativeTime(ts){
     const diffMin = Math.floor((Date.now() - ts) / 60000);
     if(diffMin < 2) return 'vừa xong';
@@ -2697,12 +2795,33 @@
     allLibraryGames = [
       { id:null, name:'Game Tốc Độ', creator:'GTR', isDefault:true, kind:'speed', createdAt:0 },
       { id:'lifting', name:'Nâng Tạ', creator:'GTR', isDefault:true, kind:'lifting', createdAt:0 },
+      { id:'garden', name:'Vườn Cây 3D', creator:'GTR', isDefault:true, kind:'garden', createdAt:0 },
       ...publishedList.map(g => ({
         id:g.id, name:g.name, creator:g.creator, isDefault:false, kind:'speed', createdAt:g.createdAt,
         description:g.description||'', difficulty:g.difficulty||'medium', thumbnailData:g.thumbnailData||null
       }))
     ];
     renderGameLibrary(document.getElementById('gameLibrarySearch').value);
+  }
+  function gardenGameArt(){
+    return `<svg viewBox="0 0 200 200" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="gardenSkyG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#6fd6c9"/><stop offset="100%" stop-color="#bfe08a"/>
+        </linearGradient>
+      </defs>
+      <rect width="200" height="200" fill="url(#gardenSkyG)"/>
+      <circle cx="160" cy="34" r="16" fill="#FFE9A8" opacity="0.9"/>
+      <rect x="0" y="120" width="200" height="80" fill="#5a3a24"/>
+      <g opacity="0.35" stroke="#3d2818" stroke-width="2">
+        <line x1="0" y1="140" x2="200" y2="140"/><line x1="0" y1="160" x2="200" y2="160"/><line x1="0" y1="180" x2="200" y2="180"/>
+        <line x1="50" y1="120" x2="50" y2="200"/><line x1="100" y1="120" x2="100" y2="200"/><line x1="150" y1="120" x2="150" y2="200"/>
+      </g>
+      <g transform="translate(45,128)"><ellipse cx="0" cy="14" rx="10" ry="4" fill="#3d2818"/><path d="M0 14 Q-4 -6 0 -20 Q4 -6 0 14 Z" fill="#4FAE6B"/><circle cx="-3" cy="-14" r="6" fill="#4FAE6B"/><circle cx="4" cy="-10" r="6" fill="#4FAE6B"/></g>
+      <g transform="translate(100,124)"><ellipse cx="0" cy="18" rx="12" ry="4" fill="#3d2818"/><circle cx="0" cy="-6" r="16" fill="#E15A5A"/><rect x="-2" y="-24" width="4" height="10" fill="#4FAE6B"/></g>
+      <g transform="translate(155,130)"><ellipse cx="0" cy="12" rx="9" ry="4" fill="#3d2818"/><path d="M0 12 Q-5 -4 0 -16 Q5 -4 0 12 Z" fill="#3d8f52"/></g>
+      <text x="20" y="30" font-family="Arial" font-size="26">🌱</text>
+    </svg>`;
   }
   // Hand-drawn SVG art for the two first-party games (no external images — keeps things
   // crisp, on-brand, and copyright-free, same approach as the rest of GTR's UI).
@@ -2781,6 +2900,10 @@
         art = liftingGameArt();
         openCall = `openLiftingGame(); return false;`;
         tag = 'Nâng tạ';
+      } else if(g.kind === 'garden'){
+        art = gardenGameArt();
+        openCall = `openGardenGame(); return false;`;
+        tag = '3D · Trồng cây';
       } else {
         art = g.thumbnailData ? `<img src="${g.thumbnailData}" alt="${safeName}" style="width:100%; height:100%; object-fit:cover;">` : speedGameArt();
         const gameIdAttr = g.id === null ? 'null' : `'${g.id}'`;
@@ -3826,12 +3949,12 @@
   }
   document.getElementById('draftBtn').addEventListener('click', async ()=>{
     if(!currentUsername){ showToast('Bạn cần đăng nhập trước khi lưu nháp'); return; }
-    const ok = await storageSet(`gtr_draft:${currentUsername}`, serializeLevel(), false);
+    const ok = await serverSet(`gtr_draft:${currentUsername}`, serializeLevel());
     showToast(ok ? '💾 Đã lưu bản nháp trên tài khoản của bạn' : 'Không thể lưu nháp lúc này, hãy thử lại');
   });
   (async function loadDraftOnOpen(){
     if(!currentUsername) return;
-    const level = await storageGet(`gtr_draft:${currentUsername}`, false);
+    const level = await serverGet(`gtr_draft:${currentUsername}`);
     if(level && (level.objects||[]).length){
       rebuildFromLevel(level);
       showToast('📂 Đã khôi phục bản nháp gần nhất của bạn');
@@ -4928,9 +5051,8 @@
         const remaining = Math.max(0, TIME_LIMIT_SEC - elapsed);
         statTimeEl.textContent = formatRaceTime(remaining);
       }
-      const effectiveKm = Math.round((customTrackEndZ/TRACK_LEN) * TOTAL_DISPLAY_KM * 10) / 10;
-      const kmProgress = Math.max(0, Math.min(1, player.position.z/customTrackEndZ)) * effectiveKm;
-      statDistanceEl.textContent = `${kmProgress.toFixed(1)}/${effectiveKm}km`;
+      const kmProgress = Math.max(0, Math.min(1, player.position.z/TRACK_LEN)) * TOTAL_DISPLAY_KM;
+      statDistanceEl.textContent = `${kmProgress.toFixed(1)}/${TOTAL_DISPLAY_KM}km`;
     }
     if(raceStartTime !== null && (nowMs-raceStartTime)/1000 >= TIME_LIMIT_SEC){ failRunTimeout(); }
 
@@ -5032,7 +5154,7 @@
     crossZone(zoneIdx);
 
     // finish line -> complete the run
-    if(player.position.z >= customTrackEndZ - 2){
+    if(player.position.z >= TRACK_LEN - 2){
       completeRun();
     }
 
@@ -5146,7 +5268,6 @@
   const studioTraps = [];
   const studioFinishPoints = [];
   let customFinishReached = false;
-  let customTrackEndZ = TRACK_LEN; // rút ngắn lại nếu là game cộng đồng tự tạo, không dùng hết cả 100km mặc định
 
   async function loadPublishedGame(){
     const isPlaytest = (loadedGameId === '__playtest__');
@@ -5171,7 +5292,6 @@
     }
 
     let spawnFound = false;
-    let maxObjZ = 0;
     (game.objects || []).forEach(o=>{
       const mesh = buildPublishedBlock(o.type, o.color);
       if(!mesh) return;
@@ -5196,7 +5316,6 @@
       const worldZ = 8 + (o.gz/15) * (TRACK_LEN - 16);
       mesh.position.x = worldX; mesh.position.z = worldZ;
       scene.add(mesh);
-      maxObjZ = Math.max(maxObjZ, worldZ);
 
       if(o.type === 'cube' || o.type === 'sphere'){
         obstacles.push({ mesh, radius: 1.05, blockHeight: 1.6, msg:'💥 Va vào chướng ngại vật!' });
@@ -5210,13 +5329,6 @@
         studioFinishPoints.push({ x: worldX, z: worldZ });
       }
     });
-
-    // Game cộng đồng tự tạo không nên buộc người chơi chạy hết cả 100km mặc định —
-    // nếu người tạo không tự đặt vạch đích riêng, tự tính vạch đích ngay sau khối cuối
-    // cùng họ đã xây, để trải nghiệm đúng với những gì họ thực sự tạo ra.
-    if(!isPlaytest && loadedGameId && studioFinishPoints.length === 0 && maxObjZ > 0){
-      customTrackEndZ = Math.min(TRACK_LEN, maxObjZ + 14);
-    }
   }
 
   // ===================== Load saved outfit (best-effort, keeps appearance consistent) =====================
@@ -5900,6 +6012,322 @@
         tries++;
         if(typeof THREE !== 'undefined'){ clearInterval(waitTimer); boot(); }
         else if(tries > 50){ clearInterval(waitTimer); liftToast('❌ Không tải được đồ họa 3D. Kiểm tra mạng và thử lại.'); }
+      }, 200);
+    } else boot();
+  }
+
+  // ========== Vườn Cây 3D: trồng cây, chăm sóc, thu hoạch ==========
+  const SEEDS = [
+    { id:'s1', name:'Cà Rốt',   emoji:'🥕', color:0xFF8C42, growSec:8,  reward:15,  price:0    },
+    { id:'s2', name:'Cà Chua',  emoji:'🍅', color:0xE15A5A, growSec:15, reward:35,  price:100  },
+    { id:'s3', name:'Dưa Hấu',  emoji:'🍉', color:0x4FAE6B, growSec:25, reward:80,  price:400  },
+    { id:'s4', name:'Cây Vàng', emoji:'✨', color:0xFFD166, growSec:40, reward:250, price:1500 },
+  ];
+  let gardenState = { coins:0, harvests:0, ownedSeeds:['s1'], equippedSeed:'s1', tiles:{} };
+  let gardenInitialized = false;
+
+  async function loadGardenState(){
+    const saved = await serverGet(`gtr_garden:${currentUsername}`);
+    if(saved) gardenState = Object.assign({ coins:0, harvests:0, ownedSeeds:['s1'], equippedSeed:'s1', tiles:{} }, saved);
+    document.getElementById('gardenCoins').textContent = gardenState.coins.toLocaleString('en-US');
+    document.getElementById('gardenHarvests').textContent = gardenState.harvests;
+    const eq = SEEDS.find(s=>s.id===gardenState.equippedSeed) || SEEDS[0];
+    document.getElementById('gardenEquippedSeedName').textContent = eq.name;
+  }
+  function saveGardenState(){ serverSet(`gtr_garden:${currentUsername}`, gardenState); }
+
+  function gardenToast(msg){
+    const t = document.getElementById('gardenToast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(window._gardenToastTimer);
+    window._gardenToastTimer = setTimeout(()=>t.classList.remove('show'), 2000);
+  }
+
+  function renderGardenShop(){
+    document.getElementById('gardenShopCoins').textContent = gardenState.coins.toLocaleString('en-US');
+    const grid = document.getElementById('gardenShopGrid');
+    grid.innerHTML = SEEDS.map(s=>{
+      const owned = gardenState.ownedSeeds.includes(s.id);
+      const equipped = gardenState.equippedSeed === s.id;
+      return `
+      <div class="lift-shop-item ${owned?'owned':''} ${equipped?'equipped':''}" data-id="${s.id}">
+        <div class="lift-shop-emoji">${s.emoji}</div>
+        <div class="lift-shop-name">${s.name}</div>
+        <div class="lift-shop-desc">${s.growSec}s · +${s.reward} 🪙 Xu Vườn/thu hoạch</div>
+        <div class="lift-shop-price ${owned?'owned-tag':''}">${owned ? (equipped?'Đang cầm':'Đã có — bấm để cầm') : '🪙 '+s.price.toLocaleString('en-US')}</div>
+      </div>`;
+    }).join('');
+    grid.querySelectorAll('.lift-shop-item').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const id = el.dataset.id;
+        const s = SEEDS.find(x=>x.id===id);
+        const owned = gardenState.ownedSeeds.includes(id);
+        if(owned){
+          gardenState.equippedSeed = id;
+          saveGardenState();
+          document.getElementById('gardenEquippedSeedName').textContent = s.name;
+          renderGardenShop();
+          return;
+        }
+        if(gardenState.coins < s.price){ gardenToast(`Cần thêm ${(s.price-gardenState.coins).toLocaleString('en-US')} 🪙 Xu Vườn nữa (thu hoạch để kiếm thêm).`); return; }
+        gardenState.coins -= s.price;
+        gardenState.ownedSeeds.push(id);
+        gardenState.equippedSeed = id;
+        saveGardenState();
+        document.getElementById('gardenCoins').textContent = gardenState.coins.toLocaleString('en-US');
+        document.getElementById('gardenEquippedSeedName').textContent = s.name;
+        renderGardenShop();
+        gardenToast(`Đã mua hạt ${s.name}!`);
+      });
+    });
+  }
+  document.getElementById('gardenShopBtn').addEventListener('click', ()=>{
+    renderGardenShop();
+    document.getElementById('gardenShopOverlay').classList.add('open');
+    document.getElementById('gardenShopPanel').classList.add('open');
+  });
+  function closeGardenShop(){
+    document.getElementById('gardenShopOverlay').classList.remove('open');
+    document.getElementById('gardenShopPanel').classList.remove('open');
+  }
+  document.getElementById('gardenShopOverlay').addEventListener('click', closeGardenShop);
+  document.getElementById('gardenShopClose').addEventListener('click', closeGardenShop);
+  document.getElementById('gardenBackChip').addEventListener('click', ()=>closeEmbeddedView('gardenView'));
+
+  function initGardenScene(playerOutfit){
+    const container = document.getElementById('gardenView');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x8fd0c9);
+    scene.fog = new THREE.Fog(0x8fd0c9, 20, 50);
+
+    const camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 200);
+    const renderer = new THREE.WebGLRenderer({ antialias:true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    container.insertBefore(renderer.domElement, container.firstChild);
+
+    window.addEventListener('resize', ()=>{
+      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+    const sun = new THREE.DirectionalLight(0xfff2d6, 0.9);
+    sun.position.set(12,20,8);
+    scene.add(sun);
+
+    const groundGeo = new THREE.PlaneGeometry(40,40);
+    const groundMat = new THREE.MeshStandardMaterial({ color:0x6bbf6b, roughness:0.95 });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI/2;
+    scene.add(ground);
+
+    // 6x6 garden plot grid of soil tiles
+    const GRID_N = 6, TILE_GAP = 2.1;
+    const soilGeo = new THREE.BoxGeometry(1.7, 0.2, 1.7);
+    const soilMat = new THREE.MeshStandardMaterial({ color:0x6b4a30, roughness:0.9 });
+    const tiles = [];
+    const offset = (GRID_N-1)*TILE_GAP/2;
+    for(let ix=0; ix<GRID_N; ix++){
+      for(let iz=0; iz<GRID_N; iz++){
+        const x = ix*TILE_GAP - offset, z = iz*TILE_GAP - offset + 6;
+        const soil = new THREE.Mesh(soilGeo, soilMat);
+        soil.position.set(x, 0.1, z);
+        scene.add(soil);
+        const key = `${ix}_${iz}`;
+        const saved = gardenState.tiles[key];
+        tiles.push({ key, x, z, plantMesh:null, seedId: saved ? saved.seedId : null, plantedAt: saved ? saved.plantedAt : null, notifiedReady:false });
+      }
+    }
+
+    function plantVisual(seed){
+      const g = new THREE.Group();
+      const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.07,0.5,6), new THREE.MeshStandardMaterial({color:0x3d8f52}));
+      stem.position.y = 0.25;
+      const fruit = new THREE.Mesh(new THREE.SphereGeometry(0.28,10,8), new THREE.MeshStandardMaterial({color:seed.color, roughness:0.5}));
+      fruit.position.y = 0.55;
+      g.add(stem, fruit);
+      g.userData.fruit = fruit;
+      g.scale.setScalar(0.05);
+      return g;
+    }
+
+    tiles.forEach(t=>{
+      if(t.seedId){
+        const seed = SEEDS.find(s=>s.id===t.seedId);
+        const mesh = plantVisual(seed);
+        mesh.position.set(t.x, 0.2, t.z);
+        scene.add(mesh);
+        t.plantMesh = mesh;
+      }
+    });
+
+    // ---- nhân vật chuẩn GTR — dùng chung 1 hàm dựng nhân vật với mọi game khác, đúng màu trang phục thật ----
+    const outfit = playerOutfit || { head:'#F2E82E', torso:'#29D3EA', limb:'#2ECC55' };
+    const builtChar = buildGtrCharacter({ headColor: outfit.head, torsoColor: outfit.torso, limbColor: outfit.limb });
+    const player = builtChar.group;
+    player.position.set(0,0,0);
+    scene.add(player);
+
+    // ---- joystick + orbit camera (same feel as the other GTR games) ----
+    let joyX=0, joyY=0, joyPointerId=null;
+    const joyBase = document.getElementById('gardenJoystickBase');
+    const joyKnob = document.getElementById('gardenJoystickKnob');
+    const JOY_R = 60;
+    function joyStart(e){ if(joyPointerId!==null) return; joyPointerId=e.pointerId; joyBase.setPointerCapture(e.pointerId); }
+    function joyMove(e){
+      if(e.pointerId!==joyPointerId) return;
+      const r = joyBase.getBoundingClientRect();
+      const cx=r.left+r.width/2, cy=r.top+r.height/2;
+      let dx=e.clientX-cx, dy=e.clientY-cy;
+      const d=Math.min(JOY_R, Math.sqrt(dx*dx+dy*dy));
+      const ang=Math.atan2(dy,dx);
+      dx=Math.cos(ang)*d; dy=Math.sin(ang)*d;
+      joyKnob.style.transform=`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+      joyX=dx/JOY_R; joyY=dy/JOY_R;
+    }
+    function joyEnd(e){ if(e.pointerId!==joyPointerId) return; joyPointerId=null; joyX=0; joyY=0; joyKnob.style.transform='translate(-50%,-50%)'; }
+    joyBase.addEventListener('pointerdown', joyStart);
+    window.addEventListener('pointermove', joyMove);
+    window.addEventListener('pointerup', joyEnd);
+    window.addEventListener('pointercancel', joyEnd);
+
+    let camYaw = Math.PI, camPitch = 0.6, camDist = 10;
+    const camMinDist=5, camMaxDist=18;
+    const lookLayer = document.getElementById('gardenLookLayer');
+    const lookPointers = new Map();
+    let pinchStartDist=null, pinchStartCamDist=camDist;
+    function pDist(){ const p=[...lookPointers.values()]; if(p.length<2) return null; return Math.hypot(p[0].x-p[1].x, p[0].y-p[1].y); }
+    lookLayer.addEventListener('pointerdown', (e)=>{
+      lookLayer.setPointerCapture(e.pointerId);
+      lookPointers.set(e.pointerId, {x:e.clientX,y:e.clientY});
+      if(lookPointers.size===2){ pinchStartDist=pDist(); pinchStartCamDist=camDist; }
+    });
+    window.addEventListener('pointermove', (e)=>{
+      if(!lookPointers.has(e.pointerId)) return;
+      const prev = lookPointers.get(e.pointerId);
+      const cur = {x:e.clientX,y:e.clientY};
+      lookPointers.set(e.pointerId, cur);
+      if(lookPointers.size>=2){
+        const d=pDist();
+        if(d && pinchStartDist) camDist = Math.max(camMinDist, Math.min(camMaxDist, pinchStartCamDist*(pinchStartDist/d)));
+        return;
+      }
+      camYaw -= (cur.x-prev.x)*0.006;
+      camPitch = Math.max(0.15, Math.min(1.35, camPitch + (cur.y-prev.y)*0.004));
+    });
+    window.addEventListener('pointerup', (e)=>{ lookPointers.delete(e.pointerId); if(lookPointers.size<2) pinchStartDist=null; });
+    lookLayer.addEventListener('wheel', (e)=>{ e.preventDefault(); camDist=Math.max(camMinDist, Math.min(camMaxDist, camDist+e.deltaY*0.01)); }, {passive:false});
+
+    let facingAngle = 0;
+    const speed = 0.13;
+    const clock = new THREE.Clock();
+    let lastSave = 0;
+
+    function animate(){
+      requestAnimationFrame(animate);
+      const dt = Math.min(clock.getDelta(), 0.05);
+
+      const mag = Math.min(1, Math.hypot(joyX,joyY));
+      if(mag > 0.08){
+        const fwdX=-Math.sin(camYaw), fwdZ=-Math.cos(camYaw);
+        const rightX=Math.cos(camYaw), rightZ=-Math.sin(camYaw);
+        const moveX = rightX*joyX - fwdX*joyY, moveZ = rightZ*joyX - fwdZ*joyY;
+        const len = Math.hypot(moveX,moveZ)||1;
+        const nx=moveX/len, nz=moveZ/len;
+        player.position.x += nx*speed*mag*(dt*60);
+        player.position.z += nz*speed*mag*(dt*60);
+        player.position.x = Math.max(-13, Math.min(13, player.position.x));
+        player.position.z = Math.max(-8, Math.min(20, player.position.z));
+        const target = Math.atan2(nx,nz);
+        let diff = target - facingAngle;
+        while(diff>Math.PI) diff-=Math.PI*2; while(diff<-Math.PI) diff+=Math.PI*2;
+        facingAngle += diff*0.25;
+        player.rotation.y = facingAngle;
+      }
+
+      // tile growth + walk-to-plant/harvest
+      const now = Date.now();
+      tiles.forEach(t=>{
+        if(t.seedId && t.plantedAt){
+          const seed = SEEDS.find(s=>s.id===t.seedId);
+          const progress = Math.min(1, (now-t.plantedAt)/1000/seed.growSec);
+          if(t.plantMesh){
+            t.plantMesh.scale.setScalar(0.05 + progress*0.95);
+            if(progress>=1) t.plantMesh.position.y = 0.2 + Math.sin(now*0.003)*0.05;
+          }
+        }
+        const dx=t.x-player.position.x, dz=t.z-player.position.z;
+        if(Math.hypot(dx,dz) < 1.3){
+          if(!t.seedId){
+            // plant
+            const seed = SEEDS.find(s=>s.id===gardenState.equippedSeed);
+            t.seedId = seed.id;
+            t.plantedAt = now;
+            const mesh = plantVisual(seed);
+            mesh.position.set(t.x, 0.2, t.z);
+            scene.add(mesh);
+            t.plantMesh = mesh;
+            gardenState.tiles[t.key] = { seedId:t.seedId, plantedAt:t.plantedAt };
+            saveGardenState();
+          } else {
+            const seed = SEEDS.find(s=>s.id===t.seedId);
+            const progress = Math.min(1, (now-t.plantedAt)/1000/seed.growSec);
+            if(progress>=1){
+              // harvest
+              gardenState.coins += seed.reward;
+              gardenState.harvests += 1;
+              document.getElementById('gardenCoins').textContent = gardenState.coins.toLocaleString('en-US');
+              document.getElementById('gardenHarvests').textContent = gardenState.harvests;
+              gardenToast(`🌾 Thu hoạch ${seed.name}! +${seed.reward} 🪙 Xu Vườn`);
+              scene.remove(t.plantMesh);
+              t.plantMesh = null; t.seedId = null; t.plantedAt = null;
+              delete gardenState.tiles[t.key];
+              saveGardenState();
+            }
+          }
+        }
+      });
+
+      const camX = player.position.x + camDist*Math.sin(camYaw)*Math.cos(camPitch);
+      const camY = player.position.y + 1.6 + camDist*Math.sin(camPitch);
+      const camZ = player.position.z + camDist*Math.cos(camYaw)*Math.cos(camPitch);
+      camera.position.set(camX, camY, camZ);
+      camera.lookAt(player.position.x, player.position.y+1.2, player.position.z);
+
+      renderer.render(scene, camera);
+    }
+    camera.position.set(0, 8, 16);
+    camera.lookAt(0,1,6);
+    animate();
+    setTimeout(()=>{ document.getElementById('gardenLoadGate').classList.add('hidden'); }, 500);
+  }
+
+  function openGardenGame(){
+    document.getElementById('gardenView').classList.add('open');
+    if(gardenInitialized) return;
+    gardenInitialized = true;
+    function boot(){
+      Promise.all([
+        loadGardenState(),
+        serverGet(`gtr_outfit:${currentUsername}`)
+      ]).then(([_, outfit])=>{
+        try{
+          initGardenScene(outfit);
+        }catch(err){
+          console.error('Lỗi khởi tạo Vườn Cây 3D:', err);
+          document.getElementById('gardenLoadGate').classList.add('hidden');
+          gardenToast('❌ Có lỗi khi tải game: ' + err.message);
+        }
+      });
+    }
+    if(typeof THREE === 'undefined'){
+      let tries = 0;
+      const waitTimer = setInterval(()=>{
+        tries++;
+        if(typeof THREE !== 'undefined'){ clearInterval(waitTimer); boot(); }
+        else if(tries > 50){ clearInterval(waitTimer); document.getElementById('gardenLoadGate').classList.add('hidden'); gardenToast('❌ Không tải được đồ họa 3D. Kiểm tra mạng và thử lại.'); }
       }, 200);
     } else boot();
   }
