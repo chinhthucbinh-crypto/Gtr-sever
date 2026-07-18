@@ -320,6 +320,51 @@ app.post('/api/admin/set-coins', async (req, res) => {
   }
 });
 
+// Chỉnh GTR-Coin + gửi thông báo cho TOÀN BỘ người chơi cùng lúc.
+// body: { adminUsername, adminPassword, mode: 'set'|'add', amount, message }
+// mode 'set' = đặt lại đúng bằng "amount" cho mọi người; mode 'add' = cộng/trừ thêm "amount" vào số hiện có.
+app.post('/api/admin/broadcast', async (req, res) => {
+  try{
+    const { adminUsername, adminPassword, mode, message } = req.body || {};
+    const amount = parseInt(req.body?.amount, 10) || 0;
+    if(!(await verifyAdmin(adminUsername, adminPassword))){
+      return res.status(403).json({ ok:false, error:'Không có quyền quản trị.' });
+    }
+    if(mode !== 'set' && mode !== 'add'){
+      return res.status(400).json({ ok:false, error:'Thiếu kiểu áp dụng (set/add).' });
+    }
+
+    const usersRes = await pool.query('SELECT username, coins FROM accounts');
+    const users = usersRes.rows;
+
+    for(const u of users){
+      const newCoins = Math.max(0, mode === 'set' ? amount : (u.coins + amount));
+      await pool.query('UPDATE accounts SET coins=$1 WHERE username=$2', [newCoins, u.username]);
+
+      if(message){
+        const key = `gtr_account:${u.username}`;
+        const r = await pool.query('SELECT value FROM kv_store WHERE key=$1', [key]);
+        const account = r.rows[0] ? r.rows[0].value : { coins: newCoins, lastClaim: null, notifications: [] };
+        account.notifications = account.notifications || [];
+        account.notifications.unshift({
+          id: Date.now() + Math.floor(Math.random()*1000),
+          text: `📢 Thông báo từ GTR: ${message}`,
+          time: new Date().toLocaleTimeString('vi-VN', { hour:'2-digit', minute:'2-digit', timeZone:'Asia/Ho_Chi_Minh' }),
+          read: false
+        });
+        await pool.query(
+          'INSERT INTO kv_store (key, value) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET value=$2',
+          [key, JSON.stringify(account)]
+        );
+      }
+    }
+    res.json({ ok:true, affected: users.length });
+  }catch(e){
+    console.error('admin/broadcast error:', e.message);
+    res.status(500).json({ ok:false, error:'Lỗi server.' });
+  }
+});
+
 // Danh sách các cuộc trò chuyện đang có (dựa trên các key gtr_chat:* trong kho chung) — để kiểm duyệt.
 app.post('/api/admin/chats', async (req, res) => {
   try{
