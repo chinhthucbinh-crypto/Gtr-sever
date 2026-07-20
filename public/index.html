@@ -2011,8 +2011,15 @@
   <div class="stat-bar" id="gardenStatBar">
     <div class="stat-chip"><span class="stat-ic">🪙</span><span id="gardenCoins">0</span></div>
     <div class="stat-chip"><span class="stat-ic">🌾</span><span id="gardenHarvests">0</span></div>
+    <div class="stat-chip"><span class="stat-ic">🧺</span><span id="gardenBasketCount">0</span></div>
     <div class="stat-chip" id="gardenShopBtn"><span class="stat-ic">🛒</span>Hạt giống</div>
   </div>
+
+  <button id="gardenSellBtn" style="display:none; position:fixed; left:50%; bottom:150px; transform:translateX(-50%); z-index:25;
+    padding:14px 26px; border-radius:16px; border:none; cursor:pointer;
+    background:linear-gradient(135deg, var(--signal), #22c99a); color:#06120D;
+    font-family:'Space Grotesk'; font-weight:800; font-size:15px;
+    box-shadow:0 8px 24px rgba(44,241,176,0.4);">🏪 Bán giỏ hàng</button>
 
   <div class="garden-seed-chip" id="gardenSeedChip">
     <span class="stat-ic">🌱</span> Đang cầm: <span id="gardenEquippedSeedName">Cà Rốt</span>
@@ -6023,18 +6030,25 @@
     { id:'s3', name:'Dưa Hấu',  emoji:'🍉', color:0x4FAE6B, growSec:25, reward:80,  price:400  },
     { id:'s4', name:'Cây Vàng', emoji:'✨', color:0xFFD166, growSec:40, reward:250, price:1500 },
   ];
-  let gardenState = { coins:0, harvests:0, ownedSeeds:['s1'], equippedSeed:'s1', tiles:{} };
+  let gardenState = { coins:0, harvests:0, ownedSeeds:['s1'], equippedSeed:'s1', tiles:{}, basket:{} };
   let gardenInitialized = false;
+  let gardenSocket = null;
 
   async function loadGardenState(){
     const saved = await serverGet(`gtr_garden:${currentUsername}`);
-    if(saved) gardenState = Object.assign({ coins:0, harvests:0, ownedSeeds:['s1'], equippedSeed:'s1', tiles:{} }, saved);
+    if(saved) gardenState = Object.assign({ coins:0, harvests:0, ownedSeeds:['s1'], equippedSeed:'s1', tiles:{}, basket:{} }, saved);
     document.getElementById('gardenCoins').textContent = gardenState.coins.toLocaleString('en-US');
     document.getElementById('gardenHarvests').textContent = gardenState.harvests;
+    updateBasketHUD();
     const eq = SEEDS.find(s=>s.id===gardenState.equippedSeed) || SEEDS[0];
     document.getElementById('gardenEquippedSeedName').textContent = eq.name;
   }
   function saveGardenState(){ serverSet(`gtr_garden:${currentUsername}`, gardenState); }
+  function updateBasketHUD(){
+    const total = Object.values(gardenState.basket || {}).reduce((a,b)=>a+b, 0);
+    const el = document.getElementById('gardenBasketCount');
+    if(el) el.textContent = total;
+  }
 
   function gardenToast(msg){
     const t = document.getElementById('gardenToast');
@@ -6092,7 +6106,10 @@
   }
   document.getElementById('gardenShopOverlay').addEventListener('click', closeGardenShop);
   document.getElementById('gardenShopClose').addEventListener('click', closeGardenShop);
-  document.getElementById('gardenBackChip').addEventListener('click', ()=>closeEmbeddedView('gardenView'));
+  document.getElementById('gardenBackChip').addEventListener('click', ()=>{
+    if(gardenSocket) try{ gardenSocket.disconnect(); }catch(e){}
+    closeEmbeddedView('gardenView');
+  });
 
   function initGardenScene(playerOutfit){
     const container = document.getElementById('gardenView');
@@ -6117,29 +6134,101 @@
     sun.position.set(12,20,8);
     scene.add(sun);
 
-    const groundGeo = new THREE.PlaneGeometry(40,40);
+    // ---- bố cục nhiều khu vườn: mỗi người chơi trong phòng được cấp 1 ô lô đất riêng,
+    // xếp thành lưới quanh khu chợ bán trung tâm ----
+    const PLOT_COLS = 5, PLOT_ROWS = 4; // 20 ô, khớp giới hạn 20 người/phòng
+    const PLOT_SPACING = 16;
+    function plotOffsetForSlot(slot){
+      const s = ((slot % (PLOT_COLS*PLOT_ROWS)) + (PLOT_COLS*PLOT_ROWS)) % (PLOT_COLS*PLOT_ROWS);
+      const col = s % PLOT_COLS, row = Math.floor(s / PLOT_COLS);
+      return {
+        x: (col - (PLOT_COLS-1)/2) * PLOT_SPACING,
+        z: (row - (PLOT_ROWS-1)/2) * PLOT_SPACING + 26 // đẩy ra xa khu chợ trung tâm ở (0,0,0)
+      };
+    }
+    const WORLD_SPAN = Math.max(PLOT_COLS*PLOT_SPACING, PLOT_ROWS*PLOT_SPACING) + 40;
+
+    const groundGeo = new THREE.PlaneGeometry(WORLD_SPAN, WORLD_SPAN);
     const groundMat = new THREE.MeshStandardMaterial({ color:0x6bbf6b, roughness:0.95 });
     const ground = new THREE.Mesh(groundGeo, groundMat);
     ground.rotation.x = -Math.PI/2;
     scene.add(ground);
 
-    // 6x6 garden plot grid of soil tiles
-    const GRID_N = 6, TILE_GAP = 2.1;
-    const soilGeo = new THREE.BoxGeometry(1.7, 0.2, 1.7);
-    const soilMat = new THREE.MeshStandardMaterial({ color:0x6b4a30, roughness:0.9 });
-    const tiles = [];
-    const offset = (GRID_N-1)*TILE_GAP/2;
-    for(let ix=0; ix<GRID_N; ix++){
-      for(let iz=0; iz<GRID_N; iz++){
-        const x = ix*TILE_GAP - offset, z = iz*TILE_GAP - offset + 6;
-        const soil = new THREE.Mesh(soilGeo, soilMat);
-        soil.position.set(x, 0.1, z);
-        scene.add(soil);
-        const key = `${ix}_${iz}`;
-        const saved = gardenState.tiles[key];
-        tiles.push({ key, x, z, plantMesh:null, seedId: saved ? saved.seedId : null, plantedAt: saved ? saved.plantedAt : null, notifiedReady:false });
+    // ---- khu chợ bán 3D — cố định giữa bản đồ, mọi người mang giỏ tới đây để bán ----
+    const sellPointPos = { x: 0, z: 0 };
+    (function buildSellStall(){
+      const g = new THREE.Group();
+      const postMat = new THREE.MeshStandardMaterial({ color:0x8a5a34, roughness:0.9 });
+      [[-1.3,-1.3],[1.3,-1.3],[-1.3,1.3],[1.3,1.3]].forEach(([px,pz])=>{
+        const post = new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.09,2.2,6), postMat);
+        post.position.set(px,1.1,pz);
+        g.add(post);
+      });
+      const roof = new THREE.Mesh(new THREE.ConeGeometry(2.4,1.1,4), new THREE.MeshStandardMaterial({ color:0xE0554A, roughness:0.7 }));
+      roof.position.y = 2.75; roof.rotation.y = Math.PI/4;
+      g.add(roof);
+      const counter = new THREE.Mesh(new THREE.BoxGeometry(2.8,0.9,1.1), new THREE.MeshStandardMaterial({ color:0xC8935A, roughness:0.8 }));
+      counter.position.y = 0.45;
+      g.add(counter);
+      // biển hiệu nổi
+      const c = document.createElement('canvas'); c.width=256; c.height=96;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle='rgba(18,22,31,0.85)'; ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(4,10,248,60,14) : ctx.fillRect(4,10,248,60);
+      ctx.fill();
+      ctx.font='bold 30px Inter, sans-serif'; ctx.fillStyle='#fff'; ctx.textAlign='center';
+      ctx.fillText('🏪 Chợ Bán', 128, 52);
+      const tex = new THREE.CanvasTexture(c);
+      const sign = new THREE.Sprite(new THREE.SpriteMaterial({ map:tex, depthTest:false }));
+      sign.scale.set(2.6,1.0,1); sign.position.set(0,3.6,0);
+      g.add(sign);
+      g.position.set(sellPointPos.x, 0, sellPointPos.z);
+      scene.add(g);
+    })();
+
+    // ---- khung lô đất trang trí cho toàn bộ 20 vị trí (kể cả chưa có ai) — cho cảm giác
+    // "mỗi người 1 khu vườn riêng" ngay cả trước khi biết ai đang ở đâu ----
+    const plotLabels = new Map(); // slot -> sprite (tên chủ khu vườn)
+    function buildPlotFence(offsetX, offsetZ){
+      const fenceMat = new THREE.MeshStandardMaterial({ color:0xB98A55, roughness:0.85 });
+      const R = 6.6;
+      const corners = [[-R,-R],[R,-R],[R,R],[-R,R]];
+      for(let i=0;i<4;i++){
+        const [x1,z1] = corners[i], [x2,z2] = corners[(i+1)%4];
+        const midX=(x1+x2)/2, midZ=(z1+z2)/2;
+        const len = Math.hypot(x2-x1, z2-z1);
+        const rail = new THREE.Mesh(new THREE.BoxGeometry(len,0.35,0.12), fenceMat);
+        rail.position.set(offsetX+midX, 0.3, offsetZ+midZ);
+        rail.rotation.y = Math.atan2(z2-z1, x2-x1);
+        scene.add(rail);
       }
     }
+    function setPlotLabel(slot, offsetX, offsetZ, name){
+      if(plotLabels.has(slot)) { scene.remove(plotLabels.get(slot)); plotLabels.delete(slot); }
+      const c = document.createElement('canvas'); c.width=256; c.height=64;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle='rgba(18,22,31,0.72)'; ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(0,12,256,40,10) : ctx.fillRect(0,12,256,40);
+      ctx.fill();
+      ctx.font='bold 24px Inter, sans-serif'; ctx.fillStyle='#fff'; ctx.textAlign='center';
+      ctx.fillText(`🌱 Vườn của ${name}`, 128, 40);
+      const tex = new THREE.CanvasTexture(c);
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map:tex, depthTest:false }));
+      sprite.scale.set(3.2,0.8,1); sprite.position.set(offsetX, 2.2, offsetZ-6.8);
+      scene.add(sprite);
+      plotLabels.set(slot, sprite);
+    }
+    for(let s=0; s<PLOT_COLS*PLOT_ROWS; s++){
+      const off = plotOffsetForSlot(s);
+      buildPlotFence(off.x, off.z);
+    }
+
+    // ---- lưới ô đất TRỒNG THẬT của chính người chơi — chỉ dựng khi đã biết vị trí (slot) được gán ----
+    const GRID_N = 6, TILE_GAP = 1.7;
+    const soilGeo = new THREE.BoxGeometry(1.4, 0.2, 1.4);
+    const soilMat = new THREE.MeshStandardMaterial({ color:0x6b4a30, roughness:0.9 });
+    let tiles = [];
+    let myPlotOffset = { x:0, z:26 }; // mặc định slot 0, dùng ngay nếu chưa kết nối multiplayer kịp
 
     function plantVisual(seed){
       const g = new THREE.Group();
@@ -6153,22 +6242,155 @@
       return g;
     }
 
-    tiles.forEach(t=>{
-      if(t.seedId){
-        const seed = SEEDS.find(s=>s.id===t.seedId);
-        const mesh = plantVisual(seed);
-        mesh.position.set(t.x, 0.2, t.z);
-        scene.add(mesh);
-        t.plantMesh = mesh;
+    function buildOwnPlot(offsetX, offsetZ){
+      myPlotOffset = { x:offsetX, z:offsetZ };
+      const gridOffset = (GRID_N-1)*TILE_GAP/2;
+      tiles = [];
+      for(let ix=0; ix<GRID_N; ix++){
+        for(let iz=0; iz<GRID_N; iz++){
+          const x = offsetX + ix*TILE_GAP - gridOffset, z = offsetZ + iz*TILE_GAP - gridOffset;
+          const soil = new THREE.Mesh(soilGeo, soilMat);
+          soil.position.set(x, 0.1, z);
+          scene.add(soil);
+          const key = `${ix}_${iz}`;
+          const saved = gardenState.tiles[key];
+          tiles.push({ key, x, z, plantMesh:null, seedId: saved ? saved.seedId : null, plantedAt: saved ? saved.plantedAt : null });
+        }
       }
-    });
+      tiles.forEach(t=>{
+        if(t.seedId){
+          const seed = SEEDS.find(s=>s.id===t.seedId);
+          const mesh = plantVisual(seed);
+          mesh.position.set(t.x, 0.2, t.z);
+          scene.add(mesh);
+          t.plantMesh = mesh;
+        }
+      });
+      player.position.set(offsetX, 0, offsetZ + 8);
+    }
 
     // ---- nhân vật chuẩn GTR — dùng chung 1 hàm dựng nhân vật với mọi game khác, đúng màu trang phục thật ----
     const outfit = playerOutfit || { head:'#F2E82E', torso:'#29D3EA', limb:'#2ECC55' };
     const builtChar = buildGtrCharacter({ headColor: outfit.head, torsoColor: outfit.torso, limbColor: outfit.limb });
     const player = builtChar.group;
-    player.position.set(0,0,0);
+    player.position.set(0,0,26);
     scene.add(player);
+
+    let myPlotBuilt = false;
+    function ensureOwnPlotBuilt(slot){
+      if(myPlotBuilt) return;
+      myPlotBuilt = true;
+      const off = plotOffsetForSlot(slot);
+      buildOwnPlot(off.x, off.z);
+      setPlotLabel(slot, off.x, off.z, currentUsername);
+    }
+
+    document.getElementById('gardenSellBtn').addEventListener('click', ()=>{
+      const items = Object.entries(gardenState.basket || {}).filter(([,n])=>n>0);
+      if(items.length === 0) return;
+      let total = 0;
+      const parts = [];
+      items.forEach(([seedId, count])=>{
+        const seed = SEEDS.find(s=>s.id===seedId);
+        if(!seed) return;
+        const value = seed.reward * count;
+        total += value;
+        parts.push(`${seed.emoji}×${count}`);
+      });
+      gardenState.coins += total;
+      gardenState.basket = {};
+      saveGardenState();
+      document.getElementById('gardenCoins').textContent = gardenState.coins.toLocaleString('en-US');
+      updateBasketHUD();
+      document.getElementById('gardenSellBtn').style.display = 'none';
+      gardenToast(`🏪 Đã bán ${parts.join(' ')} → +${total.toLocaleString('en-US')} 🪙 Xu Vườn!`);
+    });
+
+    // ---- Multiplayer: vào cùng phòng với người chơi khác, mỗi người có khu vườn riêng theo slot được gán ----
+    const remoteGardenPlayers = new Map(); // socketId -> { group, target:{x,y,z} }
+    function colorFromNameGarden(name){
+      let hash = 0;
+      for(let i=0;i<name.length;i++){ hash = (hash*31 + name.charCodeAt(i)) >>> 0; }
+      return new THREE.Color(`hsl(${hash % 360}, 65%, 55%)`).getHex();
+    }
+    function makeNameSpriteGarden(name){
+      const c = document.createElement('canvas'); c.width=256; c.height=64;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle='rgba(11,14,20,0.72)'; ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(0,14,256,36,10) : ctx.fillRect(0,14,256,36);
+      ctx.fill();
+      ctx.font='bold 28px Inter, sans-serif'; ctx.fillStyle='#E8ECF3'; ctx.textAlign='center';
+      ctx.fillText(name.slice(0,16), 128, 40);
+      const tex = new THREE.CanvasTexture(c);
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map:tex, depthTest:false }));
+      sprite.scale.set(1.8,0.45,1);
+      return sprite;
+    }
+    function addRemoteGardenPlayer(id, username, slot){
+      if(remoteGardenPlayers.has(id)) return;
+      const off = plotOffsetForSlot(typeof slot === 'number' ? slot : 0);
+      setPlotLabel(`p_${id}`, off.x, off.z, username);
+      const built = buildGtrCharacter({ headColor:0xF2E82E, torsoColor: colorFromNameGarden(username||'?'), limbColor:0x2ECC55 });
+      const group = built.group;
+      group.position.set(off.x, 0, off.z+8);
+      const nameSprite = makeNameSpriteGarden(username||'?');
+      nameSprite.position.set(0,1.55,0);
+      group.add(nameSprite);
+      scene.add(group);
+      remoteGardenPlayers.set(id, { group, target:{ x:group.position.x, y:0, z:group.position.z } });
+    }
+    function removeRemoteGardenPlayer(id){
+      const rp = remoteGardenPlayers.get(id);
+      if(!rp) return;
+      scene.remove(rp.group);
+      remoteGardenPlayers.delete(id);
+      if(plotLabels.has(`p_${id}`)){ scene.remove(plotLabels.get(`p_${id}`)); plotLabels.delete(`p_${id}`); }
+    }
+    function lerpRemoteGardenPlayers(dt){
+      const t = Math.min(1, dt*10);
+      remoteGardenPlayers.forEach(rp=>{
+        rp.group.position.x += (rp.target.x - rp.group.position.x) * t;
+        rp.group.position.z += (rp.target.z - rp.group.position.z) * t;
+      });
+    }
+    let lastGardenSentPos = { x:null, z:null };
+    let lastGardenSentAt = 0;
+    function maybeBroadcastGardenPosition(){
+      if(!gardenSocket || !gardenSocket.connected) return;
+      const now = performance.now();
+      if(now - lastGardenSentAt < 120) return;
+      const p = player.position;
+      if(lastGardenSentPos.x !== null){
+        const moved = Math.hypot(p.x-lastGardenSentPos.x, p.z-lastGardenSentPos.z);
+        if(moved < 0.01) return;
+      }
+      lastGardenSentAt = now;
+      lastGardenSentPos = { x:p.x, z:p.z };
+      gardenSocket.emit('move', { x:p.x, y:0, z:p.z });
+    }
+    try{
+      if(typeof io === 'function'){
+        gardenSocket = io(API_BASE, { transports:['websocket','polling'] });
+        gardenSocket.on('connect', ()=>{
+          gardenSocket.emit('join_game', { username: currentUsername || 'Khách' });
+        });
+        gardenSocket.on('joined', ({ slotIndex, players }) => {
+          ensureOwnPlotBuilt(slotIndex);
+          (players||[]).forEach(p => addRemoteGardenPlayer(p.id, p.username, p.slotIndex));
+        });
+        gardenSocket.on('player_joined', ({ id, username, slotIndex }) => {
+          addRemoteGardenPlayer(id, username, slotIndex);
+        });
+        gardenSocket.on('player_moved', ({ id, x, z }) => {
+          const rp = remoteGardenPlayers.get(id);
+          if(rp) rp.target = { x, y:0, z };
+        });
+        gardenSocket.on('player_left', ({ id }) => removeRemoteGardenPlayer(id));
+        gardenSocket.on('connect_error', ()=>{});
+      }
+    }catch(e){ /* multiplayer là tính năng cộng thêm — không chặn chơi 1 mình nếu lỗi */ }
+    // dự phòng: nếu sau 1.5s vẫn chưa kết nối được (mạng chặn/offline), tự dựng vườn ở slot 0 để vẫn chơi được
+    setTimeout(()=> ensureOwnPlotBuilt(0), 1500);
 
     // ---- joystick + orbit camera (same feel as the other GTR games) ----
     let joyX=0, joyY=0, joyPointerId=null;
@@ -6238,8 +6460,8 @@
         const nx=moveX/len, nz=moveZ/len;
         player.position.x += nx*speed*mag*(dt*60);
         player.position.z += nz*speed*mag*(dt*60);
-        player.position.x = Math.max(-13, Math.min(13, player.position.x));
-        player.position.z = Math.max(-8, Math.min(20, player.position.z));
+        player.position.x = Math.max(-WORLD_SPAN/2+2, Math.min(WORLD_SPAN/2-2, player.position.x));
+        player.position.z = Math.max(-WORLD_SPAN/2+2, Math.min(WORLD_SPAN/2-2, player.position.z));
         const target = Math.atan2(nx,nz);
         let diff = target - facingAngle;
         while(diff>Math.PI) diff-=Math.PI*2; while(diff<-Math.PI) diff+=Math.PI*2;
@@ -6275,12 +6497,12 @@
             const seed = SEEDS.find(s=>s.id===t.seedId);
             const progress = Math.min(1, (now-t.plantedAt)/1000/seed.growSec);
             if(progress>=1){
-              // harvest
-              gardenState.coins += seed.reward;
+              // harvest → cho vào giỏ, phải mang tới chợ mới đổi được Xu Vườn
+              gardenState.basket[seed.id] = (gardenState.basket[seed.id]||0) + 1;
               gardenState.harvests += 1;
-              document.getElementById('gardenCoins').textContent = gardenState.coins.toLocaleString('en-US');
+              updateBasketHUD();
               document.getElementById('gardenHarvests').textContent = gardenState.harvests;
-              gardenToast(`🌾 Thu hoạch ${seed.name}! +${seed.reward} 🪙 Xu Vườn`);
+              gardenToast(`🧺 Nhặt ${seed.name}! Mang tới chợ để bán.`);
               scene.remove(t.plantMesh);
               t.plantMesh = null; t.seedId = null; t.plantedAt = null;
               delete gardenState.tiles[t.key];
@@ -6289,6 +6511,16 @@
           }
         }
       });
+
+      // gần khu chợ bán? hiện nút bán giỏ hàng
+      const distToStall = Math.hypot(player.position.x-sellPointPos.x, player.position.z-sellPointPos.z);
+      const sellBtn = document.getElementById('gardenSellBtn');
+      const basketTotal = Object.values(gardenState.basket).reduce((a,b)=>a+b,0);
+      if(distToStall < 3.2 && basketTotal > 0){ sellBtn.style.display = ''; }
+      else { sellBtn.style.display = 'none'; }
+
+      lerpRemoteGardenPlayers(dt);
+      maybeBroadcastGardenPosition();
 
       const camX = player.position.x + camDist*Math.sin(camYaw)*Math.cos(camPitch);
       const camY = player.position.y + 1.6 + camDist*Math.sin(camPitch);
