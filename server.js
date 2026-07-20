@@ -484,6 +484,7 @@ class RoomManager {
   constructor(maxPerRoom) {
     this.maxPerRoom = maxPerRoom;
     this.rooms = new Map(); // roomId -> Set(socketId)
+    this.slots = new Map(); // roomId -> Map(socketId -> slotIndex) — dùng để gán khu vườn riêng, không trùng nhau
     this.nextRoomIndex = 1;
   }
 
@@ -502,12 +503,29 @@ class RoomManager {
     this.rooms.get(roomId).add(socketId);
   }
 
+  // Gán số ô (0..maxSlots-1) nhỏ nhất còn trống trong phòng cho người chơi này — dùng làm vị trí khu vườn riêng.
+  assignSlot(roomId, socketId, maxSlots) {
+    if (!this.slots.has(roomId)) this.slots.set(roomId, new Map());
+    const roomSlots = this.slots.get(roomId);
+    const used = new Set(roomSlots.values());
+    let slot = 0;
+    while (used.has(slot) && slot < maxSlots) slot++;
+    roomSlots.set(socketId, slot);
+    return slot;
+  }
+
+  releaseSlot(roomId, socketId) {
+    const roomSlots = this.slots.get(roomId);
+    if (roomSlots) roomSlots.delete(socketId);
+  }
+
   leave(roomId, socketId) {
     const players = this.rooms.get(roomId);
     if (!players) return;
     players.delete(socketId);
+    this.releaseSlot(roomId, socketId);
     // dọn phòng trống để không tốn bộ nhớ / duyệt thừa
-    if (players.size === 0) this.rooms.delete(roomId);
+    if (players.size === 0) { this.rooms.delete(roomId); this.slots.delete(roomId); }
   }
 
   roomSize(roomId) {
@@ -547,8 +565,9 @@ io.on('connection', (socket) => {
     roomId = roomManager.assignRoom();
     roomManager.join(roomId, socket.id);
     socket.join(roomId);
+    const slotIndex = roomManager.assignSlot(roomId, socket.id, MAX_PLAYERS_PER_ROOM);
 
-    playerState.set(socket.id, { username, x: 0, y: 0, z: 0, roomId });
+    playerState.set(socket.id, { username, x: 0, y: 0, z: 0, roomId, slotIndex });
 
     // báo cho chính người này biết họ đã vào phòng nào, cùng ai
     const others = [...roomManager.rooms.get(roomId)]
@@ -557,13 +576,14 @@ io.on('connection', (socket) => {
 
     socket.emit('joined', {
       roomId,
+      slotIndex,
       playerCount: roomManager.roomSize(roomId),
       maxPlayers: MAX_PLAYERS_PER_ROOM,
       players: others
     });
 
     // báo cho những người còn lại trong phòng biết có người mới vào
-    socket.to(roomId).emit('player_joined', { id: socket.id, username });
+    socket.to(roomId).emit('player_joined', { id: socket.id, username, slotIndex });
 
     console.log(`[${roomId}] ${username} vào phòng (${roomManager.roomSize(roomId)}/${MAX_PLAYERS_PER_ROOM})`);
   });
