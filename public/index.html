@@ -1416,6 +1416,9 @@
       <div class="tag">Tài khoản GTR</div>
     </div>
     <div class="logout-item" id="outfitBtn" style="color:var(--signal);">Cửa hàng trang phục</div>
+    <div class="logout-item" id="backupBtn">📥 Tải về (Sao lưu tài khoản)</div>
+    <div class="logout-item" id="restoreBtn">📤 Khôi phục từ file sao lưu</div>
+    <input type="file" id="restoreFileInput" accept="application/json" style="display:none;">
     <div class="logout-item" id="complaintBtn">📢 Gửi khiếu nại</div>
     <div class="logout-item" id="logoutBtn">Đăng xuất</div>
   </div>
@@ -2271,6 +2274,98 @@
   document.getElementById('outfitBtn').addEventListener('click', ()=>{
     avatarDropdown.classList.remove('open');
     openAvatarView();
+  });
+
+  // ========== Tải về (Sao lưu) / Khôi phục tài khoản ==========
+  // Gộp mọi dữ liệu của tài khoản (coin, đồ đã mua, trang phục, pet game đua, sức mạnh
+  // nâng tạ, vườn cây, bạn bè) vào 1 file .json tải về máy — luôn có bản riêng phòng khi
+  // server gặp trục trặc, không phụ thuộc hoàn toàn vào 1 nơi lưu trữ.
+  const BACKUP_VERSION = 1;
+
+  async function gatherBackupData(username){
+    const [accountData, inventoryData, outfitData, speedrunData, liftingData, gardenData, friendsData, draftData] = await Promise.all([
+      serverGet(`gtr_account:${username}`),
+      serverGet(`gtr_inventory:${username}`),
+      serverGet(`gtr_outfit:${username}`),
+      serverGet(`gtr_speedrun:${username}`),
+      serverGet(`gtr_lifting:${username}`),
+      serverGet(`gtr_garden:${username}`),
+      serverGet(`gtr_friends:${username}`),
+      serverGet(`gtr_draft:${username}`),
+    ]);
+    return {
+      gtrBackupVersion: BACKUP_VERSION,
+      username,
+      exportedAt: new Date().toISOString(),
+      account: accountData,
+      inventory: inventoryData,
+      outfit: outfitData,
+      speedrun: speedrunData,
+      lifting: liftingData,
+      garden: gardenData,
+      friends: friendsData,
+      draft: draftData,
+    };
+  }
+
+  document.getElementById('backupBtn').addEventListener('click', async ()=>{
+    avatarDropdown.classList.remove('open');
+    showRewardToast('Đang chuẩn bị file tải về...');
+    const backup = await gatherBackupData(currentUsername);
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type:'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const dateStr = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = `gtr-backup-${currentUsername}-${dateStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 2000);
+    showRewardToast('✅ Đã tải về file sao lưu — giữ file này để không mất tài khoản!');
+  });
+
+  document.getElementById('restoreBtn').addEventListener('click', ()=>{
+    avatarDropdown.classList.remove('open');
+    document.getElementById('restoreFileInput').click();
+  });
+
+  document.getElementById('restoreFileInput').addEventListener('change', async (e)=>{
+    const file = e.target.files[0];
+    e.target.value = '';
+    if(!file) return;
+    let backup;
+    try{
+      const text = await file.text();
+      backup = JSON.parse(text);
+    }catch(err){
+      showRewardToast('❌ File sao lưu không hợp lệ.');
+      return;
+    }
+    if(!backup || typeof backup.gtrBackupVersion !== 'number'){
+      showRewardToast('❌ Đây không phải file sao lưu GTR hợp lệ.');
+      return;
+    }
+    const proceed = confirm(
+      `File này là bản sao lưu của tài khoản "${backup.username}" (xuất lúc ${new Date(backup.exportedAt).toLocaleString('vi-VN')}).\n\n` +
+      `Khôi phục vào tài khoản đang đăng nhập "${currentUsername}"? Dữ liệu hiện tại của "${currentUsername}" sẽ bị GHI ĐÈ.`
+    );
+    if(!proceed) return;
+
+    const tasks = [];
+    if(backup.account)   tasks.push(serverSet(`gtr_account:${currentUsername}`, backup.account));
+    if(backup.inventory) tasks.push(serverSet(`gtr_inventory:${currentUsername}`, backup.inventory));
+    if(backup.outfit)    tasks.push(serverSet(`gtr_outfit:${currentUsername}`, backup.outfit));
+    if(backup.speedrun)  tasks.push(serverSet(`gtr_speedrun:${currentUsername}`, backup.speedrun));
+    if(backup.lifting)   tasks.push(serverSet(`gtr_lifting:${currentUsername}`, backup.lifting));
+    if(backup.garden)    tasks.push(serverSet(`gtr_garden:${currentUsername}`, backup.garden));
+    if(backup.friends)   tasks.push(serverSet(`gtr_friends:${currentUsername}`, backup.friends));
+    if(backup.draft)     tasks.push(serverSet(`gtr_draft:${currentUsername}`, backup.draft));
+    await Promise.all(tasks);
+
+    if(backup.account){ account = backup.account; renderAccount(); }
+
+    showRewardToast('✅ Đã khôi phục tài khoản thành công! Vào lại các game để thấy dữ liệu cập nhật.');
   });
 
   // ========== Per-account personal state (coins, notifications) ==========
