@@ -2024,6 +2024,12 @@
     font-family:'Space Grotesk'; font-weight:800; font-size:15px;
     box-shadow:0 8px 24px rgba(44,241,176,0.4);">🏪 Bán giỏ hàng</button>
 
+  <button id="gardenActionBtn" style="display:none; position:fixed; left:50%; bottom:220px; transform:translateX(-50%); z-index:25;
+    padding:14px 26px; border-radius:16px; border:none; cursor:pointer;
+    background:linear-gradient(135deg, #FFD166, #f5a623); color:#2b1a00;
+    font-family:'Space Grotesk'; font-weight:800; font-size:15px;
+    box-shadow:0 8px 24px rgba(255,209,102,0.4);"></button>
+
   <div class="garden-seed-chip" id="gardenSeedChip">
     <span class="stat-ic">🌱</span> Đang cầm: <span id="gardenEquippedSeedName">Cà Rốt</span>
   </div>
@@ -6380,6 +6386,75 @@
       setPlotLabel(slot, off.x, off.z, currentUsername);
     }
 
+    // ---- Nút hành động trồng/thu hoạch — CHỈ chạy khi người chơi chủ động bấm, không tự động
+    // theo khoảng cách nữa (tránh lỗi "vừa nhặt xong lại tự mọc lại ngay") ----
+    let currentActionTile = null;
+    const actionBtn = document.getElementById('gardenActionBtn');
+    function updateGardenActionButton(tile, now){
+      currentActionTile = tile;
+      if(!tile){ actionBtn.style.display = 'none'; return; }
+      if(!tile.seedId){
+        const seed = SEEDS.find(s=>s.id===gardenState.equippedSeed);
+        if(!seed){ actionBtn.style.display = 'none'; return; }
+        actionBtn.textContent = `🌱 Trồng ${seed.name}`;
+        actionBtn.style.display = '';
+        actionBtn.disabled = false;
+        return;
+      }
+      const seed = SEEDS.find(s=>s.id===tile.seedId);
+      const progress = Math.min(1, (now-tile.plantedAt)/1000/seed.growSec);
+      if(progress >= 1){
+        actionBtn.textContent = `🌾 Thu hoạch ${seed.name}`;
+        actionBtn.style.display = '';
+        actionBtn.disabled = false;
+        actionBtn.style.opacity = '1';
+        actionBtn.style.cursor = 'pointer';
+      } else {
+        actionBtn.textContent = `⏳ ${seed.name} đang lớn... (${Math.round(progress*100)}%)`;
+        actionBtn.style.display = '';
+        actionBtn.disabled = true;
+        actionBtn.style.opacity = '0.6';
+        actionBtn.style.cursor = 'not-allowed';
+      }
+    }
+    actionBtn.addEventListener('click', ()=>{
+      const t = currentActionTile;
+      if(!t) return;
+      const now = Date.now();
+      if(!t.seedId){
+        // trồng — cần đang cầm 1 loại hạt đã sở hữu
+        const seed = SEEDS.find(s=>s.id===gardenState.equippedSeed);
+        if(!seed || !gardenState.ownedSeeds.includes(seed.id)){
+          gardenToast('⚠️ Bạn chưa có hạt giống nào — mở 🛒 Hạt giống để mua trước.');
+          return;
+        }
+        t.seedId = seed.id;
+        t.plantedAt = now;
+        const mesh = plantVisual(seed);
+        mesh.position.set(t.x, 0.2, t.z);
+        scene.add(mesh);
+        t.plantMesh = mesh;
+        gardenState.tiles[t.key] = { seedId:t.seedId, plantedAt:t.plantedAt };
+        saveGardenState();
+        gardenToast(`🌱 Đã trồng ${seed.name}!`);
+        actionBtn.style.display = 'none'; // ẩn ngay, animate() sẽ tự cập nhật lại đúng trạng thái ở khung hình sau
+      } else {
+        const seed = SEEDS.find(s=>s.id===t.seedId);
+        const progress = Math.min(1, (now-t.plantedAt)/1000/seed.growSec);
+        if(progress < 1) return; // chưa chín, nút đã bị disable nhưng chặn thêm cho chắc
+        gardenState.basket[seed.id] = (gardenState.basket[seed.id]||0) + 1;
+        gardenState.harvests += 1;
+        updateBasketHUD();
+        document.getElementById('gardenHarvests').textContent = gardenState.harvests;
+        gardenToast(`🧺 Nhặt ${seed.name}! Mang tới chợ để bán.`);
+        scene.remove(t.plantMesh);
+        t.plantMesh = null; t.seedId = null; t.plantedAt = null;
+        delete gardenState.tiles[t.key];
+        saveGardenState();
+        actionBtn.style.display = 'none';
+      }
+    });
+
     document.getElementById('gardenSellBtn').addEventListener('click', ()=>{
       const items = Object.entries(gardenState.basket || {}).filter(([,n])=>n>0);
       if(items.length === 0) return;
@@ -6564,8 +6639,10 @@
         player.rotation.y = facingAngle;
       }
 
-      // tile growth + walk-to-plant/harvest
+      // tile growth + phát hiện ô gần nhất để hiện nút hành động (KHÔNG còn tự động trồng/thu hoạch
+      // theo khoảng cách nữa — trước đây cứ đứng gần là tự trồng lại ngay lập tức sau khi vừa nhặt xong)
       const now = Date.now();
+      let nearestTile = null, nearestDist = 1.3;
       tiles.forEach(t=>{
         if(t.seedId && t.plantedAt){
           const seed = SEEDS.find(s=>s.id===t.seedId);
@@ -6576,36 +6653,10 @@
           }
         }
         const dx=t.x-player.position.x, dz=t.z-player.position.z;
-        if(Math.hypot(dx,dz) < 1.3){
-          if(!t.seedId){
-            // plant
-            const seed = SEEDS.find(s=>s.id===gardenState.equippedSeed);
-            t.seedId = seed.id;
-            t.plantedAt = now;
-            const mesh = plantVisual(seed);
-            mesh.position.set(t.x, 0.2, t.z);
-            scene.add(mesh);
-            t.plantMesh = mesh;
-            gardenState.tiles[t.key] = { seedId:t.seedId, plantedAt:t.plantedAt };
-            saveGardenState();
-          } else {
-            const seed = SEEDS.find(s=>s.id===t.seedId);
-            const progress = Math.min(1, (now-t.plantedAt)/1000/seed.growSec);
-            if(progress>=1){
-              // harvest → cho vào giỏ, phải mang tới chợ mới đổi được Xu Vườn
-              gardenState.basket[seed.id] = (gardenState.basket[seed.id]||0) + 1;
-              gardenState.harvests += 1;
-              updateBasketHUD();
-              document.getElementById('gardenHarvests').textContent = gardenState.harvests;
-              gardenToast(`🧺 Nhặt ${seed.name}! Mang tới chợ để bán.`);
-              scene.remove(t.plantMesh);
-              t.plantMesh = null; t.seedId = null; t.plantedAt = null;
-              delete gardenState.tiles[t.key];
-              saveGardenState();
-            }
-          }
-        }
+        const dist = Math.hypot(dx,dz);
+        if(dist < nearestDist){ nearestDist = dist; nearestTile = t; }
       });
+      updateGardenActionButton(nearestTile, now);
 
       // gần khu chợ bán? hiện nút bán giỏ hàng
       const distToStall = Math.hypot(player.position.x-sellPointPos.x, player.position.z-sellPointPos.z);
