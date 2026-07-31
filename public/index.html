@@ -6154,6 +6154,46 @@
     if(el) el.textContent = total;
   }
 
+  // ========== Âm thanh hiệu ứng (Web Audio API — tự tạo âm, không cần file mp3) ==========
+  const GtrSound = (function(){
+    let ctx = null;
+    function ensureCtx(){
+      if(!ctx){
+        try{ ctx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ return null; }
+      }
+      if(ctx.state === 'suspended') ctx.resume();
+      return ctx;
+    }
+    // Mở khóa audio context ngay lần chạm đầu tiên (bắt buộc trên mobile/Safari)
+    ['pointerdown','touchstart','click'].forEach(evt=>{
+      window.addEventListener(evt, ()=>ensureCtx(), { once:true, passive:true });
+    });
+    // tone: 1 nốt đơn giản với fade-out mượt, tránh tiếng "tách"
+    function tone(freq, dur, type, vol, delay){
+      const ac = ensureCtx(); if(!ac) return;
+      const t0 = ac.currentTime + (delay||0);
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.type = type || 'sine';
+      osc.frequency.setValueAtTime(freq, t0);
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(vol!=null?vol:0.14, t0 + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      osc.connect(gain).connect(ac.destination);
+      osc.start(t0); osc.stop(t0 + dur + 0.02);
+    }
+    return {
+      click(){ tone(720, 0.06, 'sine', 0.08); },
+      plant(){ tone(420, 0.09, 'triangle', 0.12); tone(560, 0.09, 'triangle', 0.09, 0.05); },
+      harvest(){ tone(660, 0.08, 'triangle', 0.13); tone(880, 0.12, 'triangle', 0.12, 0.06); },
+      coin(){ tone(988, 0.07, 'square', 0.09); tone(1318, 0.14, 'square', 0.1, 0.06); },
+      buy(){ tone(523, 0.08, 'sine', 0.12); tone(659, 0.08, 'sine', 0.1, 0.05); tone(784, 0.14, 'sine', 0.1, 0.1); },
+      error(){ tone(220, 0.16, 'sawtooth', 0.1); },
+      open(){ tone(500, 0.07, 'sine', 0.09); tone(700, 0.09, 'sine', 0.08, 0.04); },
+      close(){ tone(500, 0.08, 'sine', 0.08); tone(350, 0.09, 'sine', 0.07, 0.04); },
+    };
+  })();
+
   function gardenToast(msg){
     const t = document.getElementById('gardenToast');
     t.textContent = msg; t.classList.add('show');
@@ -6181,13 +6221,15 @@
         const s = SEEDS.find(x=>x.id===id);
         const owned = gardenState.ownedSeeds.includes(id);
         if(owned){
+          GtrSound.click();
           gardenState.equippedSeed = id;
           saveGardenState();
           document.getElementById('gardenEquippedSeedName').textContent = s.name;
           renderGardenShop();
           return;
         }
-        if(gardenState.coins < s.price){ gardenToast(`Cần thêm ${(s.price-gardenState.coins).toLocaleString('en-US')} 🪙 Xu Vườn nữa (thu hoạch để kiếm thêm).`); return; }
+        if(gardenState.coins < s.price){ GtrSound.error(); gardenToast(`Cần thêm ${(s.price-gardenState.coins).toLocaleString('en-US')} 🪙 Xu Vườn nữa (thu hoạch để kiếm thêm).`); return; }
+        GtrSound.buy();
         gardenState.coins -= s.price;
         gardenState.ownedSeeds.push(id);
         gardenState.equippedSeed = id;
@@ -6200,11 +6242,13 @@
     });
   }
   document.getElementById('gardenShopBtn').addEventListener('click', ()=>{
+    GtrSound.open();
     renderGardenShop();
     document.getElementById('gardenShopOverlay').classList.add('open');
     document.getElementById('gardenShopPanel').classList.add('open');
   });
   function closeGardenShop(){
+    GtrSound.close();
     document.getElementById('gardenShopOverlay').classList.remove('open');
     document.getElementById('gardenShopPanel').classList.remove('open');
   }
@@ -6466,9 +6510,11 @@
         // trồng — cần đang cầm 1 loại hạt đã sở hữu
         const seed = SEEDS.find(s=>s.id===gardenState.equippedSeed);
         if(!seed || !gardenState.ownedSeeds.includes(seed.id)){
+          GtrSound.error();
           gardenToast('⚠️ Bạn chưa có hạt giống nào — mở 🛒 Hạt giống để mua trước.');
           return;
         }
+        GtrSound.plant();
         t.seedId = seed.id;
         t.plantedAt = now;
         const mesh = plantVisual(seed);
@@ -6483,6 +6529,7 @@
         const seed = SEEDS.find(s=>s.id===t.seedId);
         const progress = Math.min(1, (now-t.plantedAt)/1000/seed.growSec);
         if(progress < 1) return; // chưa chín, nút đã bị disable nhưng chặn thêm cho chắc
+        GtrSound.harvest();
         gardenState.basket[seed.id] = (gardenState.basket[seed.id]||0) + 1;
         gardenState.harvests += 1;
         updateBasketHUD();
@@ -6508,6 +6555,7 @@
         total += value;
         parts.push(`${seed.emoji}×${count}`);
       });
+      GtrSound.coin();
       gardenState.coins += total;
       gardenState.basket = {};
       saveGardenState();
