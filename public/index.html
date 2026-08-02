@@ -839,14 +839,14 @@
     position:fixed; inset:0; z-index:60; background:rgba(5,7,11,0.6);
     opacity:0; pointer-events:none; transition:opacity .2s;
   }
-  #miniGameView .backpack-overlay.open, #liftingView .backpack-overlay.open{ opacity:1; pointer-events:auto; }
+  #miniGameView .backpack-overlay.open, #liftingView .backpack-overlay.open, #gardenView .backpack-overlay.open{ opacity:1; pointer-events:auto; }
   #miniGameView .backpack-panel, #liftingView .backpack-panel, #gardenView .backpack-panel{
     position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.95); z-index:61;
     width:360px; max-width:92vw; max-height:78vh; overflow-y:auto;
     background:var(--panel); border:1px solid var(--line); border-radius:16px;
     padding:20px; opacity:0; pointer-events:none; transition:all .2s;
   }
-  #miniGameView .backpack-panel.open, #liftingView .backpack-panel.open{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
+  #miniGameView .backpack-panel.open, #liftingView .backpack-panel.open, #gardenView .backpack-panel.open{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
   #miniGameView .backpack-head, #liftingView .backpack-head, #gardenView .backpack-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
   #miniGameView .backpack-head h3, #liftingView .backpack-head h3{ font-family:'Space Grotesk'; font-weight:600; font-size:16px; }
   #miniGameView .backpack-sub{ font-size:11.5px; color:var(--muted); margin-bottom:16px; }
@@ -2030,6 +2030,12 @@
     background:linear-gradient(135deg, #FFD166, #f5a623); color:#2b1a00;
     font-family:'Space Grotesk'; font-weight:800; font-size:15px;
     box-shadow:0 8px 24px rgba(255,209,102,0.4);"></button>
+
+  <button id="gardenRabbitBtn" style="display:none; position:fixed; left:50%; bottom:290px; transform:translateX(-50%); z-index:25;
+    padding:14px 26px; border-radius:16px; border:none; cursor:pointer;
+    background:linear-gradient(135deg, #FFB6D9, #f57ab6); color:#3a0620;
+    font-family:'Space Grotesk'; font-weight:800; font-size:15px;
+    box-shadow:0 8px 24px rgba(245,122,182,0.4);">🐰 Đổi Tai Thỏ</button>
 
   <div class="garden-seed-chip" id="gardenSeedChip">
     <span class="stat-ic">🌱</span> Đang cầm: <span id="gardenEquippedSeedName">Cà Rốt</span>
@@ -3951,6 +3957,7 @@
     if(objects.length===0) return;
     objects.forEach(o=>scene.remove(o.mesh));
     objects = []; selectedId = null;
+    gameMeta.publishedId = null; // "Xóa hết" = bắt đầu dự án mới hoàn toàn, không còn gắn với game đã xuất bản trước đó
     updateStatus(); renderProps();
     showToast('Đã xóa toàn bộ khung cảnh');
   });
@@ -3972,7 +3979,7 @@
   }
 
   // ===================== Cài đặt trò chơi: ảnh đại diện tùy chỉnh (mô tả/độ khó đọc trực tiếp từ form) =====================
-  let gameMeta = { thumbnailData: null };
+  let gameMeta = { thumbnailData: null, publishedId: null };
   function currentDescription(){ return document.getElementById('gameDescInput').value.trim(); }
   function currentDifficulty(){ return document.getElementById('gameDifficultyInput').value; }
 
@@ -4036,6 +4043,7 @@
       description: currentDescription(),
       difficulty: currentDifficulty(),
       thumbnailData: gameMeta.thumbnailData,
+      publishedId: gameMeta.publishedId || null,
       objects: objects.map(o=>({ type:o.type, gx:o.gx, gz:o.gz, color:o.color }))
     };
   }
@@ -4046,6 +4054,7 @@
     document.getElementById('gameDescInput').value = level.description || '';
     document.getElementById('gameDifficultyInput').value = level.difficulty || 'medium';
     gameMeta.thumbnailData = level.thumbnailData || null;
+    gameMeta.publishedId = level.publishedId || null;
     (level.objects || []).forEach(o=>{
       const mesh = buildMesh(o.type, o.color);
       if(!mesh) return;
@@ -4090,28 +4099,42 @@
     if(!objects.some(o=>o.type==='spawn')){ showToast('Mỗi trò chơi cần ít nhất 1 Điểm xuất phát — hãy đặt trước khi xuất bản.'); return; }
     if(!objects.some(o=>o.type==='finish')){ showToast('Mỗi trò chơi cần ít nhất 1 Vạch đích — hãy đặt trước khi xuất bản.'); return; }
     const level = serializeLevel();
-    const gameId = 'g' + Date.now();
+    const games = (await serverGet('gtr_games')) || {};
+    // Nếu project này đã từng xuất bản (và game đó vẫn còn tồn tại, đúng chủ), CẬP NHẬT lại đúng game
+    // cũ thay vì tạo thêm một bản mới — đây chính là lý do trước đây bấm "Xuất bản" nhiều lần bị
+    // chồng thành nhiều game trùng nhau trong thư viện.
+    const existing = level.publishedId ? games[level.publishedId] : null;
+    const isUpdate = !!(existing && existing.creator === currentUsername);
+    const gameId = isUpdate ? level.publishedId : ('g' + Date.now());
     const gameData = {
       id: gameId,
       name: level.name,
       creator: currentUsername,
-      createdAt: Date.now(),
+      createdAt: isUpdate ? existing.createdAt : Date.now(),
+      updatedAt: Date.now(),
       description: level.description,
       difficulty: level.difficulty,
       thumbnailData: level.thumbnailData,
       objects: level.objects
     };
-    const games = (await serverGet('gtr_games')) || {};
     games[gameId] = gameData;
     const ok = await serverSet('gtr_games', games);
     if(ok){
-      showToast(`Đã xuất bản "${level.name}"! <a href="#" onclick="openMiniGame('${gameId}'); return false;">Chơi thử ngay</a>`);
-      storageDelete(`gtr_draft:${currentUsername}`, false);
+      gameMeta.publishedId = gameId;
+      const verb = isUpdate ? 'Đã cập nhật' : 'Đã xuất bản';
+      showToast(`${verb} "${level.name}"! <a href="#" onclick="playFreshlyPublished('${gameId}'); return false;">Chơi thử ngay</a>`);
+      await serverSet(`gtr_draft:${currentUsername}`, level);
       if(typeof loadGameLibrary === 'function') loadGameLibrary();
     } else {
       showToast('Đã lưu bản dựng cục bộ, nhưng không thể đăng lên thư viện chung lúc này. Hãy thử lại sau.');
     }
   });
+  // Luôn buộc mini-game khởi tạo lại từ đầu, kể cả khi trùng id với game đang mở sẵn —
+  // nếu không, engine sẽ tưởng "không có gì đổi" và bỏ qua, khiến người chơi vẫn thấy bản cũ.
+  window.playFreshlyPublished = function(gameId){
+    currentMiniGameId = undefined;
+    openMiniGame(gameId);
+  };
 
   function showToast(html){
     const toast = document.getElementById('toast');
@@ -6134,13 +6157,13 @@
     { id:'s3', name:'Dưa Hấu',  emoji:'🍉', color:0x4FAE6B, growSec:25, reward:80,  price:400,  shape:'melon'  },
     { id:'s4', name:'Cây Vàng', emoji:'✨', color:0xFFD166, growSec:40, reward:250, price:1500, shape:'sphere' },
   ];
-  let gardenState = { coins:0, harvests:0, ownedSeeds:['s1'], equippedSeed:'s1', tiles:{}, basket:{} };
+  let gardenState = { coins:0, harvests:0, ownedSeeds:['s1'], equippedSeed:'s1', tiles:{}, basket:{}, carrotsCollected:0, items:{} };
   let gardenInitialized = false;
   let gardenSocket = null;
 
   async function loadGardenState(){
     const saved = await serverGet(`gtr_garden:${currentUsername}`);
-    if(saved) gardenState = Object.assign({ coins:0, harvests:0, ownedSeeds:['s1'], equippedSeed:'s1', tiles:{}, basket:{} }, saved);
+    if(saved) gardenState = Object.assign({ coins:0, harvests:0, ownedSeeds:['s1'], equippedSeed:'s1', tiles:{}, basket:{}, carrotsCollected:0, items:{} }, saved);
     document.getElementById('gardenCoins').textContent = gardenState.coins.toLocaleString('en-US');
     document.getElementById('gardenHarvests').textContent = gardenState.harvests;
     updateBasketHUD();
@@ -6148,6 +6171,7 @@
     document.getElementById('gardenEquippedSeedName').textContent = eq.name;
   }
   function saveGardenState(){ serverSet(`gtr_garden:${currentUsername}`, gardenState); }
+  const RABBIT_EAR_GOAL = 150;
   function updateBasketHUD(){
     const total = Object.values(gardenState.basket || {}).reduce((a,b)=>a+b, 0);
     const el = document.getElementById('gardenBasketCount');
@@ -6334,6 +6358,77 @@
       scene.add(g);
     })();
 
+    // ---- NPC Thỏ 🐰 — đứng cạnh khu chợ, đổi 150 cà rốt lấy phụ kiện "Tai Thỏ" ----
+    const rabbitPos = { x: 5, z: -2.5 };
+    (function buildRabbitNPC(){
+      const g = new THREE.Group();
+      const furMat = new THREE.MeshStandardMaterial({ color:0xF7F3EA, roughness:0.8 });
+      const pinkMat = new THREE.MeshStandardMaterial({ color:0xF5A6C6, roughness:0.6 });
+      const body = new THREE.Mesh(new THREE.SphereGeometry(0.55,14,12), furMat);
+      body.scale.set(1,1.15,1); body.position.y = 0.62;
+      g.add(body);
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.38,14,12), furMat);
+      head.position.y = 1.35;
+      g.add(head);
+      // hai tai dài đặc trưng
+      [-0.16, 0.16].forEach(ex=>{
+        const ear = new THREE.Mesh(new THREE.SphereGeometry(0.12,8,8), furMat);
+        ear.scale.set(1,2.6,0.5);
+        ear.position.set(ex, 2.05, -0.03);
+        ear.rotation.z = ex>0 ? -0.12 : 0.12;
+        g.add(ear);
+        const earInner = new THREE.Mesh(new THREE.SphereGeometry(0.07,8,8), pinkMat);
+        earInner.scale.set(1,2.2,0.4);
+        earInner.position.set(ex, 2.03, 0.06);
+        g.add(earInner);
+      });
+      const nose = new THREE.Mesh(new THREE.SphereGeometry(0.06,8,8), pinkMat);
+      nose.position.set(0, 1.3, 0.36);
+      g.add(nose);
+      // biển hiệu nổi phía trên NPC
+      const c = document.createElement('canvas'); c.width=256; c.height=96;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle='rgba(58,6,32,0.85)'; ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(4,10,248,60,14) : ctx.fillRect(4,10,248,60);
+      ctx.fill();
+      ctx.font='bold 26px Inter, sans-serif'; ctx.fillStyle='#fff'; ctx.textAlign='center';
+      ctx.fillText('🐰 Đổi Tai Thỏ', 128, 42);
+      ctx.font='600 18px Inter, sans-serif'; ctx.fillStyle='#FFD6EA';
+      ctx.fillText(`Cần ${RABBIT_EAR_GOAL} 🥕`, 128, 66);
+      const tex = new THREE.CanvasTexture(c);
+      const sign = new THREE.Sprite(new THREE.SpriteMaterial({ map:tex, depthTest:false }));
+      sign.scale.set(2.4,0.9,1); sign.position.set(0,2.9,0);
+      g.add(sign);
+      g.position.set(rabbitPos.x, 0, rabbitPos.z);
+      g.rotation.y = -0.6;
+      scene.add(g);
+    })();
+
+    // ---- Phụ kiện "Tai Thỏ" — đội lên đầu nhân vật khi đã đổi được ----
+    function buildBunnyEarsMesh(){
+      const g = new THREE.Group();
+      const furMat = new THREE.MeshStandardMaterial({ color:0xFFFFFF, roughness:0.7 });
+      const pinkMat = new THREE.MeshStandardMaterial({ color:0xF5A6C6, roughness:0.5 });
+      [-0.16, 0.16].forEach(ex=>{
+        const ear = new THREE.Mesh(new THREE.SphereGeometry(0.09,8,8), furMat);
+        ear.scale.set(1,2.8,0.4);
+        ear.position.set(ex, 0.42, -0.02);
+        ear.rotation.z = ex>0 ? -0.15 : 0.15;
+        g.add(ear);
+        const inner = new THREE.Mesh(new THREE.SphereGeometry(0.05,8,8), pinkMat);
+        inner.scale.set(1,2.3,0.3);
+        inner.position.set(ex, 0.4, 0.05);
+        g.add(inner);
+      });
+      return g;
+    }
+    function equipBunnyEarsOnHead(headMesh){
+      if(!headMesh || headMesh.userData.bunnyEarsAttached) return;
+      const ears = buildBunnyEarsMesh();
+      headMesh.add(ears);
+      headMesh.userData.bunnyEarsAttached = true;
+    }
+
     // ---- khung lô đất trang trí cho toàn bộ 20 vị trí (kể cả chưa có ai) — cho cảm giác
     // "mỗi người 1 khu vườn riêng" ngay cả trước khi biết ai đang ở đâu ----
     const plotLabels = new Map(); // slot -> sprite (tên chủ khu vườn)
@@ -6461,6 +6556,7 @@
     const player = builtChar.group;
     player.position.set(0,0,26);
     scene.add(player);
+    if(gardenState.items && gardenState.items.tai_tho){ equipBunnyEarsOnHead(builtChar.head); }
 
     let myPlotBuilt = false;
     function ensureOwnPlotBuilt(slot){
@@ -6534,13 +6630,45 @@
         gardenState.harvests += 1;
         updateBasketHUD();
         document.getElementById('gardenHarvests').textContent = gardenState.harvests;
-        gardenToast(`🧺 Nhặt ${seed.name}! Mang tới chợ để bán.`);
+        if(seed.id === 's1' && !(gardenState.items && gardenState.items.tai_tho)){
+          gardenState.carrotsCollected = (gardenState.carrotsCollected||0) + 1;
+          const remain = RABBIT_EAR_GOAL - gardenState.carrotsCollected;
+          if(remain <= 0){
+            gardenToast(`🥕 Đủ ${RABBIT_EAR_GOAL} Cà Rốt rồi! Mang tới NPC Thỏ 🐰 gần chợ để đổi Tai Thỏ.`);
+          } else {
+            gardenToast(`🧺 Nhặt ${seed.name}! (🥕 ${gardenState.carrotsCollected}/${RABBIT_EAR_GOAL} cho Thỏ)`);
+          }
+        } else {
+          gardenToast(`🧺 Nhặt ${seed.name}! Mang tới chợ để bán.`);
+        }
         scene.remove(t.plantMesh);
         t.plantMesh = null; t.seedId = null; t.plantedAt = null;
         delete gardenState.tiles[t.key];
         saveGardenState();
         actionBtn.style.display = 'none';
       }
+    });
+
+    document.getElementById('gardenRabbitBtn').addEventListener('click', ()=>{
+      if(gardenState.items && gardenState.items.tai_tho){
+        GtrSound.click();
+        gardenToast('🐰 Bạn đã có Tai Thỏ rồi!');
+        return;
+      }
+      const have = gardenState.carrotsCollected || 0;
+      if(have < RABBIT_EAR_GOAL){
+        GtrSound.error();
+        gardenToast(`🥕 Cần thêm ${RABBIT_EAR_GOAL - have} Cà Rốt nữa (trồng & thu hoạch Cà Rốt để tích lũy).`);
+        return;
+      }
+      gardenState.carrotsCollected = have - RABBIT_EAR_GOAL;
+      gardenState.items = gardenState.items || {};
+      gardenState.items.tai_tho = true;
+      saveGardenState();
+      equipBunnyEarsOnHead(builtChar.head);
+      document.getElementById('gardenRabbitBtn').style.display = 'none';
+      GtrSound.buy();
+      gardenToast('🐰✨ Chúc mừng! Bạn nhận được Tai Thỏ và đã đội lên đầu!');
     });
 
     document.getElementById('gardenSellBtn').addEventListener('click', ()=>{
@@ -6753,6 +6881,13 @@
       const basketTotal = Object.values(gardenState.basket).reduce((a,b)=>a+b,0);
       if(distToStall < 3.2 && basketTotal > 0){ sellBtn.style.display = ''; }
       else { sellBtn.style.display = 'none'; }
+
+      // gần NPC Thỏ? hiện nút đổi Tai Thỏ (ẩn luôn nếu đã sở hữu rồi)
+      const rabbitBtn = document.getElementById('gardenRabbitBtn');
+      const hasEars = !!(gardenState.items && gardenState.items.tai_tho);
+      const distToRabbit = Math.hypot(player.position.x-rabbitPos.x, player.position.z-rabbitPos.z);
+      if(distToRabbit < 3.2 && !hasEars){ rabbitBtn.style.display = ''; }
+      else { rabbitBtn.style.display = 'none'; }
 
       lerpRemoteGardenPlayers(dt);
       maybeBroadcastGardenPosition();
