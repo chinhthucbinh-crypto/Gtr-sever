@@ -515,12 +515,12 @@
     box-shadow:0 4px 14px rgba(0,0,0,0.25);
   }
   .av-toggle{
-    display:flex; background:rgba(255,255,255,0.92); border-radius:100px; padding:4px;
+    display:flex; background:rgba(255,255,255,0.92); border-radius:100px; padding:3px;
     box-shadow:0 4px 14px rgba(0,0,0,0.25);
   }
   .av-toggle-btn{
-    padding:9px 20px; border-radius:100px; font-family:'Space Grotesk'; font-weight:700; font-size:14px;
-    color:#6b7280; cursor:pointer;
+    padding:8px 12px; border-radius:100px; font-family:'Space Grotesk'; font-weight:700; font-size:12.5px;
+    color:#6b7280; cursor:pointer; white-space:nowrap;
   }
   .av-toggle-btn.active{ background:#e7e9ee; color:#12161F; }
   .av-coin-badge{
@@ -746,14 +746,14 @@
     background:linear-gradient(rgba(11,14,20,0.75), transparent);
     pointer-events:none;
   }
-  #miniGameView .hud-top > *, #gardenView .hud-top > * { pointer-events:auto; }
-  #miniGameView .back-chip, #gardenView .back-chip {
+  #miniGameView .hud-top > *, #gardenView .hud-top > *, #fishingView .hud-top > * { pointer-events:auto; }
+  #miniGameView .back-chip, #gardenView .back-chip, #fishingView .back-chip {
     width:36px; height:36px; border-radius:10px;
     background:rgba(18,22,31,0.75); border:1px solid var(--line);
     display:grid; place-items:center; color:var(--cloud); cursor:pointer;
     backdrop-filter: blur(6px);
   }
-  #miniGameView .title-chip, #gardenView .title-chip {
+  #miniGameView .title-chip, #gardenView .title-chip, #fishingView .title-chip {
     font-family:'Space Grotesk'; font-weight:700; font-size:14.5px;
     background:rgba(18,22,31,0.75); border:1px solid var(--line);
     padding:8px 14px; border-radius:10px; backdrop-filter: blur(6px);
@@ -766,7 +766,7 @@
     font-family:'JetBrains Mono'; font-weight:600; font-size:13.5px; color:#FFD166;
   }
   #miniGameView .coin-chip svg { width:15px; height:15px; }
-  #miniGameView .stat-bar, #gardenView .stat-bar{
+  #miniGameView .stat-bar, #gardenView .stat-bar, #fishingView .stat-bar{
     position:fixed; top:56px; left:0; right:0; z-index:20;
     display:flex; flex-wrap:wrap; justify-content:center; gap:8px; padding:0 14px; row-gap:6px;
     pointer-events:none;
@@ -814,15 +814,16 @@
   #miniGameView .death-content p{ font-size:12.5px; color:rgba(255,255,255,0.75); margin-bottom:14px; }
   #miniGameView .death-timer{ font-family:'JetBrains Mono'; font-size:30px; font-weight:700; color:#fff; }
   #miniGameView .stat-chip.time-chip{ color:var(--signal); }
-  #miniGameView .stat-chip, #gardenView .stat-chip{
+  #miniGameView .stat-chip, #gardenView .stat-chip, #fishingView .stat-chip{
     display:flex; align-items:center; gap:5px;
     background:rgba(18,22,31,0.78); border:1px solid var(--line);
     padding:6px 11px; border-radius:100px; backdrop-filter:blur(6px);
     font-family:'JetBrains Mono'; font-weight:700; font-size:12.5px; color:var(--cloud);
   }
-  #miniGameView .stat-ic, #gardenView .stat-ic{ font-size:13px; }
+  #miniGameView .stat-ic, #gardenView .stat-ic, #fishingView .stat-ic{ font-size:13px; }
   #miniGameView #backpackBtn, #miniGameView #eggShopBtn{ pointer-events:auto; cursor:pointer; }
   #gardenView #gardenShopBtn{ pointer-events:auto; cursor:pointer; }
+  #fishingView #fishingBagBtn, #fishingView #fishingSkillShopBtn{ pointer-events:auto; cursor:pointer; }
   #miniGameView .pet-toast{
     position:fixed; top:100px; left:50%; transform:translateX(-50%) translateY(-14px) scale(0.9);
     background:rgba(18,22,31,0.92); border:1px solid var(--signal); border-radius:14px;
@@ -835,20 +836,20 @@
   #miniGameView .pet-toast-title{ font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; }
   #miniGameView .pet-toast-name{ font-family:'Space Grotesk'; font-weight:700; font-size:14.5px; }
 
-  #miniGameView .backpack-overlay, #liftingView .backpack-overlay, #gardenView .backpack-overlay{
+  #miniGameView .backpack-overlay, #liftingView .backpack-overlay, #gardenView .backpack-overlay, #fishingView .backpack-overlay{
     position:fixed; inset:0; z-index:60; background:rgba(5,7,11,0.6);
     opacity:0; pointer-events:none; transition:opacity .2s;
   }
-  #miniGameView .backpack-overlay.open, #liftingView .backpack-overlay.open, #gardenView .backpack-overlay.open{ opacity:1; pointer-events:auto; }
-  #miniGameView .backpack-panel, #liftingView .backpack-panel, #gardenView .backpack-panel{
+  #miniGameView .backpack-overlay.open, #liftingView .backpack-overlay.open, #gardenView .backpack-overlay.open, #fishingView .backpack-overlay.open{ opacity:1; pointer-events:auto; }
+  #miniGameView .backpack-panel, #liftingView .backpack-panel, #gardenView .backpack-panel, #fishingView .backpack-panel{
     position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.95); z-index:61;
     width:360px; max-width:92vw; max-height:78vh; overflow-y:auto;
     background:var(--panel); border:1px solid var(--line); border-radius:16px;
     padding:20px; opacity:0; pointer-events:none; transition:all .2s;
   }
-  #miniGameView .backpack-panel.open, #liftingView .backpack-panel.open, #gardenView .backpack-panel.open{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
-  #miniGameView .backpack-head, #liftingView .backpack-head, #gardenView .backpack-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
-  #miniGameView .backpack-head h3, #liftingView .backpack-head h3{ font-family:'Space Grotesk'; font-weight:600; font-size:16px; }
+  #miniGameView .backpack-panel.open, #liftingView .backpack-panel.open, #gardenView .backpack-panel.open, #fishingView .backpack-panel.open{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
+  #miniGameView .backpack-head, #liftingView .backpack-head, #gardenView .backpack-head, #fishingView .backpack-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  #miniGameView .backpack-head h3, #liftingView .backpack-head h3, #fishingView .backpack-head h3{ font-family:'Space Grotesk'; font-weight:600; font-size:16px; }
   #miniGameView .backpack-sub{ font-size:11.5px; color:var(--muted); margin-bottom:16px; }
   #miniGameView .backpack-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
   #miniGameView .backpack-item{ cursor:pointer; text-align:center; padding:6px; border-radius:10px; border:1px solid transparent; }
@@ -858,10 +859,10 @@
   #miniGameView .backpack-name{ font-size:11px; color:var(--cloud); }
   #miniGameView .backpack-state{ font-size:9.5px; color:var(--muted); margin-top:1px; }
   #miniGameView .backpack-empty{ grid-column:1/-1; text-align:center; color:var(--muted); font-size:13px; padding:24px 10px; line-height:1.6; }
-  #miniGameView .backpack-close, #liftingView .backpack-close, #gardenView .backpack-close{ cursor:pointer; color:var(--muted); width:30px; height:30px; display:grid; place-items:center; border-radius:8px; }
+  #miniGameView .backpack-close, #liftingView .backpack-close, #gardenView .backpack-close, #fishingView .backpack-close{ cursor:pointer; color:var(--muted); width:30px; height:30px; display:grid; place-items:center; border-radius:8px; }
   #miniGameView .backpack-close:hover, #liftingView .backpack-close:hover{ background:var(--panel-2); color:var(--cloud); }
-  #miniGameView .egg-shop-row, #liftingView .egg-shop-row, #gardenView .egg-shop-row{ display:flex; gap:10px; margin-bottom:10px; }
-  #miniGameView .egg-shop-stat, #liftingView .egg-shop-stat, #gardenView .egg-shop-stat{
+  #miniGameView .egg-shop-row, #liftingView .egg-shop-row, #gardenView .egg-shop-row, #fishingView .egg-shop-row{ display:flex; gap:10px; margin-bottom:10px; }
+  #miniGameView .egg-shop-stat, #liftingView .egg-shop-stat, #gardenView .egg-shop-stat, #fishingView .egg-shop-stat{
     flex:1; background:var(--panel-2); border:1px solid var(--line); border-radius:9px;
     padding:9px 10px; font-size:12.5px; font-weight:600; color:var(--cloud); text-align:center;
   }
@@ -889,6 +890,67 @@
     padding:7px 14px; border-radius:100px; font-size:12.5px; font-weight:600; color:var(--cloud);
   }
   #gardenView .garden-seed-chip .stat-ic{ margin-right:4px; }
+
+  /* ===================== Câu Cá 3D ===================== */
+  #fishingView{
+    display:none !important; position:fixed; inset:0; z-index:410;
+    background:#0B0E14; color:var(--cloud); font-family:'Inter', sans-serif;
+  }
+  #fishingView.open{ display:block !important; }
+  #fishingView canvas{ display:block; position:fixed; inset:0; width:100%; height:100%; touch-action:none; }
+  #fishingView .fishing-battle{
+    display:none; position:fixed; left:50%; bottom:120px; transform:translateX(-50%); z-index:26;
+    width:320px; max-width:90vw; background:rgba(11,14,20,0.82); border:1px solid var(--line);
+    border-radius:16px; padding:14px 16px; backdrop-filter:blur(8px); text-align:center;
+  }
+  #fishingView .fishing-battle.show{ display:block; }
+  #fishingView .fishing-fish-label{ font-family:'Space Grotesk'; font-weight:700; font-size:14.5px; margin-bottom:8px; }
+  #fishingView .fishing-bar-wrap{ height:12px; border-radius:100px; background:rgba(255,255,255,0.1); overflow:hidden; margin-bottom:7px; }
+  #fishingView .fishing-bar-fill{ height:100%; border-radius:100px; transition:width .12s linear; }
+  #fishingView #fishingHpFill{ background:linear-gradient(90deg,#E15A5A,#ff8a65); width:100%; }
+  #fishingView #fishingTimerFill{ background:linear-gradient(90deg,#29D3EA,#4FAE6B); width:100%; height:6px; }
+  #fishingView #fishingTimerWrap{ height:6px; margin-bottom:12px; }
+  #fishingView .fishing-reel-btn{
+    width:100%; padding:16px; border-radius:14px; border:none; cursor:pointer;
+    background:linear-gradient(135deg, var(--signal), #22c99a); color:#06120D;
+    font-family:'Space Grotesk'; font-weight:800; font-size:16px;
+    box-shadow:0 8px 24px rgba(44,241,176,0.35); user-select:none; -webkit-user-select:none;
+  }
+  #fishingView .fishing-reel-btn:active{ transform:scale(0.97); }
+  #fishingView .fishing-skill-bar{ display:flex; gap:8px; justify-content:center; margin-top:10px; }
+  #fishingView .fishing-skill-btn{
+    position:relative; width:52px; height:52px; border-radius:12px; border:1px solid var(--line);
+    background:var(--panel-2); font-size:22px; cursor:pointer; display:grid; place-items:center;
+    color:var(--cloud); overflow:hidden;
+  }
+  #fishingView .fishing-skill-btn:disabled{ opacity:0.45; cursor:not-allowed; }
+  #fishingView .fishing-skill-cd{
+    position:absolute; inset:0; background:rgba(5,7,11,0.72); display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono'; font-weight:700; font-size:13px; color:#fff;
+  }
+  #fishingView #fishingCastBtn{
+    position:fixed; left:50%; bottom:130px; transform:translateX(-50%); z-index:25;
+    padding:16px 34px; border-radius:16px; border:none; cursor:pointer;
+    background:linear-gradient(135deg, #29D3EA, #1f9fd4); color:#04222b;
+    font-family:'Space Grotesk'; font-weight:800; font-size:16px;
+    box-shadow:0 8px 24px rgba(41,211,234,0.4);
+  }
+  #fishingView #fishingSellBtn{
+    display:none; position:fixed; left:50%; bottom:200px; transform:translateX(-50%); z-index:25;
+    padding:14px 26px; border-radius:16px; border:none; cursor:pointer;
+    background:linear-gradient(135deg, #FFD166, #f5a623); color:#2b1a00;
+    font-family:'Space Grotesk'; font-weight:800; font-size:15px;
+    box-shadow:0 8px 24px rgba(255,209,102,0.4);
+  }
+  #fishingView .fishing-catch-popup{
+    position:fixed; left:50%; top:38%; transform:translateX(-50%) translateY(10px) scale(0.85); z-index:40;
+    background:rgba(18,22,31,0.92); border:1px solid var(--signal); border-radius:18px;
+    padding:20px 26px; text-align:center; opacity:0; pointer-events:none; transition:all .25s;
+  }
+  #fishingView .fishing-catch-popup.show{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+  #fishingView .fishing-catch-emoji{ font-size:54px; margin-bottom:6px; }
+  #fishingView .fishing-catch-name{ font-family:'Space Grotesk'; font-weight:800; font-size:16px; }
+  #fishingView .fishing-catch-sub{ font-size:12px; color:var(--muted); margin-top:2px; }
 
   #liftingView .lift-hud-top{
     display:flex; align-items:center; gap:12px; padding:14px 16px;
@@ -994,30 +1056,30 @@
     background:var(--panel-2); border:1px solid var(--line); font-size:13px; font-weight:700; color:var(--muted);
   }
   #liftingView .lift-shop-tab.active{ background:var(--signal); color:#06120D; border-color:var(--signal); }
-  #liftingView .lift-shop-grid, #gardenView .lift-shop-grid{ display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; }
-  #liftingView .lift-shop-item, #gardenView .lift-shop-item{
+  #liftingView .lift-shop-grid, #gardenView .lift-shop-grid, #fishingView .lift-shop-grid{ display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; }
+  #liftingView .lift-shop-item, #gardenView .lift-shop-item, #fishingView .lift-shop-item{
     background:var(--panel-2); border:1px solid var(--line); border-radius:14px; padding:14px 10px;
     text-align:center; cursor:pointer;
   }
   #liftingView .lift-shop-item.owned{ border-color:rgba(44,241,176,0.4); background:var(--signal-dim); }
   #liftingView .lift-shop-item.equipped{ border-color:var(--signal); box-shadow:0 0 0 1px var(--signal); }
-  #liftingView .lift-shop-emoji, #gardenView .lift-shop-emoji{ font-size:36px; margin-bottom:6px; }
-  #liftingView .lift-shop-name, #gardenView .lift-shop-name{ font-family:'Space Grotesk'; font-weight:700; font-size:13.5px; }
-  #liftingView .lift-shop-desc, #gardenView .lift-shop-desc{ font-size:11px; color:var(--muted); margin:3px 0 8px; }
-  #liftingView .lift-shop-price, #gardenView .lift-shop-price{
+  #liftingView .lift-shop-emoji, #gardenView .lift-shop-emoji, #fishingView .lift-shop-emoji{ font-size:36px; margin-bottom:6px; }
+  #liftingView .lift-shop-name, #gardenView .lift-shop-name, #fishingView .lift-shop-name{ font-family:'Space Grotesk'; font-weight:700; font-size:13.5px; }
+  #liftingView .lift-shop-desc, #gardenView .lift-shop-desc, #fishingView .lift-shop-desc{ font-size:11px; color:var(--muted); margin:3px 0 8px; }
+  #liftingView .lift-shop-price, #gardenView .lift-shop-price, #fishingView .lift-shop-price{
     font-family:'JetBrains Mono'; font-weight:700; font-size:12.5px; color:#FFD166;
     background:rgba(255,209,102,0.1); border-radius:100px; padding:5px 10px; display:inline-block;
   }
   #liftingView .lift-shop-price.owned-tag{ color:var(--signal); background:var(--signal-dim); }
   /* ===== Joystick (Roblox-style translucent white) ===== */
-  #miniGameView .joystick-base, #gardenView .joystick-base {
+  #miniGameView .joystick-base, #gardenView .joystick-base, #fishingView .joystick-base {
     position:fixed; left:26px; bottom:30px; z-index:20;
     width:132px; height:132px; border-radius:50%;
     background:rgba(255,255,255,0.16); border:2px solid rgba(255,255,255,0.55);
     backdrop-filter: blur(2px);
     touch-action:none;
   }
-  #miniGameView .joystick-knob, #gardenView .joystick-knob {
+  #miniGameView .joystick-knob, #gardenView .joystick-knob, #fishingView .joystick-knob {
     position:absolute; top:50%; left:50%;
     width:56px; height:56px; border-radius:50%;
     background:rgba(255,255,255,0.85); border:1.5px solid rgba(255,255,255,0.9);
@@ -1026,7 +1088,7 @@
     transition: background .1s;
   }
   #miniGameView .joystick-knob.active, #gardenView .joystick-knob.active { background:rgba(255,255,255,0.98); }
-  #miniGameView .look-layer, #gardenView .look-layer {
+  #miniGameView .look-layer, #gardenView .look-layer, #fishingView .look-layer {
     position:fixed; inset:0; z-index:15; touch-action:none;
   }
   #miniGameView /* ===== Camera rotate hint / jump button ===== */
@@ -1066,7 +1128,7 @@
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
     transition: opacity .4s;
   }
-  #miniGameView .load-gate.hidden, #gardenView .load-gate.hidden { opacity:0; pointer-events:none; }
+  #miniGameView .load-gate.hidden, #gardenView .load-gate.hidden, #fishingView .load-gate.hidden { opacity:0; pointer-events:none; }
   #miniGameView .load-mark, #gardenView .load-mark {
     width:48px; height:48px;
     background: conic-gradient(from 210deg, var(--signal), var(--violet), var(--ember), var(--signal));
@@ -1082,7 +1144,7 @@
     padding:8px 16px; border-radius:20px; font-size:13px; font-weight:600;
     opacity:0; transition: all .25s; z-index:25; backdrop-filter: blur(6px);
   }
-  #miniGameView .mini-toast.show, #gardenView .mini-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  #miniGameView .mini-toast.show, #gardenView .mini-toast.show, #fishingView .mini-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
 
   /* ===== Embedded Studio / Mini-game full-screen views ===== */
@@ -1581,6 +1643,7 @@
     <div class="av-toggle">
       <div class="av-toggle-btn active" id="avTabMarket">Chợ</div>
       <div class="av-toggle-btn" id="avTabCustomize">Tùy Chỉnh</div>
+      <div class="av-toggle-btn" id="avTabDesign">🎨 Vẽ Áo</div>
     </div>
     <div class="av-coin-badge">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
@@ -1607,6 +1670,7 @@
         <div class="av-cat-tab active" data-part="head">Đầu</div>
         <div class="av-cat-tab" data-part="torso">Áo / Tay</div>
         <div class="av-cat-tab" data-part="limb">Quần / Chân</div>
+        <div class="av-cat-tab" data-part="community">🎨 Áo Cộng Đồng</div>
       </div>
       <div class="av-scroll">
         <div class="shop-grid" id="avShopGrid"></div>
@@ -1629,6 +1693,35 @@
         </div>
       </div>
       <button class="btn btn-primary" id="avSaveBtn" style="width:100%;">Lưu trang phục</button>
+    </div>
+
+    <div id="avDesignPanel" style="display:none;">
+      <div style="display:flex; gap:14px; margin-bottom:12px;">
+        <canvas id="shirtCanvas" width="256" height="256" style="width:132px; height:132px; border-radius:14px; border:1px solid var(--line); background:#fff; touch-action:none; flex-shrink:0;"></canvas>
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:11.5px; color:var(--muted); margin-bottom:6px;">Vẽ trực tiếp lên áo — hình sẽ hiện lên nhân vật 3D ngay lập tức.</div>
+          <div id="shirtColorRow" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;"></div>
+          <input type="color" id="shirtColorPicker" value="#29D3EA" style="width:100%; height:30px; border-radius:8px; border:1px solid var(--line); background:none; padding:0; cursor:pointer;">
+        </div>
+      </div>
+      <div style="display:flex; gap:6px; margin-bottom:8px;">
+        <button class="btn btn-ghost shirt-tool-btn active" id="shirtBrushSmall" data-size="4" style="flex:1; padding:8px; font-size:12px;">Bút nhỏ</button>
+        <button class="btn btn-ghost shirt-tool-btn" id="shirtBrushMed" data-size="10" style="flex:1; padding:8px; font-size:12px;">Bút vừa</button>
+        <button class="btn btn-ghost shirt-tool-btn" id="shirtBrushLarge" data-size="22" style="flex:1; padding:8px; font-size:12px;">Tô mảng</button>
+      </div>
+      <div style="display:flex; gap:6px; margin-bottom:10px;">
+        <button class="btn btn-ghost" id="shirtFillBtn" style="flex:1; padding:8px; font-size:12px;">🪣 Đổ nền</button>
+        <button class="btn btn-ghost" id="shirtClearBtn" style="flex:1; padding:8px; font-size:12px;">🗑️ Xóa hết</button>
+      </div>
+      <div id="shirtEmojiRow" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;"></div>
+      <input id="shirtNameInput" placeholder="Tên áo (vd: Áo Kẻ Sọc Lửa)" maxlength="40"
+        style="width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cloud); font-size:13px; font-family:inherit; margin-bottom:8px;">
+      <input id="shirtPriceInput" type="number" min="0" placeholder="Giá bán (GTR-Coin, để 0 nếu tặng miễn phí)"
+        style="width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--line); background:var(--panel-2); color:var(--cloud); font-size:13px; font-family:inherit; margin-bottom:12px;">
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-ghost" id="shirtSaveOnlyBtn" style="flex:1;">💾 Chỉ để mặc riêng</button>
+        <button class="btn btn-primary" id="shirtPublishBtn" style="flex:1;">🚀 Đăng bán</button>
+      </div>
     </div>
   </div>
 
@@ -2061,6 +2154,79 @@
       <div class="egg-shop-stat"><span class="stat-ic">🪙</span> <span id="gardenShopCoins">0</span> coin</div>
     </div>
     <div class="lift-shop-grid" id="gardenShopGrid"></div>
+  </div>
+</div>
+
+<div id="fishingView">
+  <div class="load-gate" id="fishingLoadGate">
+    <div class="load-mark"></div>
+    <div class="load-text">Đang tải Câu Cá 3D...</div>
+  </div>
+
+  <div class="hud-top">
+    <div class="back-chip" id="fishingBackChip">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </div>
+    <div class="title-chip">🎣 Câu Cá 3D</div>
+  </div>
+
+  <div class="stat-bar" id="fishingStatBar">
+    <div class="stat-chip"><span class="stat-ic">🪙</span><span id="fishingCoins">0</span></div>
+    <div class="stat-chip"><span class="stat-ic">🐟</span><span id="fishingCaughtCount">0</span></div>
+    <div class="stat-chip" id="fishingBagBtn"><span class="stat-ic">🧺</span><span id="fishingBagCount">0</span> Giỏ cá</div>
+    <div class="stat-chip" id="fishingSkillShopBtn"><span class="stat-ic">🛒</span>Kỹ năng</div>
+  </div>
+
+
+  <button id="fishingCastBtn">🎣 Thả câu</button>
+  <button id="fishingSellBtn">🏪 Bán tất cả cá</button>
+
+  <div class="look-layer" id="fishingLookLayer"></div>
+
+  <div class="joystick-base" id="fishingJoystickBase">
+    <div class="joystick-knob" id="fishingJoystickKnob"></div>
+  </div>
+
+  <div class="fishing-battle" id="fishingBattleUI">
+    <div class="fishing-fish-label" id="fishingFishLabel">🐟 Cá đang cắn câu!</div>
+    <div class="fishing-bar-wrap"><div class="fishing-bar-fill" id="fishingHpFill"></div></div>
+    <div class="fishing-bar-wrap" id="fishingTimerWrap"><div class="fishing-bar-fill" id="fishingTimerFill"></div></div>
+    <button class="fishing-reel-btn" id="fishingReelBtn">🎣 GIỮ ĐỂ KÉO!</button>
+    <div class="fishing-skill-bar" id="fishingSkillBar"></div>
+  </div>
+
+  <div class="fishing-catch-popup" id="fishingCatchPopup">
+    <div class="fishing-catch-emoji" id="fishingCatchEmoji">🐟</div>
+    <div class="fishing-catch-name" id="fishingCatchName">Cá Rô</div>
+    <div class="fishing-catch-sub" id="fishingCatchSub">+8 🪙</div>
+  </div>
+
+  <div class="mini-toast" id="fishingToast"></div>
+
+  <div class="backpack-overlay" id="fishingBagOverlay"></div>
+  <div class="backpack-panel lift-shop-panel" id="fishingBagPanel">
+    <div class="backpack-head">
+      <h3>🧺 Giỏ Cá</h3>
+      <div class="backpack-close" id="fishingBagClose">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+    </div>
+    <div class="lift-shop-grid" id="fishingBagGrid"></div>
+  </div>
+
+  <div class="backpack-overlay" id="fishingSkillOverlay"></div>
+  <div class="backpack-panel lift-shop-panel" id="fishingSkillPanel">
+    <div class="backpack-head">
+      <h3>🛒 Cửa hàng kỹ năng</h3>
+      <div class="backpack-close" id="fishingSkillClose">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+    </div>
+    <div class="egg-shop-row">
+      <div class="egg-shop-stat"><span class="stat-ic">🪙</span> <span id="fishingSkillCoins">0</span> coin</div>
+      <div class="egg-shop-stat"><span class="stat-ic">⚔️</span> <span id="fishingSkillEquippedCount">0</span>/4 trang bị</div>
+    </div>
+    <div class="lift-shop-grid" id="fishingSkillGrid"></div>
   </div>
 </div>
 
@@ -2911,6 +3077,7 @@
       { id:null, name:'Game Tốc Độ', creator:'GTR', isDefault:true, kind:'speed', createdAt:0 },
       { id:'lifting', name:'Nâng Tạ', creator:'GTR', isDefault:true, kind:'lifting', createdAt:0 },
       { id:'garden', name:'Vườn Cây 3D', creator:'GTR', isDefault:true, kind:'garden', createdAt:0 },
+      { id:'fishing', name:'Câu Cá 3D', creator:'GTR', isDefault:true, kind:'fishing', createdAt:0 },
       ...publishedList.map(g => ({
         id:g.id, name:g.name, creator:g.creator, isDefault:false, kind:'speed', createdAt:g.createdAt,
         description:g.description||'', difficulty:g.difficulty||'medium', thumbnailData:g.thumbnailData||null
@@ -2963,6 +3130,26 @@
       <g fill="#ffffff" opacity="0.85">
         <path d="M100 60 L112 60 L102 78 L114 78 L94 106 L100 82 L90 82 Z"/>
       </g>
+    </svg>`;
+  }
+  function fishingGameArt(){
+    return `<svg viewBox="0 0 200 200" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="fishSkyG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#1f6f8f"/><stop offset="100%" stop-color="#0d3b52"/>
+        </linearGradient>
+      </defs>
+      <rect width="200" height="200" fill="url(#fishSkyG)"/>
+      <circle cx="160" cy="34" r="15" fill="#FFE9A8" opacity="0.85"/>
+      <rect x="0" y="120" width="200" height="80" fill="#154a63"/>
+      <path d="M0 120 Q25 112 50 120 T100 120 T150 120 T200 120 V200 H0 Z" fill="#1c5d7c" opacity="0.7"/>
+      <g transform="translate(40,150)"><ellipse cx="0" cy="0" rx="16" ry="9" fill="#F2E82E"/><path d="M-14 0 L-26 -8 L-26 8 Z" fill="#F2E82E"/><circle cx="7" cy="-2" r="2" fill="#12161F"/></g>
+      <g transform="translate(120,60) rotate(20)">
+        <rect x="-2" y="0" width="4" height="70" fill="#8a5a2a"/>
+      </g>
+      <path d="M122 130 Q100 100 122 60" stroke="#EDF1F7" stroke-width="1.5" fill="none" opacity="0.8"/>
+      <circle cx="122" cy="132" r="4" fill="#E15A5A"/>
+      <text x="24" y="28" font-family="Arial" font-size="26">🎣</text>
     </svg>`;
   }
   function liftingGameArt(){
@@ -3019,6 +3206,10 @@
         art = gardenGameArt();
         openCall = `openGardenGame(); return false;`;
         tag = '3D · Trồng cây';
+      } else if(g.kind === 'fishing'){
+        art = fishingGameArt();
+        openCall = `openFishingGame(); return false;`;
+        tag = '3D · Câu cá';
       } else {
         art = g.thumbnailData ? `<img src="${g.thumbnailData}" alt="${safeName}" style="width:100%; height:100%; object-fit:cover;">` : speedGameArt();
         const gameIdAttr = g.id === null ? 'null' : `'${g.id}'`;
@@ -3254,12 +3445,14 @@
     if(savedOutfit) outfitDraft = savedOutfit;
     const savedInv = await serverGet(`gtr_inventory:${currentUsername}`);
     if(savedInv) inventory = savedInv;
+    await loadCustomInventory();
     document.getElementById('avatarView').classList.add('open');
     renderShopGrid();
     renderEquipSummary();
     document.getElementById('avCoinBalance').textContent = account.coins.toLocaleString('en-US');
     if(!avInitialized){ avInitialized = true; initAvatarPreview(); }
     updateAvatarPreviewColors();
+    claimPendingEarnings();
   }
   function closeAvatarView(){
     document.getElementById('avatarView').classList.remove('open');
@@ -3276,11 +3469,15 @@
   function setAvTab(tab){
     document.getElementById('avTabMarket').classList.toggle('active', tab==='market');
     document.getElementById('avTabCustomize').classList.toggle('active', tab==='customize');
+    document.getElementById('avTabDesign').classList.toggle('active', tab==='design');
     document.getElementById('avMarketPanel').style.display = tab==='market' ? 'block' : 'none';
     document.getElementById('avCustomizePanel').style.display = tab==='customize' ? 'block' : 'none';
+    document.getElementById('avDesignPanel').style.display = tab==='design' ? 'block' : 'none';
+    if(tab==='design') initShirtDesignerOnce();
   }
   document.getElementById('avTabMarket').addEventListener('click', ()=>setAvTab('market'));
   document.getElementById('avTabCustomize').addEventListener('click', ()=>{ renderEquipSummary(); setAvTab('customize'); });
+  document.getElementById('avTabDesign').addEventListener('click', ()=>setAvTab('design'));
 
   document.getElementById('avCatTabs').addEventListener('click', (e)=>{
     const tab = e.target.closest('.av-cat-tab');
@@ -3288,10 +3485,16 @@
     document.querySelectorAll('.av-cat-tab').forEach(t=>t.classList.remove('active'));
     tab.classList.add('active');
     avCurrentPart = tab.dataset.part;
-    renderShopGrid();
+    if(avCurrentPart === 'community'){
+      renderCommunityGrid();
+      loadCommunityItems().then(renderCommunityGrid);
+    } else {
+      renderShopGrid();
+    }
   });
 
   function renderShopGrid(){
+    if(avCurrentPart === 'community'){ renderCommunityGrid(); return; }
     const part = avCurrentPart;
     const grid = document.getElementById('avShopGrid');
     grid.innerHTML = SHOP_ITEMS[part].map(item=>{
@@ -3314,7 +3517,11 @@
 
   function renderEquipSummary(){
     document.getElementById('avEquipHead').style.background = outfitDraft.head;
-    document.getElementById('avEquipTorso').style.background = outfitDraft.torso;
+    if(outfitDraft.torso === 'custom' && outfitDraft.torsoTexture){
+      document.getElementById('avEquipTorso').style.background = `url('${outfitDraft.torsoTexture}') center/cover`;
+    } else {
+      document.getElementById('avEquipTorso').style.background = outfitDraft.torso;
+    }
     document.getElementById('avEquipLimb').style.background = outfitDraft.limb;
   }
 
@@ -3323,6 +3530,7 @@
     const owned = inventory[part].includes(id);
     if(owned){
       outfitDraft[part] = item.color;
+      if(part === 'torso'){ outfitDraft.torsoTexture = null; outfitDraft.torsoItemId = null; }
       renderShopGrid();
       updateAvatarPreviewColors();
       return;
@@ -3334,6 +3542,7 @@
     account.coins -= item.price;
     inventory[part].push(id);
     outfitDraft[part] = item.color;
+    if(part === 'torso'){ outfitDraft.torsoTexture = null; outfitDraft.torsoItemId = null; }
     saveAccount();
     await serverSet(`gtr_inventory:${currentUsername}`, inventory);
     renderAccount();
@@ -3348,6 +3557,230 @@
     showRewardToast(ok ? 'Đã lưu trang phục — bộ đồ này sẽ giữ nguyên khi bạn vào chơi.' : 'Đã áp dụng trang phục cho phiên này (không lưu được lâu dài lúc này).');
   });
   document.getElementById('shopSideLink').addEventListener('click', openAvatarView);
+
+  // ========== Thiết Kế Áo 3D + Chợ Vật Phẩm Cộng Đồng ==========
+  // Bất kỳ ai cũng có thể tự vẽ một chiếc áo riêng, chỉ giữ để mặc một mình, hoặc đăng bán cho
+  // người chơi khác mua bằng GTR-Coin. Vật phẩm được lưu chung trong 'gtr_marketplace'.
+  let shirtDesignerInitialized = false;
+  let shirtCtx = null;
+  let shirtCanvasTexture = null;
+  let shirtBrushColor = '#29D3EA';
+  let shirtBrushSize = 4;
+  let shirtDrawing = false;
+  let customInventory = []; // danh sách id vật phẩm cộng đồng mà mình đã sở hữu
+  let communityItems = {};  // toàn bộ vật phẩm đang bán trên chợ, key = itemId
+
+  const SHIRT_COLORS = ['#FFFFFF','#12161F','#E15A5A','#F2B84B','#FFD166','#2ECC55','#29D3EA','#5B8DEF','#8C7CFF','#E1A6D8','#7a5230','#3A4356'];
+  const SHIRT_EMOJIS = ['⭐','❤️','⚡','🔥','🌙','☀️','💎','🍀','🎵','☠️','👑','🌈'];
+
+  function initShirtDesignerOnce(){
+    if(shirtDesignerInitialized) return;
+    shirtDesignerInitialized = true;
+    const canvas = document.getElementById('shirtCanvas');
+    shirtCtx = canvas.getContext('2d');
+    shirtCtx.fillStyle = outfitDraft.torso && outfitDraft.torso.startsWith('#') ? outfitDraft.torso : '#29D3EA';
+    shirtCtx.fillRect(0,0,canvas.width,canvas.height);
+
+    document.getElementById('shirtColorRow').innerHTML = SHIRT_COLORS.map(c=>
+      `<div class="shirt-swatch" data-color="${c}" style="width:24px;height:24px;border-radius:7px;background:${c};border:1.5px solid var(--line); cursor:pointer;"></div>`
+    ).join('');
+    document.getElementById('shirtColorRow').addEventListener('click', (e)=>{
+      const sw = e.target.closest('.shirt-swatch');
+      if(!sw) return;
+      shirtBrushColor = sw.dataset.color;
+      document.getElementById('shirtColorPicker').value = shirtBrushColor;
+    });
+    document.getElementById('shirtColorPicker').addEventListener('input', (e)=>{ shirtBrushColor = e.target.value; });
+
+    document.getElementById('shirtEmojiRow').innerHTML = SHIRT_EMOJIS.map(em=>
+      `<div class="shirt-emoji-btn" data-emoji="${em}" style="width:30px;height:30px;border-radius:8px;background:var(--panel-2);border:1px solid var(--line);display:grid;place-items:center;font-size:16px;cursor:pointer;">${em}</div>`
+    ).join('');
+    document.getElementById('shirtEmojiRow').addEventListener('click', (e)=>{
+      const btn = e.target.closest('.shirt-emoji-btn');
+      if(!btn) return;
+      shirtCtx.font = '48px serif';
+      shirtCtx.textAlign = 'center'; shirtCtx.textBaseline = 'middle';
+      shirtCtx.fillText(btn.dataset.emoji, canvas.width/2, canvas.height/2);
+      markShirtCanvasDirty();
+    });
+
+    document.querySelectorAll('.shirt-tool-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('.shirt-tool-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        shirtBrushSize = parseInt(btn.dataset.size, 10);
+      });
+    });
+
+    function canvasPointFromEvent(e){
+      const r = canvas.getBoundingClientRect();
+      return {
+        x: (e.clientX - r.left) / r.width * canvas.width,
+        y: (e.clientY - r.top) / r.height * canvas.height,
+      };
+    }
+    let lastPt = null;
+    canvas.addEventListener('pointerdown', (e)=>{
+      e.preventDefault();
+      canvas.setPointerCapture(e.pointerId);
+      shirtDrawing = true;
+      lastPt = canvasPointFromEvent(e);
+      shirtCtx.fillStyle = shirtBrushColor;
+      shirtCtx.beginPath(); shirtCtx.arc(lastPt.x, lastPt.y, shirtBrushSize/2, 0, Math.PI*2); shirtCtx.fill();
+      markShirtCanvasDirty();
+    });
+    canvas.addEventListener('pointermove', (e)=>{
+      if(!shirtDrawing) return;
+      const pt = canvasPointFromEvent(e);
+      shirtCtx.strokeStyle = shirtBrushColor;
+      shirtCtx.lineWidth = shirtBrushSize;
+      shirtCtx.lineCap = 'round'; shirtCtx.lineJoin = 'round';
+      shirtCtx.beginPath(); shirtCtx.moveTo(lastPt.x, lastPt.y); shirtCtx.lineTo(pt.x, pt.y); shirtCtx.stroke();
+      lastPt = pt;
+      markShirtCanvasDirty();
+    });
+    ['pointerup','pointercancel','pointerleave'].forEach(evt=> canvas.addEventListener(evt, ()=>{ shirtDrawing=false; lastPt=null; }));
+
+    document.getElementById('shirtFillBtn').addEventListener('click', ()=>{
+      shirtCtx.fillStyle = shirtBrushColor;
+      shirtCtx.fillRect(0,0,canvas.width,canvas.height);
+      markShirtCanvasDirty();
+    });
+    document.getElementById('shirtClearBtn').addEventListener('click', ()=>{
+      shirtCtx.fillStyle = '#FFFFFF';
+      shirtCtx.fillRect(0,0,canvas.width,canvas.height);
+      markShirtCanvasDirty();
+    });
+
+    document.getElementById('shirtSaveOnlyBtn').addEventListener('click', async ()=>{
+      outfitDraft.torso = 'custom';
+      outfitDraft.torsoTexture = canvas.toDataURL('image/png');
+      outfitDraft.torsoItemId = null;
+      const ok = await serverSet(`gtr_outfit:${currentUsername}`, outfitDraft);
+      updateAvatarPreviewColors();
+      showRewardToast(ok ? '💾 Đã lưu áo tự thiết kế — chỉ mình bạn mặc, không đăng bán.' : 'Đã áp dụng cho phiên này (không lưu được lâu dài lúc này).');
+    });
+
+    document.getElementById('shirtPublishBtn').addEventListener('click', async ()=>{
+      const name = document.getElementById('shirtNameInput').value.trim();
+      const priceRaw = document.getElementById('shirtPriceInput').value;
+      const price = priceRaw === '' ? 0 : Math.max(0, parseInt(priceRaw, 10) || 0);
+      if(!name){ showRewardToast('⚠️ Hãy đặt tên cho chiếc áo trước khi đăng bán.'); return; }
+      const itemId = 'shirt' + Date.now();
+      const imageData = canvas.toDataURL('image/png');
+      const items = (await serverGet('gtr_marketplace')) || {};
+      items[itemId] = { id:itemId, name, creator:currentUsername, price, image:imageData, createdAt:Date.now(), sales:0 };
+      const ok = await serverSet('gtr_marketplace', items);
+      if(!ok){ showRewardToast('❌ Không đăng bán được lúc này — thử lại sau.'); return; }
+      // tự động sở hữu + mặc luôn chiếc áo mình vừa tạo
+      customInventory.push(itemId);
+      await serverSet(`gtr_custom_inventory:${currentUsername}`, customInventory);
+      outfitDraft.torso = 'custom';
+      outfitDraft.torsoTexture = imageData;
+      outfitDraft.torsoItemId = itemId;
+      await serverSet(`gtr_outfit:${currentUsername}`, outfitDraft);
+      updateAvatarPreviewColors();
+      showRewardToast(`🚀 Đã đăng bán "${name}"${price>0 ? ` với giá ${price.toLocaleString('en-US')} GTR-Coin` : ' (miễn phí)'}! Mọi người có thể mua ở tab Áo Cộng Đồng.`);
+      document.getElementById('shirtNameInput').value = '';
+      document.getElementById('shirtPriceInput').value = '';
+    });
+  }
+
+  function markShirtCanvasDirty(){
+    if(shirtCanvasTexture){ shirtCanvasTexture.needsUpdate = true; }
+    else if(avMats && avMats.torso){
+      // lần đầu vẽ: gắn canvas trực tiếp làm texture để xem trước tức thì, không cần chờ tải ảnh
+      shirtCanvasTexture = new THREE.CanvasTexture(document.getElementById('shirtCanvas'));
+      avMats.torso.map = shirtCanvasTexture;
+      avMats.torso.color.set('#ffffff');
+      avMats.torso.needsUpdate = true;
+    }
+  }
+
+  async function loadCustomInventory(){
+    const saved = await serverGet(`gtr_custom_inventory:${currentUsername}`);
+    customInventory = saved || [];
+  }
+  async function loadCommunityItems(){
+    communityItems = (await serverGet('gtr_marketplace')) || {};
+  }
+  // Do dự án chưa có cổng thanh toán thật giữa người dùng, tiền bán được cộng dồn vào một "số dư
+  // đang chờ" của người tạo và tự động cộng vào ví của họ ở lần mở Tủ Đồ tiếp theo.
+  async function claimPendingEarnings(){
+    const pending = await serverGet(`gtr_pending_earnings:${currentUsername}`);
+    const amount = pending || 0;
+    if(amount > 0){
+      account.coins += amount;
+      saveAccount();
+      await serverSet(`gtr_pending_earnings:${currentUsername}`, 0);
+      renderAccount();
+      showRewardToast(`🎉 Bạn vừa nhận được ${amount.toLocaleString('en-US')} GTR-Coin từ việc bán áo tự thiết kế!`);
+    }
+  }
+
+  function renderCommunityGrid(){
+    const grid = document.getElementById('avShopGrid');
+    const entries = Object.values(communityItems || {}).sort((a,b)=>b.createdAt-a.createdAt);
+    if(entries.length === 0){
+      grid.innerHTML = `<div class="backpack-empty" style="grid-column:1/-1;">Chưa có ai đăng bán áo tự thiết kế — hãy là người đầu tiên ở tab 🎨 Thiết Kế!</div>`;
+      return;
+    }
+    grid.innerHTML = entries.map(item=>{
+      const owned = customInventory.includes(item.id) || item.creator === currentUsername;
+      const equipped = outfitDraft.torsoItemId === item.id;
+      return `
+      <div class="shop-item ${equipped?'equipped':''}" data-item-id="${item.id}">
+        <div class="shop-swatch" style="background-image:url('${item.image}'); background-size:cover; background-position:center;">
+          ${!owned ? `<div class="lock-badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="5" y="11" width="14" height="9" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>` : ''}
+          ${equipped ? `<div class="equip-badge">✓</div>` : ''}
+        </div>
+        <div class="shop-item-name">${item.name}</div>
+        <div class="shop-item-price">${owned ? (equipped ? 'Đang mặc' : 'Đã sở hữu') : (item.price>0 ? `🪙 ${item.price.toLocaleString('en-US')}` : 'Miễn phí')}</div>
+        <div style="font-size:9.5px; color:var(--muted); margin-top:2px;">bởi ${item.creator}</div>
+      </div>`;
+    }).join('');
+    grid.querySelectorAll('.shop-item').forEach(el=>{
+      el.addEventListener('click', ()=>onCommunityItemClick(el.dataset.itemId));
+    });
+  }
+
+  async function onCommunityItemClick(itemId){
+    const item = communityItems[itemId];
+    if(!item) return;
+    const owned = customInventory.includes(itemId) || item.creator === currentUsername;
+    if(owned){
+      outfitDraft.torso = 'custom';
+      outfitDraft.torsoTexture = item.image;
+      outfitDraft.torsoItemId = itemId;
+      renderCommunityGrid();
+      updateAvatarPreviewColors();
+      return;
+    }
+    if(item.price > account.coins){
+      showRewardToast(`Bạn cần thêm ${(item.price - account.coins).toLocaleString('en-US')} GTR-Coin nữa để mua "${item.name}".`);
+      return;
+    }
+    account.coins -= item.price;
+    saveAccount();
+    customInventory.push(itemId);
+    await serverSet(`gtr_custom_inventory:${currentUsername}`, customInventory);
+    // cộng tiền bán (trừ khi tự mua áo của chính mình) vào số dư đang chờ của người tạo
+    if(item.price > 0 && item.creator !== currentUsername){
+      const pending = (await serverGet(`gtr_pending_earnings:${item.creator}`)) || 0;
+      await serverSet(`gtr_pending_earnings:${item.creator}`, pending + item.price);
+      item.sales = (item.sales||0) + 1;
+      communityItems[itemId] = item;
+      await serverSet('gtr_marketplace', communityItems);
+    }
+    outfitDraft.torso = 'custom';
+    outfitDraft.torsoTexture = item.image;
+    outfitDraft.torsoItemId = itemId;
+    renderAccount();
+    document.getElementById('avCoinBalance').textContent = account.coins.toLocaleString('en-US');
+    renderCommunityGrid();
+    updateAvatarPreviewColors();
+    showRewardToast(`Đã mua "${item.name}" với ${item.price.toLocaleString('en-US')} GTR-Coin!`);
+  }
 
   // ---- Shared character builder: rounded, Roblox-proportioned blocky avatar ----
   function toHexInt(c){
@@ -3421,11 +3854,12 @@
     const headColor  = toHexInt(opts.headColor  !== undefined ? opts.headColor  : 0xF2E82E);
     const torsoColor = toHexInt(opts.torsoColor !== undefined ? opts.torsoColor : 0x29D3EA);
     const limbColor  = toHexInt(opts.limbColor  !== undefined ? opts.limbColor  : 0x2ECC55);
+    const torsoTexture = opts.torsoTexture || null; // data URL của áo tự thiết kế (nếu có) — ưu tiên hơn màu đơn
 
     const LEG_W=0.42, LEG_D=0.42, LEG_H=1.0;
     const TORSO_W=0.95, TORSO_D=0.5, TORSO_H=1.05;
     const ARM_W=0.38, ARM_D=0.38, ARM_H=1.0;
-    const HEAD_S=0.85;
+    const HEAD_S=0.62;
 
     const legY   = LEG_H/2;
     const torsoY = LEG_H + TORSO_H/2;
@@ -3434,7 +3868,12 @@
     const group = new THREE.Group();
     const shade = { roughness:0.42, metalness:0.06 };
 
-    const skinTorso = new THREE.MeshStandardMaterial({ color:torsoColor, roughness:shade.roughness, metalness:shade.metalness });
+    const skinTorso = new THREE.MeshStandardMaterial({ color: torsoTexture ? 0xffffff : torsoColor, roughness:shade.roughness, metalness:shade.metalness });
+    if(torsoTexture){
+      try{
+        new THREE.TextureLoader().load(torsoTexture, tex=>{ skinTorso.map = tex; skinTorso.needsUpdate = true; });
+      }catch(e){ /* nếu tải texture lỗi, vẫn còn màu trắng nền làm dự phòng */ }
+    }
     const faceTex = makeFaceTexture(headColor);
     const headMats = [
       new THREE.MeshStandardMaterial({ color:headColor, roughness:shade.roughness, metalness:shade.metalness }),
@@ -3555,6 +3994,7 @@
       torsoColor: outfitDraft ? outfitDraft.torso : 0x2CF1B0,
       headColor:  outfitDraft ? outfitDraft.head  : 0xF2B84B,
       limbColor:  outfitDraft ? outfitDraft.limb  : 0x171C27,
+      torsoTexture: outfitDraft ? outfitDraft.torsoTexture : null,
     });
     avPlayer = built.group;
     avMats = { torso:built.skinTorso, head:built.headMats, armL:built.armL.material, armR:built.armR.material, legL:built.legL.material, legR:built.legR.material };
@@ -3624,7 +4064,20 @@
 
   function updateAvatarPreviewColors(){
     if(!avMats) return;
-    avMats.torso.color.set(outfitDraft.torso);
+    if(outfitDraft.torso === 'custom' && outfitDraft.torsoTexture){
+      // nếu đang là texture đang vẽ trực tiếp (canvas live), giữ nguyên map đó, chỉ đảm bảo màu nền trắng
+      if(!shirtCanvasTexture || avMats.torso.map !== shirtCanvasTexture){
+        new THREE.TextureLoader().load(outfitDraft.torsoTexture, tex=>{
+          avMats.torso.map = tex;
+          avMats.torso.color.set('#ffffff');
+          avMats.torso.needsUpdate = true;
+        });
+      }
+    } else {
+      avMats.torso.map = null;
+      avMats.torso.color.set(outfitDraft.torso);
+      avMats.torso.needsUpdate = true;
+    }
     avMats.armL.color.set(outfitDraft.head);
     avMats.armR.color.set(outfitDraft.head);
     avMats.legL.color.set(outfitDraft.limb);
@@ -4434,7 +4887,7 @@
   // reads a saved outfit (best-effort) so appearance stays consistent between visits
   let outfit = { head:0xF2E82E, torso:0x29D3EA, limb:0x2ECC55 };
 
-  const builtPlayer = buildGtrCharacter({ headColor: outfit.head, torsoColor: outfit.torso, limbColor: outfit.limb });
+  const builtPlayer = buildGtrCharacter({ headColor: outfit.head, torsoColor: outfit.torso, limbColor: outfit.limb, torsoTexture: outfit.torsoTexture });
   const player   = builtPlayer.group;
   const torso    = builtPlayer.torso;
   const head     = builtPlayer.head;
@@ -5800,7 +6253,7 @@
   async function liftLoadOutfitColors(){
     try{
       const saved = await serverGet(`gtr_outfit:${currentUsername}`);
-      if(saved) return { headColor:toHexInt(saved.head), torsoColor:toHexInt(saved.torso), limbColor:toHexInt(saved.limb) };
+      if(saved) return { headColor:toHexInt(saved.head), torsoColor:toHexInt(saved.torso), limbColor:toHexInt(saved.limb), torsoTexture: saved.torsoTexture || null };
     }catch(e){}
     return { headColor:0xF2E82E, torsoColor:0x29D3EA, limbColor:0x2ECC55 };
   }
@@ -6409,15 +6862,15 @@
       const g = new THREE.Group();
       const furMat = new THREE.MeshStandardMaterial({ color:0xFFFFFF, roughness:0.7 });
       const pinkMat = new THREE.MeshStandardMaterial({ color:0xF5A6C6, roughness:0.5 });
-      [-0.16, 0.16].forEach(ex=>{
-        const ear = new THREE.Mesh(new THREE.SphereGeometry(0.09,8,8), furMat);
+      [-0.12, 0.12].forEach(ex=>{
+        const ear = new THREE.Mesh(new THREE.SphereGeometry(0.07,8,8), furMat);
         ear.scale.set(1,2.8,0.4);
-        ear.position.set(ex, 0.42, -0.02);
+        ear.position.set(ex, 0.31, -0.02);
         ear.rotation.z = ex>0 ? -0.15 : 0.15;
         g.add(ear);
-        const inner = new THREE.Mesh(new THREE.SphereGeometry(0.05,8,8), pinkMat);
+        const inner = new THREE.Mesh(new THREE.SphereGeometry(0.04,8,8), pinkMat);
         inner.scale.set(1,2.3,0.3);
-        inner.position.set(ex, 0.4, 0.05);
+        inner.position.set(ex, 0.29, 0.04);
         g.add(inner);
       });
       return g;
@@ -6552,7 +7005,7 @@
 
     // ---- nhân vật chuẩn GTR — dùng chung 1 hàm dựng nhân vật với mọi game khác, đúng màu trang phục thật ----
     const outfit = playerOutfit || { head:'#F2E82E', torso:'#29D3EA', limb:'#2ECC55' };
-    const builtChar = buildGtrCharacter({ headColor: outfit.head, torsoColor: outfit.torso, limbColor: outfit.limb });
+    const builtChar = buildGtrCharacter({ headColor: outfit.head, torsoColor: outfit.torso, limbColor: outfit.limb, torsoTexture: outfit.torsoTexture });
     const player = builtChar.group;
     player.position.set(0,0,26);
     scene.add(player);
@@ -6980,6 +7433,674 @@
   }
   function closeEmbeddedView(id){
     document.getElementById(id).classList.remove('open');
+  }
+
+  // ========================= Câu Cá 3D =========================
+  let fishingInitialized = false;
+  let fishingState = { coins:0, caughtCount:0, bag:{}, ownedSkills:[], equippedSkills:[] };
+  const FISH_TYPES = [
+    { id:'f1', name:'Cá Rô',        emoji:'🐟', hp:150,  value:8,    rarity:'Thường',      chance:40 },
+    { id:'f2', name:'Cá Chép',      emoji:'🐠', hp:350,  value:20,   rarity:'Thường',      chance:28 },
+    { id:'f3', name:'Cá Trê',       emoji:'🐡', hp:700,  value:55,   rarity:'Hiếm',        chance:16 },
+    { id:'f4', name:'Cá Ngừ',       emoji:'🐟', hp:1300, value:120,  rarity:'Hiếm',        chance:10 },
+    { id:'f5', name:'Cá Mập Nhỏ',   emoji:'🦈', hp:2600, value:300,  rarity:'Sử Thi',      chance:4.5 },
+    { id:'f6', name:'Cá Rồng Vàng', emoji:'🐉', hp:6000, value:1200, rarity:'Huyền Thoại', chance:1.5 },
+  ];
+  const FISH_SKILLS = [
+    { id:'heli',     name:'Cần Câu Trực Thăng',   emoji:'🚁', desc:'Quay cần câu như cánh quạt trực thăng, bay lên trời 5 giây, gây 4200 sát thương lên cá.', price:500, cooldown:12, duration:5, damage:4200 },
+    { id:'yank',     name:'Giật Mạnh',            emoji:'💥', desc:'Giật cần thật mạnh, gây 900 sát thương tức thì lên cá.', price:250, cooldown:6,  duration:0, damage:900 },
+    { id:'power_up', name:'Cường Hóa Lưỡi Câu',   emoji:'⚡', desc:'Tăng 50% lực kéo trong 8 giây.', price:300, cooldown:15, duration:8, pullMult:1.5 },
+    { id:'extend',   name:'Dây Câu Chắc Chắn',    emoji:'🧵', desc:'Kéo dài thời gian giằng co thêm 10 giây trước khi cá sổng.', price:200, cooldown:10, duration:0, extendSec:10 },
+    { id:'stun',     name:'Choáng Cá',            emoji:'❄️', desc:'Cá ngừng kháng cự trong 4 giây, kéo dễ hơn hẳn.', price:350, cooldown:14, duration:4, stun:true },
+  ];
+
+  async function loadFishingState(){
+    const saved = await serverGet(`gtr_fishing:${currentUsername}`);
+    if(saved) fishingState = Object.assign({ coins:0, caughtCount:0, bag:{}, ownedSkills:[], equippedSkills:[] }, saved);
+    document.getElementById('fishingCoins').textContent = fishingState.coins.toLocaleString('en-US');
+    document.getElementById('fishingCaughtCount').textContent = fishingState.caughtCount;
+    updateFishingBagHUD();
+  }
+  function saveFishingState(){ serverSet(`gtr_fishing:${currentUsername}`, fishingState); }
+  function updateFishingBagHUD(){
+    const total = Object.values(fishingState.bag||{}).reduce((a,b)=>a+b,0);
+    document.getElementById('fishingBagCount').textContent = total;
+    document.getElementById('fishingSellBtn').style.display = total>0 ? '' : 'none';
+  }
+  function fishingToast(msg){
+    const t = document.getElementById('fishingToast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(window._fishingToastTimer);
+    window._fishingToastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+  }
+
+  function openFishingGame(){
+    document.getElementById('fishingView').classList.add('open');
+    if(fishingInitialized) return;
+    fishingInitialized = true;
+    function boot(){
+      Promise.all([
+        loadFishingState(),
+        serverGet(`gtr_outfit:${currentUsername}`)
+      ]).then(([_, outfit])=>{
+        try{
+          initFishingApp(outfit);
+        }catch(err){
+          console.error('Lỗi khởi tạo Câu Cá 3D:', err);
+          document.getElementById('fishingLoadGate').classList.add('hidden');
+          fishingToast('❌ Có lỗi khi tải game: ' + err.message);
+        }
+      });
+    }
+    if(typeof THREE === 'undefined'){
+      let tries = 0;
+      const waitTimer = setInterval(()=>{
+        tries++;
+        if(typeof THREE !== 'undefined'){ clearInterval(waitTimer); boot(); }
+        else if(tries > 50){ clearInterval(waitTimer); document.getElementById('fishingLoadGate').classList.add('hidden'); fishingToast('❌ Không tải được đồ họa 3D. Kiểm tra mạng và thử lại.'); }
+      }, 100);
+    } else {
+      boot();
+    }
+  }
+
+  function initFishingApp(playerOutfit){
+    const container = document.getElementById('fishingView');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x1f6f8f);
+    scene.fog = new THREE.Fog(0x1f6f8f, 26, 70);
+
+    const camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 200);
+    const renderer = new THREE.WebGLRenderer({ antialias:true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    container.insertBefore(renderer.domElement, container.firstChild);
+
+    window.addEventListener('resize', ()=>{
+      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+    const sun = new THREE.DirectionalLight(0xfff2d6, 0.95);
+    sun.position.set(10, 22, -6);
+    scene.add(sun);
+
+    // ---- mặt trời buổi chiều ----
+    (function(){
+      const s = new THREE.Mesh(new THREE.SphereGeometry(3.2,16,16), new THREE.MeshBasicMaterial({ color:0xFFE9A8 }));
+      s.position.set(-30, 20, 40);
+      scene.add(s);
+    })();
+
+    // ---- mặt nước — mặt phẳng nhiều đoạn, dao động sóng theo thời gian ----
+    const WATER_SEG = 40;
+    const waterGeo = new THREE.PlaneGeometry(70, 90, WATER_SEG, WATER_SEG);
+    waterGeo.rotateX(-Math.PI/2);
+    const waterMat = new THREE.MeshStandardMaterial({ color:0x1c5d7c, roughness:0.35, metalness:0.15, transparent:true, opacity:0.92 });
+    const water = new THREE.Mesh(waterGeo, waterMat);
+    water.position.set(0, 0, 42);
+    scene.add(water);
+    const waterBasePos = waterGeo.attributes.position.array.slice();
+
+    // ---- bến gỗ nơi nhân vật đứng câu ----
+    (function(){
+      const deckMat = new THREE.MeshStandardMaterial({ color:0x5a3a24, roughness:0.9 });
+      const deck = new THREE.Mesh(new THREE.BoxGeometry(6, 0.4, 8), deckMat);
+      deck.position.set(0, 0.2, -3);
+      scene.add(deck);
+      const plankMat = new THREE.MeshStandardMaterial({ color:0x3d2818, roughness:0.9 });
+      for(let i=0;i<7;i++){
+        const plank = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.44, 8), plankMat);
+        plank.position.set(-2.7 + i*0.9, 0.2, -3);
+        scene.add(plank);
+      }
+      // cọc trụ chống dưới nước
+      const pileMat = new THREE.MeshStandardMaterial({ color:0x2c1c10, roughness:0.95 });
+      [[-2.6,-0.2],[2.6,-0.2],[-2.6,-6],[2.6,-6]].forEach(([x,z])=>{
+        const pile = new THREE.Mesh(new THREE.CylinderGeometry(0.18,0.18,3.6,8), pileMat);
+        pile.position.set(x, -1.4, z);
+        scene.add(pile);
+      });
+    })();
+
+    // ---- nhân vật đứng câu, quay mặt ra hồ (+z) ----
+    const outfit = playerOutfit || { head:0xF2E82E, torso:0x29D3EA, limb:0x2ECC55 };
+    const builtChar = buildGtrCharacter({ headColor: outfit.head, torsoColor: outfit.torso, limbColor: outfit.limb, torsoTexture: outfit.torsoTexture });
+    const player = builtChar.group;
+    player.position.set(0, 0.4, -1.5);
+    player.rotation.y = Math.PI; // quay lưng về camera, mặt hướng ra mặt nước phía +z
+    scene.add(player);
+
+    // ---- cần câu gắn vào tay phải nhân vật ----
+    const rodPivot = new THREE.Group();
+    rodPivot.position.set(0, -0.35, 0.18); // gần bàn tay, phía trước cánh tay
+    builtChar.armR.add(rodPivot);
+    const rodMat = new THREE.MeshStandardMaterial({ color:0x8a5a2a, roughness:0.7 });
+    const ROD_LEN = 2.4;
+    const rodMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.05, ROD_LEN, 8), rodMat);
+    rodMesh.position.y = ROD_LEN/2;
+    rodPivot.add(rodMesh);
+    // "cánh quạt" trang trí hiện ra khi dùng kỹ năng Trực Thăng
+    const heliBladeGroup = new THREE.Group();
+    heliBladeGroup.visible = false;
+    heliBladeGroup.position.y = ROD_LEN;
+    const bladeMat = new THREE.MeshStandardMaterial({ color:0xEDF1F7, roughness:0.4 });
+    const blade1 = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.04, 0.14), bladeMat);
+    const blade2 = blade1.clone(); blade2.rotation.y = Math.PI/2;
+    heliBladeGroup.add(blade1, blade2);
+    rodPivot.add(heliBladeGroup);
+    rodPivot.rotation.x = -1.1; // cần câu chúc ra phía trước-lên
+
+    // đối tượng dùng để lấy tọa độ thế giới của đầu cần câu (điểm gắn dây câu)
+    const rodTipMarker = new THREE.Object3D();
+    rodTipMarker.position.y = ROD_LEN;
+    rodMesh.add(rodTipMarker);
+    const rodTipWorld = new THREE.Vector3();
+
+    // ---- phao câu ----
+    const bobberMat = new THREE.MeshStandardMaterial({ color:0xFFD166, roughness:0.4 });
+    const bobber = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 10), bobberMat);
+    bobber.visible = false;
+    scene.add(bobber);
+    const bobberWorldTarget = new THREE.Vector3(0, 0, 12); // vị trí phao khi thả xong, cách bến ~12m ra hồ
+
+    // ---- dây câu (line nối đầu cần -> phao) ----
+    const lineGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+    const lineMat = new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.75 });
+    const fishingLine = new THREE.Line(lineGeo, lineMat);
+    fishingLine.visible = false;
+    scene.add(fishingLine);
+
+    // ---- cá đang cầm trên tay (hiện ra ngắn sau khi câu được) ----
+    function buildHeldFishMesh(fishType){
+      const g = new THREE.Group();
+      const colorMap = { 'f1':0x7fb8d4, 'f2':0xd4a373, 'f3':0x8a6b53, 'f4':0x4a6fa5, 'f5':0x607d8b, 'f6':0xffd54f };
+      const mat = new THREE.MeshStandardMaterial({ color: colorMap[fishType.id] || 0x88aacc, roughness:0.4 });
+      const body = new THREE.Mesh(new THREE.SphereGeometry(0.22,10,8), mat);
+      body.scale.set(1.6,1,0.7);
+      g.add(body);
+      const tail = new THREE.Mesh(new THREE.ConeGeometry(0.16,0.26,6), mat);
+      tail.rotation.z = Math.PI/2;
+      tail.position.x = -0.34;
+      g.add(tail);
+      return g;
+    }
+    let heldFishMesh = null;
+
+    // ---- trạng thái game & animation ----
+    let castState = 'idle'; // idle | casting | waiting | battling | retrieving | holding-fish
+    let castProgress = 0;
+    let waitDuration = 2;
+    let heliActive = false;
+    let heliTimeLeft = 0;
+    let holding = false;
+
+    let currentFish = null;
+    let fightTimer = 0;
+    let fightMax = 18;
+    let activeEffects = {};
+    const cooldowns = {};
+
+    const castStartWorld = new THREE.Vector3();
+    const castLandWorld = new THREE.Vector3(0, 0, 12);
+
+    function pickRandomFish(){
+      const total = FISH_TYPES.reduce((a,f)=>a+f.chance,0);
+      let r = Math.random()*total;
+      for(const f of FISH_TYPES){ if(r < f.chance) return f; r -= f.chance; }
+      return FISH_TYPES[0];
+    }
+
+    function startCast(){
+      if(castState !== 'idle') return;
+      GtrSound.click();
+      castState = 'casting';
+      castProgress = 0;
+      castLandWorld.set(player.position.x + (Math.random()-0.5)*4, 0, 10 + Math.random()*8);
+      document.getElementById('fishingCastBtn').style.display = 'none';
+      bobber.visible = true;
+      fishingLine.visible = true;
+    }
+
+    function startBattle(){
+      const type = pickRandomFish();
+      currentFish = Object.assign({}, type, { hp: type.hp, maxHp: type.hp });
+      fightMax = 18; fightTimer = fightMax;
+      castState = 'battling';
+      activeEffects = {};
+      document.getElementById('fishingFishLabel').textContent = `${type.emoji} ${type.name} đang cắn câu!`;
+      document.getElementById('fishingBattleUI').classList.add('show');
+      renderSkillBar();
+      GtrSound.plant();
+      updateBattleBars();
+    }
+
+    function updateBattleBars(){
+      const hpPct = Math.max(0, currentFish.hp / currentFish.maxHp * 100);
+      document.getElementById('fishingHpFill').style.width = hpPct+'%';
+      const tPct = Math.max(0, fightTimer / fightMax * 100);
+      document.getElementById('fishingTimerFill').style.width = tPct+'%';
+    }
+
+    function endBattle(success){
+      document.getElementById('fishingBattleUI').classList.remove('show');
+      const fish = currentFish;
+      if(success){
+        GtrSound.harvest();
+        fishingState.bag[fish.id] = (fishingState.bag[fish.id]||0)+1;
+        fishingState.caughtCount += 1;
+        document.getElementById('fishingCaughtCount').textContent = fishingState.caughtCount;
+        updateFishingBagHUD();
+        saveFishingState();
+        showCatchPopup(fish);
+        castState = 'retrieving';
+        castProgress = 0;
+        heldFishMesh = buildHeldFishMesh(fish);
+        heldFishMesh.scale.set(0.001,0.001,0.001);
+        scene.add(heldFishMesh);
+      } else {
+        GtrSound.error();
+        fishingToast(`${fish.emoji} ${fish.name} đã sổng mất!`);
+        castState = 'idle';
+        bobber.visible = false;
+        fishingLine.visible = false;
+        document.getElementById('fishingCastBtn').style.display = '';
+      }
+      currentFish = null;
+    }
+
+    function showCatchPopup(fish){
+      document.getElementById('fishingCatchEmoji').textContent = fish.emoji;
+      document.getElementById('fishingCatchName').textContent = fish.name;
+      document.getElementById('fishingCatchSub').textContent = `${fish.rarity} · bán được ${fish.value} 🪙`;
+      const el = document.getElementById('fishingCatchPopup');
+      el.classList.add('show');
+      setTimeout(()=>el.classList.remove('show'), 1300);
+    }
+
+    // ---- kỹ năng ----
+    function renderSkillBar(){
+      const bar = document.getElementById('fishingSkillBar');
+      bar.innerHTML = '';
+      (fishingState.equippedSkills||[]).forEach(id=>{
+        const sk = FISH_SKILLS.find(s=>s.id===id);
+        if(!sk) return;
+        const btn = document.createElement('button');
+        btn.className = 'fishing-skill-btn';
+        btn.textContent = sk.emoji;
+        btn.title = sk.name;
+        btn.addEventListener('click', ()=>useSkill(sk.id));
+        bar.appendChild(btn);
+        updateSkillBtnCooldown(sk.id);
+      });
+    }
+    function updateSkillBtnCooldown(id){
+      const bar = document.getElementById('fishingSkillBar');
+      const idx = (fishingState.equippedSkills||[]).indexOf(id);
+      if(idx<0) return;
+      const btn = bar.children[idx];
+      if(!btn) return;
+      const cd = cooldowns[id]||0;
+      let cdEl = btn.querySelector('.fishing-skill-cd');
+      if(cd > 0){
+        if(!cdEl){ cdEl = document.createElement('div'); cdEl.className='fishing-skill-cd'; btn.appendChild(cdEl); }
+        cdEl.textContent = Math.ceil(cd);
+        btn.disabled = true;
+      } else {
+        if(cdEl) cdEl.remove();
+        btn.disabled = false;
+      }
+    }
+    function useSkill(id){
+      if(castState !== 'battling') return;
+      if((cooldowns[id]||0) > 0) return;
+      const sk = FISH_SKILLS.find(s=>s.id===id);
+      if(!sk) return;
+      cooldowns[id] = sk.cooldown;
+      if(sk.damage){
+        currentFish.hp = Math.max(0, currentFish.hp - sk.damage);
+        fishingToast(`${sk.emoji} ${sk.name}! -${sk.damage.toLocaleString('en-US')} sát thương`);
+      }
+      if(sk.extendSec){ fightTimer += sk.extendSec; fightMax += sk.extendSec; }
+      if(sk.pullMult){ activeEffects.pullMult = { mult: sk.pullMult, timeLeft: sk.duration }; }
+      if(sk.stun){ activeEffects.stun = { timeLeft: sk.duration }; }
+      if(id === 'heli'){
+        heliActive = true; heliTimeLeft = sk.duration;
+        heliBladeGroup.visible = true;
+        fishingToast('🚁 Cần Câu Trực Thăng! Bay lên trời!');
+      }
+      GtrSound.buy();
+      updateBattleBars();
+      if(currentFish.hp <= 0) endBattle(true);
+    }
+
+    document.getElementById('fishingCastBtn').addEventListener('click', startCast);
+    const reelBtn = document.getElementById('fishingReelBtn');
+    reelBtn.addEventListener('pointerdown', e=>{ e.preventDefault(); holding = true; });
+    ['pointerup','pointerleave','pointercancel'].forEach(evt=> reelBtn.addEventListener(evt, ()=>{ holding = false; }));
+
+    document.getElementById('fishingBagBtn').addEventListener('click', ()=>{
+      GtrSound.open();
+      renderFishingBag();
+      document.getElementById('fishingBagOverlay').classList.add('open');
+      document.getElementById('fishingBagPanel').classList.add('open');
+    });
+    function closeFishingBag(){
+      GtrSound.close();
+      document.getElementById('fishingBagOverlay').classList.remove('open');
+      document.getElementById('fishingBagPanel').classList.remove('open');
+    }
+    document.getElementById('fishingBagOverlay').addEventListener('click', closeFishingBag);
+    document.getElementById('fishingBagClose').addEventListener('click', closeFishingBag);
+
+    function renderFishingBag(){
+      const grid = document.getElementById('fishingBagGrid');
+      const entries = Object.entries(fishingState.bag||{}).filter(([,n])=>n>0);
+      if(entries.length===0){
+        grid.innerHTML = `<div class="backpack-empty">Giỏ cá trống — hãy đi câu vài con nhé!</div>`;
+        return;
+      }
+      grid.innerHTML = entries.map(([id,n])=>{
+        const f = FISH_TYPES.find(x=>x.id===id);
+        if(!f) return '';
+        return `<div class="lift-shop-item">
+          <div class="lift-shop-emoji">${f.emoji}</div>
+          <div class="lift-shop-name">${f.name}</div>
+          <div class="lift-shop-desc">x${n} · ${f.rarity}</div>
+          <div class="lift-shop-price">${f.value} 🪙/con</div>
+        </div>`;
+      }).join('');
+    }
+
+    document.getElementById('fishingSellBtn').addEventListener('click', ()=>{
+      const entries = Object.entries(fishingState.bag||{}).filter(([,n])=>n>0);
+      if(entries.length===0) return;
+      let total = 0;
+      const parts = [];
+      entries.forEach(([id,n])=>{
+        const f = FISH_TYPES.find(x=>x.id===id);
+        if(!f) return;
+        total += f.value*n;
+        parts.push(`${f.emoji}x${n}`);
+      });
+      fishingState.coins += total;
+      fishingState.bag = {};
+      saveFishingState();
+      document.getElementById('fishingCoins').textContent = fishingState.coins.toLocaleString('en-US');
+      updateFishingBagHUD();
+      GtrSound.coin();
+      fishingToast(`🏪 Đã bán ${parts.join(' ')} → +${total.toLocaleString('en-US')} 🪙!`);
+    });
+
+    document.getElementById('fishingSkillShopBtn').addEventListener('click', ()=>{
+      GtrSound.open();
+      renderFishingSkillShop();
+      document.getElementById('fishingSkillOverlay').classList.add('open');
+      document.getElementById('fishingSkillPanel').classList.add('open');
+    });
+    function closeFishingSkillShop(){
+      GtrSound.close();
+      document.getElementById('fishingSkillOverlay').classList.remove('open');
+      document.getElementById('fishingSkillPanel').classList.remove('open');
+    }
+    document.getElementById('fishingSkillOverlay').addEventListener('click', closeFishingSkillShop);
+    document.getElementById('fishingSkillClose').addEventListener('click', closeFishingSkillShop);
+
+    function renderFishingSkillShop(){
+      document.getElementById('fishingSkillCoins').textContent = fishingState.coins.toLocaleString('en-US');
+      document.getElementById('fishingSkillEquippedCount').textContent = (fishingState.equippedSkills||[]).length;
+      const grid = document.getElementById('fishingSkillGrid');
+      grid.innerHTML = FISH_SKILLS.map(sk=>{
+        const owned = (fishingState.ownedSkills||[]).includes(sk.id);
+        const equipped = (fishingState.equippedSkills||[]).includes(sk.id);
+        const priceLabel = owned
+          ? (equipped ? '<span class="lift-shop-price owned-tag">Đang trang bị</span>' : '<span class="lift-shop-price owned-tag">Đã sở hữu — chạm để trang bị</span>')
+          : `<span class="lift-shop-price">${sk.price.toLocaleString('en-US')} 🪙</span>`;
+        return `<div class="lift-shop-item ${owned?'owned':''} ${equipped?'equipped':''}" data-id="${sk.id}">
+          <div class="lift-shop-emoji">${sk.emoji}</div>
+          <div class="lift-shop-name">${sk.name}</div>
+          <div class="lift-shop-desc">${sk.desc}</div>
+          ${priceLabel}
+        </div>`;
+      }).join('');
+      grid.querySelectorAll('.lift-shop-item').forEach(el=>{
+        el.addEventListener('click', ()=>{
+          const id = el.dataset.id;
+          const sk = FISH_SKILLS.find(s=>s.id===id);
+          const owned = (fishingState.ownedSkills||[]).includes(id);
+          if(owned){
+            const idx = (fishingState.equippedSkills||[]).indexOf(id);
+            if(idx >= 0){
+              fishingState.equippedSkills.splice(idx,1);
+              GtrSound.click();
+            } else {
+              if((fishingState.equippedSkills||[]).length >= 4){
+                GtrSound.error();
+                fishingToast('⚠️ Tối đa 4 kỹ năng — hãy tháo bớt trước khi trang bị thêm.');
+                return;
+              }
+              fishingState.equippedSkills = fishingState.equippedSkills || [];
+              fishingState.equippedSkills.push(id);
+              GtrSound.click();
+            }
+            saveFishingState();
+            renderFishingSkillShop();
+            renderSkillBar();
+            return;
+          }
+          if(fishingState.coins < sk.price){
+            GtrSound.error();
+            fishingToast(`Cần thêm ${(sk.price-fishingState.coins).toLocaleString('en-US')} 🪙 nữa (câu cá & bán để kiếm thêm).`);
+            return;
+          }
+          GtrSound.buy();
+          fishingState.coins -= sk.price;
+          fishingState.ownedSkills = fishingState.ownedSkills || [];
+          fishingState.ownedSkills.push(id);
+          saveFishingState();
+          document.getElementById('fishingCoins').textContent = fishingState.coins.toLocaleString('en-US');
+          renderFishingSkillShop();
+          fishingToast(`Đã mua kỹ năng ${sk.name}!`);
+        });
+      });
+    }
+
+    document.getElementById('fishingBackChip').addEventListener('click', ()=>{
+      closeEmbeddedView('fishingView');
+    });
+
+    // ---- joystick di chuyển + camera xoay tự do (giống hệt cảm giác điều khiển ở Vườn Cây) ----
+    let joyX=0, joyY=0, joyPointerId=null;
+    const joyBase = document.getElementById('fishingJoystickBase');
+    const joyKnob = document.getElementById('fishingJoystickKnob');
+    const JOY_R = 60;
+    function joyStart(e){ if(joyPointerId!==null) return; joyPointerId=e.pointerId; joyBase.setPointerCapture(e.pointerId); }
+    function joyMove(e){
+      if(e.pointerId!==joyPointerId) return;
+      const r = joyBase.getBoundingClientRect();
+      const cx=r.left+r.width/2, cy=r.top+r.height/2;
+      let dx=e.clientX-cx, dy=e.clientY-cy;
+      const d=Math.min(JOY_R, Math.sqrt(dx*dx+dy*dy));
+      const ang=Math.atan2(dy,dx);
+      dx=Math.cos(ang)*d; dy=Math.sin(ang)*d;
+      joyKnob.style.transform=`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+      joyX=dx/JOY_R; joyY=dy/JOY_R;
+    }
+    function joyEnd(e){ if(e.pointerId!==joyPointerId) return; joyPointerId=null; joyX=0; joyY=0; joyKnob.style.transform='translate(-50%,-50%)'; }
+    joyBase.addEventListener('pointerdown', joyStart);
+    window.addEventListener('pointermove', joyMove);
+    window.addEventListener('pointerup', joyEnd);
+    window.addEventListener('pointercancel', joyEnd);
+
+    let camYaw = Math.PI, camPitch = 0.5, camDist = 7.5;
+    const camMinDist=4, camMaxDist=14;
+    const lookLayer = document.getElementById('fishingLookLayer');
+    const lookPointers = new Map();
+    let pinchStartDist=null, pinchStartCamDist=camDist;
+    function pDist(){ const p=[...lookPointers.values()]; if(p.length<2) return null; return Math.hypot(p[0].x-p[1].x, p[0].y-p[1].y); }
+    lookLayer.addEventListener('pointerdown', (e)=>{
+      lookLayer.setPointerCapture(e.pointerId);
+      lookPointers.set(e.pointerId, {x:e.clientX,y:e.clientY});
+      if(lookPointers.size===2){ pinchStartDist=pDist(); pinchStartCamDist=camDist; }
+    });
+    window.addEventListener('pointermove', (e)=>{
+      if(!lookPointers.has(e.pointerId)) return;
+      const prev = lookPointers.get(e.pointerId);
+      const cur = {x:e.clientX,y:e.clientY};
+      lookPointers.set(e.pointerId, cur);
+      if(lookPointers.size>=2){
+        const d=pDist();
+        if(d && pinchStartDist) camDist = Math.max(camMinDist, Math.min(camMaxDist, pinchStartCamDist*(pinchStartDist/d)));
+        return;
+      }
+      camYaw -= (cur.x-prev.x)*0.006;
+      camPitch = Math.max(0.15, Math.min(1.35, camPitch + (cur.y-prev.y)*0.004));
+    });
+    window.addEventListener('pointerup', (e)=>{ lookPointers.delete(e.pointerId); if(lookPointers.size<2) pinchStartDist=null; });
+    lookLayer.addEventListener('wheel', (e)=>{ e.preventDefault(); camDist=Math.max(camMinDist, Math.min(camMaxDist, camDist+e.deltaY*0.01)); }, {passive:false});
+
+    let facingAngle = Math.PI;
+    const moveSpeed = 0.1;
+    const DOCK_X_MIN=-2.6, DOCK_X_MAX=2.6, DOCK_Z_MIN=-6.3, DOCK_Z_MAX=-0.4;
+
+    // ---- vòng lặp render & cập nhật ----
+    let lastT = performance.now();
+    function loop(t){
+      const dt = Math.min(0.05, (t-lastT)/1000);
+      lastT = t;
+      const timeSec = t/1000;
+
+      // sóng nước
+      const posAttr = waterGeo.attributes.position;
+      for(let i=0;i<posAttr.count;i++){
+        const bx = waterBasePos[i*3], by = waterBasePos[i*3+1], bz = waterBasePos[i*3+2];
+        posAttr.array[i*3+1] = by + Math.sin(bx*0.35 + timeSec*1.4) * 0.12 + Math.cos(bz*0.3 + timeSec*1.1) * 0.1;
+      }
+      posAttr.needsUpdate = true;
+      waterGeo.computeVertexNormals();
+
+      // di chuyển nhân vật trên bến theo joystick (xoay theo hướng camera đang nhìn)
+      const mag = Math.min(1, Math.hypot(joyX,joyY));
+      if(mag > 0.08 && castState !== 'battling'){
+        const fwdX=-Math.sin(camYaw), fwdZ=-Math.cos(camYaw);
+        const rightX=Math.cos(camYaw), rightZ=-Math.sin(camYaw);
+        const moveX = rightX*joyX - fwdX*joyY, moveZ = rightZ*joyX - fwdZ*joyY;
+        const len = Math.hypot(moveX,moveZ)||1;
+        const nx=moveX/len, nz=moveZ/len;
+        player.position.x = Math.max(DOCK_X_MIN, Math.min(DOCK_X_MAX, player.position.x + nx*moveSpeed*mag*(dt*60)));
+        player.position.z = Math.max(DOCK_Z_MIN, Math.min(DOCK_Z_MAX, player.position.z + nz*moveSpeed*mag*(dt*60)));
+        const target = Math.atan2(nx,nz) + Math.PI;
+        let diff = target - facingAngle;
+        while(diff>Math.PI) diff-=Math.PI*2; while(diff<-Math.PI) diff+=Math.PI*2;
+        facingAngle += diff*0.25;
+        if(!heliActive) player.rotation.y = facingAngle;
+      }
+
+      // trạng thái câu cá
+      if(castState === 'casting'){
+        castProgress += dt;
+        const p = Math.min(1, castProgress/0.6);
+        rodTipMarker.getWorldPosition(rodTipWorld);
+        bobber.position.lerpVectors(rodTipWorld, castLandWorld, p);
+        bobber.position.y = rodTipWorld.y*(1-p) + 0.05 + Math.sin(p*Math.PI)*1.6;
+        if(p >= 1){ castState = 'waiting'; castProgress = 0; waitDuration = 1.5 + Math.random()*2.5; }
+      } else if(castState === 'waiting'){
+        castProgress += dt;
+        bobber.position.set(castLandWorld.x, Math.sin(timeSec*2)*0.05, castLandWorld.z);
+        if(castProgress > waitDuration){ startBattle(); }
+      } else if(castState === 'battling'){
+        fightTimer -= dt;
+        const shakeAmt = 0.12;
+        bobber.position.set(
+          castLandWorld.x + Math.sin(timeSec*22)*shakeAmt,
+          Math.abs(Math.sin(timeSec*18))*0.14,
+          castLandWorld.z + Math.cos(timeSec*19)*shakeAmt
+        );
+        const stunned = !!(activeEffects.stun && activeEffects.stun.timeLeft > 0);
+        if(activeEffects.stun){ activeEffects.stun.timeLeft -= dt; if(activeEffects.stun.timeLeft<=0) delete activeEffects.stun; }
+        let pullMult = 1;
+        if(activeEffects.pullMult){ activeEffects.pullMult.timeLeft -= dt; pullMult = activeEffects.pullMult.mult; if(activeEffects.pullMult.timeLeft<=0) delete activeEffects.pullMult; }
+        if(holding){
+          currentFish.hp = Math.max(0, currentFish.hp - 90*pullMult*dt);
+        } else if(!stunned){
+          currentFish.hp = Math.min(currentFish.maxHp, currentFish.hp + 22*dt);
+        }
+        updateBattleBars();
+        if(currentFish.hp <= 0){ endBattle(true); }
+        else if(fightTimer <= 0){ endBattle(false); }
+      } else if(castState === 'retrieving'){
+        castProgress += dt;
+        const p = Math.min(1, castProgress/0.7);
+        rodTipMarker.getWorldPosition(rodTipWorld);
+        bobber.position.lerpVectors(castLandWorld, rodTipWorld, p);
+        bobber.position.y += Math.sin(p*Math.PI)*0.8;
+        if(heldFishMesh){
+          heldFishMesh.position.copy(bobber.position);
+          const s = 0.001 + p*0.999;
+          heldFishMesh.scale.set(s,s,s);
+        }
+        if(p >= 1){
+          castState = 'holding-fish';
+          castProgress = 0;
+          bobber.visible = false;
+          fishingLine.visible = false;
+          if(heldFishMesh){
+            heldFishMesh.position.set(player.position.x, player.position.y + 1.6, player.position.z - 1.0);
+          }
+        }
+      } else if(castState === 'holding-fish'){
+        castProgress += dt;
+        if(heldFishMesh){ heldFishMesh.rotation.y += dt*3; }
+        if(castProgress > 1.2){
+          if(heldFishMesh){ scene.remove(heldFishMesh); heldFishMesh = null; }
+          castState = 'idle';
+          document.getElementById('fishingCastBtn').style.display = '';
+        }
+      }
+
+      // dây câu: nối đầu cần với phao
+      if(fishingLine.visible){
+        rodTipMarker.getWorldPosition(rodTipWorld);
+        const posArr = fishingLine.geometry.attributes.position.array;
+        posArr[0]=rodTipWorld.x; posArr[1]=rodTipWorld.y; posArr[2]=rodTipWorld.z;
+        posArr[3]=bobber.position.x; posArr[4]=bobber.position.y; posArr[5]=bobber.position.z;
+        fishingLine.geometry.attributes.position.needsUpdate = true;
+      }
+
+      // kỹ năng trực thăng: nhân vật bay lên, cần câu quay tít
+      if(heliActive){
+        heliTimeLeft -= dt;
+        const progress = 1 - Math.max(0,heliTimeLeft)/5;
+        const height = Math.sin(Math.min(progress*Math.PI, Math.PI)) * 4.2;
+        player.position.y = 0.4 + height;
+        rodPivot.rotation.y += dt*30;
+        if(heliTimeLeft <= 0){
+          heliActive = false;
+          player.position.y = 0.4;
+          rodPivot.rotation.y = 0;
+          heliBladeGroup.visible = false;
+        }
+      }
+      Object.keys(cooldowns).forEach(id=>{
+        if(cooldowns[id] > 0){ cooldowns[id] -= dt; if(cooldowns[id]<0) cooldowns[id]=0; updateSkillBtnCooldown(id); }
+      });
+
+      // camera đứng yên phía sau nhân vật, hơi đung đưa cho sống động
+      const camX = player.position.x + camDist*Math.sin(camYaw)*Math.cos(camPitch);
+      const camY = player.position.y + 1.6 + camDist*Math.sin(camPitch);
+      const camZ = player.position.z + camDist*Math.cos(camYaw)*Math.cos(camPitch);
+      camera.position.set(camX, camY, camZ);
+      camera.lookAt(player.position.x, player.position.y+1.2, player.position.z);
+
+      renderer.render(scene, camera);
+      requestAnimationFrame(loop);
+    }
+    camera.position.set(0, 3.4, -6.4);
+    camera.lookAt(0, 1.2, 6);
+    document.getElementById('fishingLoadGate').classList.add('hidden');
+    requestAnimationFrame(loop);
   }
 
   loadAccountsDB();
