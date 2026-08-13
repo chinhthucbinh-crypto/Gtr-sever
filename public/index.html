@@ -417,6 +417,25 @@
 
   /* ===== Leaderboard drawer ===== */
   .lb-list{ flex:1; overflow-y:auto; padding:8px 10px; }
+
+  /* ===== Nhiệm vụ hằng ngày ===== */
+  .quest-card{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:14px; padding:13px 14px;
+  }
+  .quest-card.done{ border-color:rgba(44,241,176,0.4); background:var(--signal-dim); }
+  .quest-card-top{ display:flex; align-items:center; gap:9px; margin-bottom:9px; }
+  .quest-icon{ font-size:19px; flex-shrink:0; }
+  .quest-label{ font-size:13px; font-weight:600; color:var(--cloud); flex:1; line-height:1.35; }
+  .quest-bar-wrap{ height:8px; border-radius:100px; background:rgba(255,255,255,0.08); overflow:hidden; margin-bottom:9px; }
+  .quest-bar-fill{ height:100%; border-radius:100px; background:linear-gradient(90deg, var(--signal), #22c99a); transition:width .25s; }
+  .quest-bottom{ display:flex; align-items:center; justify-content:space-between; }
+  .quest-progress-text{ font-family:'JetBrains Mono'; font-size:11.5px; color:var(--muted); }
+  .quest-claim-btn{
+    padding:7px 14px; border-radius:100px; border:none; cursor:pointer;
+    font-family:'Space Grotesk'; font-weight:700; font-size:12px;
+    background:var(--signal); color:#06120D;
+  }
+  .quest-claim-btn:disabled{ background:var(--panel); color:var(--muted); cursor:default; border:1px solid var(--line); }
   .lb-empty{ padding:30px 18px; text-align:center; color:var(--muted); font-size:13px; line-height:1.6; }
   .lb-row{ display:flex; align-items:center; gap:11px; padding:10px 8px; border-radius:10px; }
   .lb-row:hover{ background:var(--panel-2); }
@@ -1447,6 +1466,12 @@
       <span id="coinAmount">0</span>
     </div>
     <div class="notif-wrap">
+      <div class="icon-btn" id="questBtn" title="Nhiệm vụ hằng ngày">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <div class="badge-dot" id="questBadge"></div>
+      </div>
+    </div>
+    <div class="notif-wrap">
       <div class="icon-btn" id="notifBtn">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         <div class="badge-dot" id="notifBadge"></div>
@@ -1612,6 +1637,20 @@
     Xếp hạng theo tổng GTR-Coin của tất cả người chơi đã đăng ký trên bản demo này.
   </div>
   <div class="lb-list" id="lbList"></div>
+</div>
+
+<div class="drawer-overlay" id="questDrawerOverlay"></div>
+<div class="friends-drawer" id="questDrawer">
+  <div class="drawer-head">
+    <h3>📋 Nhiệm Vụ Hằng Ngày</h3>
+    <div class="drawer-close" id="questDrawerClose">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </div>
+  </div>
+  <div style="padding:14px 18px 4px; font-size:10.5px; color:var(--muted); line-height:1.5;">
+    Làm nhiệm vụ ở bất kỳ game nào để nhận GTR-Coin — danh sách làm mới mỗi ngày lúc 0h.
+  </div>
+  <div id="questList" style="padding:10px 14px 18px; display:flex; flex-direction:column; gap:10px;"></div>
 </div>
 
 <div class="chat-overlay" id="chatOverlay"></div>
@@ -2403,24 +2442,163 @@
   });
 
   let presenceTimer = null;
+  let lastSeenTimer = null;
 
   function enterApp(username){
     currentUsername = username;
     document.getElementById('avatarBtn').textContent = username.charAt(0).toUpperCase();
     document.getElementById('whoName').textContent = username;
     authGate.classList.add('hidden');
-    loadAccount();
+    loadAccount().then(claimOfflineReward);
+    loadQuestState();
 
     // presence heartbeat so friends can see you as "online"
     apiHeartbeat(currentUsername); // báo online ngay khi vào app
     presenceTimer = setInterval(()=>{
       apiHeartbeat(currentUsername);
     }, 20000);
+    // cứ mỗi phút, trong lúc đang chơi, cập nhật "lần cuối thấy" — để thời gian đang chơi
+    // không bị tính nhầm thành thời gian treo máy vắng mặt ở lần mở app kế tiếp
+    lastSeenTimer = setInterval(()=>{
+      serverSet(`gtr_lastseen:${currentUsername}`, Date.now());
+    }, 60000);
 
     loadGameLibrary();
 
     document.getElementById('adminBtn').style.display = isAdmin ? '' : 'none';
   }
+
+  // ---- Thưởng treo máy (idle/AFK): tính GTR-Coin dựa trên thời gian THỰC bạn không mở app ----
+  const OFFLINE_MIN_MS = 5*60*1000;      // ít nhất 5 phút vắng mặt mới tính thưởng
+  const OFFLINE_CAP_MS = 12*60*60*1000;  // tối đa quy đổi 12 tiếng/lần, tránh lạm dụng
+  const OFFLINE_COINS_PER_HOUR = 20;
+  async function claimOfflineReward(){
+    const key = `gtr_lastseen:${currentUsername}`;
+    const lastSeen = await serverGet(key);
+    const now = Date.now();
+    if(typeof lastSeen === 'number' && lastSeen > 0){
+      const elapsedMs = now - lastSeen;
+      if(elapsedMs >= OFFLINE_MIN_MS){
+        const cappedMs = Math.min(elapsedMs, OFFLINE_CAP_MS);
+        const reward = Math.floor(cappedMs/3600000 * OFFLINE_COINS_PER_HOUR);
+        if(reward > 0){
+          account.coins += reward;
+          account.notifications.unshift({ id:Date.now(), text:`🌙 Thưởng treo máy: +${reward} GTR-Coin sau khi vắng mặt.`, time:timeLabel(), read:false });
+          saveAccount();
+          renderAccount();
+          const hrs = Math.floor(cappedMs/3600000);
+          const mins = Math.floor((cappedMs%3600000)/60000);
+          const timeText = hrs>0 ? `${hrs} giờ ${mins} phút` : `${mins} phút`;
+          showRewardToast(`🌙 Chào mừng trở lại! Treo máy ${timeText} — nhận +${reward.toLocaleString('en-US')} GTR-Coin!`);
+        }
+      }
+    }
+    serverSet(key, now);
+  }
+
+  // ========== Nhiệm Vụ Hằng Ngày ==========
+  // Danh sách nhiệm vụ được chọn ngẫu nhiên nhưng ỔN ĐỊNH theo ngày (cùng 1 ngày, cùng người dùng
+  // luôn ra cùng danh sách dù mở app trên thiết bị khác), và tự làm mới lúc 0h.
+  let questState = null;
+  const QUEST_POOL = [
+    { type:'garden_harvest',  icon:'🌱', label:'Thu hoạch 5 lần ở Vườn Cây',      goal:5,  reward:20 },
+    { type:'fish_catch',      icon:'🎣', label:'Câu được 3 con cá',               goal:3,  reward:25 },
+    { type:'lift_rep',        icon:'🏋️', label:'Nâng tạ thành công 10 lần',       goal:10, reward:15 },
+    { type:'race_finish',     icon:'🏁', label:'Về đích ở Đua Tốc Độ 1 lần',      goal:1,  reward:20 },
+    { type:'studio_publish',  icon:'🎮', label:'Xuất bản 1 trò chơi ở Studio',    goal:1,  reward:30 },
+    { type:'garden_sell',     icon:'🏪', label:'Bán nông sản ở Vườn Cây 3 lần',   goal:3,  reward:15 },
+  ];
+  function pickDailyQuests(username, dateStr){
+    let seed = 0;
+    for(const ch of (username+dateStr)) seed = (seed*31 + ch.charCodeAt(0)) >>> 0;
+    const pool = [...QUEST_POOL];
+    const picked = [];
+    const n = Math.min(4, pool.length);
+    for(let i=0;i<n;i++){
+      seed = (seed*1103515245 + 12345) >>> 0;
+      const idx = seed % pool.length;
+      picked.push(pool.splice(idx,1)[0]);
+    }
+    return picked.map(q=>({ ...q, progress:0, claimed:false }));
+  }
+  async function loadQuestState(){
+    const today = todayStr();
+    const saved = await serverGet(`gtr_quests:${currentUsername}`);
+    if(saved && saved.date === today){
+      questState = saved;
+    } else {
+      questState = { date: today, quests: pickDailyQuests(currentUsername, today) };
+      await serverSet(`gtr_quests:${currentUsername}`, questState);
+    }
+    renderQuestBadge();
+  }
+  function saveQuestState(){ serverSet(`gtr_quests:${currentUsername}`, questState); }
+  function questProgress(type, amount){
+    if(!questState || !currentUsername) return;
+    let changed = false;
+    questState.quests.forEach(q=>{
+      if(q.type===type && !q.claimed && q.progress < q.goal){
+        q.progress = Math.min(q.goal, q.progress + amount);
+        changed = true;
+      }
+    });
+    if(changed){
+      saveQuestState();
+      renderQuestBadge();
+      if(document.getElementById('questDrawer').classList.contains('open')) renderQuestList();
+    }
+  }
+  function renderQuestBadge(){
+    if(!questState) return;
+    const readyCount = questState.quests.filter(q=>q.progress>=q.goal && !q.claimed).length;
+    document.getElementById('questBadge').style.display = readyCount>0 ? 'block' : 'none';
+  }
+  function renderQuestList(){
+    const list = document.getElementById('questList');
+    if(!questState){ list.innerHTML = `<div class="notif-empty">Đang tải nhiệm vụ...</div>`; return; }
+    list.innerHTML = questState.quests.map((q,i)=>{
+      const done = q.progress >= q.goal;
+      const pct = Math.min(100, q.progress/q.goal*100);
+      return `<div class="quest-card ${done?'done':''}">
+        <div class="quest-card-top">
+          <div class="quest-icon">${q.icon}</div>
+          <div class="quest-label">${q.label}</div>
+        </div>
+        <div class="quest-bar-wrap"><div class="quest-bar-fill" style="width:${pct}%"></div></div>
+        <div class="quest-bottom">
+          <div class="quest-progress-text">${q.progress}/${q.goal}</div>
+          <button class="quest-claim-btn" data-i="${i}" ${q.claimed ? 'disabled' : (done ? '' : 'disabled')}>
+            ${q.claimed ? 'Đã nhận' : `+${q.reward} 🪙`}
+          </button>
+        </div>
+      </div>`;
+    }).join('');
+    list.querySelectorAll('.quest-claim-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const q = questState.quests[parseInt(btn.dataset.i,10)];
+        if(!q || q.claimed || q.progress < q.goal) return;
+        q.claimed = true;
+        account.coins += q.reward;
+        saveAccount();
+        renderAccount();
+        saveQuestState();
+        renderQuestBadge();
+        renderQuestList();
+        showRewardToast(`✅ Hoàn thành "${q.label}" — nhận +${q.reward} GTR-Coin!`);
+      });
+    });
+  }
+  document.getElementById('questBtn').addEventListener('click', ()=>{
+    renderQuestList();
+    document.getElementById('questDrawerOverlay').classList.add('open');
+    document.getElementById('questDrawer').classList.add('open');
+  });
+  function closeQuestDrawer(){
+    document.getElementById('questDrawerOverlay').classList.remove('open');
+    document.getElementById('questDrawer').classList.remove('open');
+  }
+  document.getElementById('questDrawerOverlay').addEventListener('click', closeQuestDrawer);
+  document.getElementById('questDrawerClose').addEventListener('click', closeQuestDrawer);
 
   // ---- Avatar dropdown open/close + logout ----
   const avatarBtn = document.getElementById('avatarBtn');
@@ -2442,8 +2620,10 @@
     if(!avatarDropdown.contains(e.target)) avatarDropdown.classList.remove('open');
   });
   document.getElementById('logoutBtn').addEventListener('click', ()=>{
+    if(currentUsername) serverSet(`gtr_lastseen:${currentUsername}`, Date.now());
     currentUsername = null;
     clearInterval(presenceTimer);
+    clearInterval(lastSeenTimer);
     avatarDropdown.classList.remove('open');
     document.getElementById('authUsername').value = '';
     document.getElementById('authPassword').value = '';
@@ -2453,6 +2633,11 @@
   document.getElementById('outfitBtn').addEventListener('click', ()=>{
     avatarDropdown.classList.remove('open');
     openAvatarView();
+  });
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState === 'hidden' && currentUsername){
+      serverSet(`gtr_lastseen:${currentUsername}`, Date.now());
+    }
   });
 
   // ========== Tải về (Sao lưu) / Khôi phục tài khoản ==========
@@ -4574,6 +4759,7 @@
     const ok = await serverSet('gtr_games', games);
     if(ok){
       gameMeta.publishedId = gameId;
+      if(!isUpdate) questProgress('studio_publish', 1);
       const verb = isUpdate ? 'Đã cập nhật' : 'Đã xuất bản';
       showToast(`${verb} "${level.name}"! <a href="#" onclick="playFreshlyPublished('${gameId}'); return false;">Chơi thử ngay</a>`);
       await serverSet(`gtr_draft:${currentUsername}`, level);
@@ -5340,6 +5526,7 @@
   }
 
   function completeRun(){
+    questProgress('race_finish', 1);
     runState.runs += 1;
     let timeMsg = '';
     if(raceStartTime !== null){
@@ -6060,6 +6247,7 @@
     if(liftSceneReady) updateMonsterLook();
   }
   function doAttack(){
+    questProgress('lift_rep', 1);
     const dmg = Math.max(1, liftTotalStrength());
     liftMonsterHpNow -= dmg;
     liftFloatText('-'+dmg.toLocaleString('en-US'));
@@ -6980,6 +7168,10 @@
       myPlotOffset = { x:offsetX, z:offsetZ };
       const gridOffset = (GRID_N-1)*TILE_GAP/2;
       tiles = [];
+      const now = Date.now();
+      let autoHarvestCount = 0;
+      let autoHarvestValue = 0;
+      const autoHarvestParts = [];
       for(let ix=0; ix<GRID_N; ix++){
         for(let iz=0; iz<GRID_N; iz++){
           const x = offsetX + ix*TILE_GAP - gridOffset, z = offsetZ + iz*TILE_GAP - gridOffset;
@@ -6988,7 +7180,22 @@
           scene.add(soil);
           const key = `${ix}_${iz}`;
           const saved = gardenState.tiles[key];
-          tiles.push({ key, x, z, plantMesh:null, seedId: saved ? saved.seedId : null, plantedAt: saved ? saved.plantedAt : null });
+          let seedId = saved ? saved.seedId : null;
+          let plantedAt = saved ? saved.plantedAt : null;
+
+          // ---- "treo máy": nếu cây đã chín muồi từ lúc bạn vắng mặt, tự thu hoạch + bán luôn ----
+          if(seedId && plantedAt){
+            const seed = SEEDS.find(s=>s.id===seedId);
+            if(seed && (now - plantedAt)/1000 >= seed.growSec){
+              autoHarvestCount += 1;
+              autoHarvestValue += seed.reward;
+              const found = autoHarvestParts.find(p=>p.seed===seed);
+              if(found) found.n += 1; else autoHarvestParts.push({ seed, n:1 });
+              seedId = null; plantedAt = null;
+              delete gardenState.tiles[key];
+            }
+          }
+          tiles.push({ key, x, z, plantMesh:null, seedId, plantedAt });
         }
       }
       tiles.forEach(t=>{
@@ -7000,6 +7207,22 @@
           t.plantMesh = mesh;
         }
       });
+      if(autoHarvestCount > 0){
+        gardenState.coins += autoHarvestValue;
+        gardenState.harvests = (gardenState.harvests||0) + autoHarvestCount;
+        autoHarvestParts.forEach(({seed, n})=>{
+          if(seed.id === 's1' && !(gardenState.items && gardenState.items.tai_tho)){
+            gardenState.carrotsCollected = (gardenState.carrotsCollected||0) + n;
+          }
+        });
+        saveGardenState();
+        document.getElementById('gardenCoins').textContent = gardenState.coins.toLocaleString('en-US');
+        document.getElementById('gardenHarvests').textContent = gardenState.harvests;
+        const summary = autoHarvestParts.map(p=>`${p.seed.emoji}x${p.n}`).join(' ');
+        GtrSound.coin();
+        questProgress('garden_harvest', autoHarvestCount);
+        gardenToast(`🌙 Treo máy: tự thu hoạch & bán ${summary} → +${autoHarvestValue.toLocaleString('en-US')} 🪙!`);
+      }
       player.position.set(offsetX, 0, offsetZ + 8);
     }
 
@@ -7079,6 +7302,7 @@
         const progress = Math.min(1, (now-t.plantedAt)/1000/seed.growSec);
         if(progress < 1) return; // chưa chín, nút đã bị disable nhưng chặn thêm cho chắc
         GtrSound.harvest();
+        questProgress('garden_harvest', 1);
         gardenState.basket[seed.id] = (gardenState.basket[seed.id]||0) + 1;
         gardenState.harvests += 1;
         updateBasketHUD();
@@ -7137,6 +7361,7 @@
         parts.push(`${seed.emoji}×${count}`);
       });
       GtrSound.coin();
+      questProgress('garden_sell', 1);
       gardenState.coins += total;
       gardenState.basket = {};
       saveGardenState();
@@ -7689,6 +7914,7 @@
       const fish = currentFish;
       if(success){
         GtrSound.harvest();
+        questProgress('fish_catch', 1);
         fishingState.bag[fish.id] = (fishingState.bag[fish.id]||0)+1;
         fishingState.caughtCount += 1;
         document.getElementById('fishingCaughtCount').textContent = fishingState.caughtCount;
