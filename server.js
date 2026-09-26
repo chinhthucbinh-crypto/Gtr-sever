@@ -477,6 +477,8 @@ const io = new Server(server, {
   cors: { origin: '*' } // demo only — siết lại domain cụ thể khi triển khai thật
 });
 
+require('./garden')(io); // Vườn Cây 3D nhiều người chơi — xem file garden.js
+
 // ----------------------------------------------------------------------------
 // RoomManager: quản lý danh sách phòng, tự tạo phòng mới khi phòng hiện tại đầy
 // ----------------------------------------------------------------------------
