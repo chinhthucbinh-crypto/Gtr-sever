@@ -520,6 +520,33 @@
     background:var(--panel-2); border:1px solid var(--line); font-size:12px; color:var(--cloud); line-height:1.4;
   }
   .wallet-earn-ic{ font-size:16px; flex-shrink:0; }
+
+  /* ===== Trang chi tiết game (hiện trước khi vào chơi) ===== */
+  .game-detail-modal{
+    position:fixed; left:0; right:0; bottom:0; z-index:310;
+    background:var(--panel); border-radius:20px 20px 0 0;
+    transform:translateY(100%); transition:transform .25s ease;
+    max-height:88vh; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    box-shadow:0 -10px 40px rgba(0,0,0,0.5);
+  }
+  .game-detail-modal.open{ transform:translateY(0); }
+  .gd-thumb{ width:100%; aspect-ratio:16/9; overflow:hidden; position:relative; }
+  .gd-thumb svg, .gd-thumb img{ width:100%; height:100%; display:block; object-fit:cover; }
+  .gd-close{
+    position:absolute; top:12px; right:12px; z-index:2;
+    width:34px; height:34px; border-radius:50%; background:rgba(5,7,11,0.65); color:#fff;
+    display:grid; place-items:center; cursor:pointer;
+  }
+  .gd-body{ padding:18px 20px 26px; }
+  .gd-name{ font-family:'Space Grotesk'; font-weight:700; font-size:19px; color:var(--cloud); margin-bottom:4px; }
+  .gd-creator{ font-size:12.5px; color:var(--muted); margin-bottom:16px; }
+  .gd-info-list{ margin-bottom:18px; }
+  .gd-info-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:11px 0; border-bottom:1px solid var(--line); font-size:13px;
+  }
+  .gd-info-row span{ color:var(--muted); }
+  .gd-info-row b{ color:var(--cloud); font-weight:600; }
   .lb-row{ display:flex; align-items:center; gap:11px; padding:10px 8px; border-radius:10px; }
   .lb-row:hover{ background:var(--panel-2); }
   .lb-row.me{ background:var(--signal-dim); }
@@ -1032,6 +1059,31 @@
     padding:7px 14px; border-radius:100px; font-size:12.5px; font-weight:600; color:var(--cloud);
   }
   #gardenView .garden-seed-chip .stat-ic{ margin-right:4px; }
+  #gardenView #gardenPlayersChip .garden-net{ font-family:'Inter',sans-serif; font-weight:600; font-size:11px; color:var(--muted); margin-left:2px; }
+  #gardenView .garden-social{
+    position:fixed; right:16px; top:50%; transform:translateY(-50%); z-index:22;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  #gardenView .garden-round-btn{
+    width:46px; height:46px; border-radius:50%; font-size:22px; line-height:1; cursor:pointer;
+    background:rgba(18,22,31,0.78); border:1px solid var(--line); backdrop-filter:blur(6px);
+    display:grid; place-items:center; -webkit-tap-highlight-color:transparent;
+  }
+  #gardenView .garden-round-btn:active{ transform:scale(0.94); }
+  #gardenView .garden-quick-panel{
+    position:fixed; right:72px; top:50%; z-index:23;
+    transform:translateY(-50%) scale(0.96); opacity:0; pointer-events:none; transition:opacity .15s, transform .15s;
+    background:rgba(18,22,31,0.92); border:1px solid var(--line); border-radius:14px; padding:8px;
+    backdrop-filter:blur(8px); display:flex; flex-direction:column; gap:6px; max-width:60vw;
+  }
+  #gardenView .garden-quick-panel.open{ opacity:1; pointer-events:auto; transform:translateY(-50%) scale(1); }
+  #gardenView .garden-quick-panel button{
+    border:none; cursor:pointer; border-radius:10px; padding:9px 12px; text-align:left;
+    background:var(--panel-2); color:var(--cloud); font-family:'Inter',sans-serif; font-weight:600; font-size:13px;
+  }
+  #gardenView .garden-quick-panel button:active{ background:var(--signal-dim); }
+  #gardenView .garden-quick-panel.emotes{ display:grid; grid-template-columns:repeat(3, 1fr); }
+  #gardenView .garden-quick-panel.emotes button{ font-size:24px; text-align:center; padding:8px 12px; }
 
   /* ===================== Câu Cá 3D ===================== */
   #fishingView{
@@ -1271,6 +1323,25 @@
     transition: opacity .4s;
   }
   #miniGameView .load-gate.hidden, #gardenView .load-gate.hidden, #fishingView .load-gate.hidden { opacity:0; pointer-events:none; }
+  #miniGameView .load-thumb, #gardenView .load-thumb {
+    width:160px; aspect-ratio:16/9; border-radius:14px; overflow:hidden;
+    box-shadow:0 12px 34px rgba(0,0,0,0.5); background:var(--panel-2);
+  }
+  #miniGameView .load-thumb svg, #gardenView .load-thumb svg,
+  #miniGameView .load-thumb img, #gardenView .load-thumb img{ width:100%; height:100%; display:block; object-fit:cover; }
+  #miniGameView .load-game-name, #gardenView .load-game-name{
+    font-family:'Space Grotesk'; font-weight:700; font-size:17px; color:var(--cloud); text-align:center; padding:0 20px;
+  }
+  #miniGameView .load-game-creator, #gardenView .load-game-creator{ font-size:12px; color:var(--muted); margin-top:-10px; }
+  #miniGameView .load-bar-track, #gardenView .load-bar-track{
+    width:180px; height:5px; border-radius:100px; background:rgba(255,255,255,0.12); overflow:hidden;
+  }
+  #miniGameView .load-bar-fill, #gardenView .load-bar-fill{
+    height:100%; width:0%; border-radius:100px;
+    background: linear-gradient(90deg, #3B9EFF, #5EC2FF);
+    animation: loadBarFill 1.8s ease-out forwards;
+  }
+  @keyframes loadBarFill{ from{ width:6%; } to{ width:96%; } }
   #miniGameView .load-mark, #gardenView .load-mark, #fishingView .load-mark {
     width:52px; height:52px;
     background-image: var(--logo-img);
@@ -1279,7 +1350,7 @@
     animation: spinY 1.4s linear infinite;
   }
   @keyframes spinY{ to{ transform:rotate(360deg); } }
-  #miniGameView .load-text, #gardenView .load-text { font-family:'Space Grotesk'; font-weight:600; font-size:14px; color:var(--muted); }
+  #miniGameView .load-text, #gardenView .load-text { font-family:'Space Grotesk'; font-weight:600; font-size:12px; color:var(--muted); }
   #miniGameView /* ===== Collect toast ===== */
   .mini-toast {
     position:fixed; top:64px; left:50%; transform:translateX(-50%) translateY(-10px);
@@ -1820,6 +1891,27 @@
   </div>
 </div>
 
+<div class="drawer-overlay" id="gameDetailOverlay"></div>
+<div class="game-detail-modal" id="gameDetailModal">
+  <div class="gd-thumb" id="gdThumb"></div>
+  <div class="gd-close" id="gdClose">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </div>
+  <div class="gd-body">
+    <div class="gd-name" id="gdName">—</div>
+    <div class="gd-creator">bởi <span id="gdCreator">—</span></div>
+    <div class="gd-info-list">
+      <div class="gd-info-row"><span>Thể loại</span><b id="gdGenre">—</b></div>
+      <div class="gd-info-row"><span>Được tạo</span><b id="gdCreated">—</b></div>
+      <div class="gd-info-row" id="gdPlaysRow"><span>Lượt chơi</span><b id="gdPlays">—</b></div>
+    </div>
+    <button class="btn btn-primary" id="gamePlayBtn" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      Chơi ngay
+    </button>
+  </div>
+</div>
+
 <div class="chat-overlay" id="chatOverlay"></div>
 <div class="chat-panel" id="chatPanel">
   <div class="chat-head">
@@ -2042,8 +2134,11 @@
   <div class="rotate-hint">🔄 Xoay ngang máy để chơi thoải mái hơn</div>
 
 <div class="load-gate" id="loadGate">
-  <div class="load-mark"></div>
-  <div class="load-text">Đang tải Sân Chơi Khối...</div>
+  <div class="load-thumb" id="loadThumb"></div>
+  <div class="load-game-name" id="loadGameName">Sân Chơi Khối 3D</div>
+  <div class="load-game-creator" id="loadGameCreator">bởi GTR</div>
+  <div class="load-bar-track"><div class="load-bar-fill" id="loadBarFill"></div></div>
+  <div class="load-text">Đang tải...</div>
 </div>
 
 <div class="hud-top">
@@ -2144,8 +2239,11 @@
 
 <div id="gardenView">
   <div class="load-gate" id="gardenLoadGate">
-    <div class="load-mark"></div>
-    <div class="load-text">Đang tải Vườn Cây 3D...</div>
+    <div class="load-thumb" id="gardenLoadThumb"></div>
+    <div class="load-game-name" id="gardenLoadGameName">Vườn Cây 3D</div>
+    <div class="load-game-creator" id="gardenLoadGameCreator">bởi GTR</div>
+    <div class="load-bar-track"><div class="load-bar-fill" id="gardenLoadBarFill"></div></div>
+    <div class="load-text">Đang tải...</div>
   </div>
 
   <div class="rotate-hint">🔄 Xoay ngang máy để chơi thoải mái hơn</div>
@@ -2161,6 +2259,7 @@
     <div class="stat-chip"><span class="stat-ic">🪙</span><span id="gardenCoins">0</span></div>
     <div class="stat-chip"><span class="stat-ic">🌾</span><span id="gardenHarvests">0</span></div>
     <div class="stat-chip" id="gardenShopBtn"><span class="stat-ic">🛒</span> Hạt giống</div>
+    <div class="stat-chip" id="gardenPlayersChip"><span class="stat-ic">👥</span><span id="gardenPlayers">1/8</span><span class="garden-net" id="gardenNet">Một mình</span></div>
   </div>
 
   <div class="garden-seed-chip" id="gardenSeedChip">
@@ -2186,6 +2285,12 @@
   </div>
 
   <div class="mini-toast" id="gardenToast"></div>
+
+  <div class="garden-social" id="gardenSocial">
+    <button type="button" class="garden-round-btn" id="gardenChatBtn" aria-label="Nói nhanh">💬</button>
+    <button type="button" class="garden-round-btn" id="gardenEmoteBtn" aria-label="Biểu cảm">😊</button>
+  </div>
+  <div class="garden-quick-panel" id="gardenQuickPanel"></div>
 
   <div class="backpack-overlay" id="gardenShopOverlay"></div>
   <div class="backpack-panel lift-shop-panel" id="gardenShopPanel">
@@ -3414,19 +3519,17 @@
       const gradient = GRADIENTS[i % GRADIENTS.length];
       const badge = g.isDefault ? 'Mặc định' : 'Cộng đồng';
       const diffLabel = { easy:'Dễ', medium:'Vừa', hard:'Khó' }[g.difficulty] || null;
-      let art, openCall, tag;
+      let art, tag;
       if(g.kind === 'garden'){
         art = gardenGameArt();
-        openCall = `openGardenGame(); return false;`;
         tag = '3D · Trồng cây';
       } else {
         art = g.thumbnailData ? `<img src="${g.thumbnailData}" alt="${safeName}" style="width:100%; height:100%; object-fit:cover;">` : speedGameArt();
-        const gameIdAttr = g.id === null ? 'null' : `'${g.id}'`;
-        openCall = `openMiniGame(${gameIdAttr}); return false;`;
         tag = diffLabel ? `3D · ${diffLabel}` : '3D · Đua tốc độ';
       }
+      const gid = g.id === null ? '' : escapeHtml(String(g.id));
       return `
-      <a class="card" href="#" onclick="${openCall}" style="text-decoration:none; color:inherit;">
+      <a class="card" href="#" data-game-id="${gid}" style="text-decoration:none; color:inherit;">
         <div class="thumb" style="background:${gradient}; overflow:hidden;">
           <div class="rank">${badge}</div>
           <div style="position:absolute; inset:0;">${art}</div>
@@ -3439,11 +3542,65 @@
         <div class="sub">${g.description ? escapeHtml(g.description) : ('by ' + safeCreator)}</div>
       </a>`;
     }).join('');
+    grid.querySelectorAll('.card').forEach((cardEl, idx)=>{
+      cardEl.addEventListener('click', (e)=>{
+        e.preventDefault();
+        openGameDetail(list[idx]);
+      });
+    });
   }
   document.getElementById('gameLibrarySearch').addEventListener('input', (e) => {
     renderGameLibrary(e.target.value);
   });
   document.getElementById('lbClose').addEventListener('click', closeLeaderboard);
+
+  // ---- Trang chi tiết game — hiện trước khi vào chơi, giống Roblox: người tạo, thể loại,
+  // ngày tạo, lượt chơi thật (đếm mỗi lần bấm Play, không phải số bịa ra). ----
+  function genreLabel(g){
+    if(g.kind === 'garden') return 'Mô phỏng';
+    return 'Đua xe';
+  }
+  function formatVNDate(ts){
+    if(!ts) return '—';
+    const d = new Date(ts);
+    return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+  }
+  function formatPlays(n){
+    if(n >= 1000000) return (n/1000000).toFixed(1).replace('.0','') + ' Tr';
+    if(n >= 1000) return (n/1000).toFixed(1).replace('.0','') + ' N';
+    return String(n);
+  }
+  async function openGameDetail(g){
+    const safeName = escapeHtml(g.name);
+    const safeCreator = escapeHtml(g.creator);
+    let art;
+    if(g.kind === 'garden') art = gardenGameArt();
+    else art = g.thumbnailData ? `<img src="${g.thumbnailData}" alt="${safeName}" style="width:100%; height:100%; object-fit:cover;">` : speedGameArt();
+    document.getElementById('gdThumb').innerHTML = art;
+    document.getElementById('gdName').textContent = g.name;
+    document.getElementById('gdCreator').textContent = safeCreator;
+    document.getElementById('gdGenre').textContent = genreLabel(g);
+    document.getElementById('gdCreated').textContent = formatVNDate(g.createdAt);
+    document.getElementById('gdPlaysRow').style.display = 'none';
+    const playKey = `gtr_playcount:${g.id === null ? 'default_speed' : g.id}`;
+    const plays = (await serverGet(playKey)) || 0;
+    document.getElementById('gdPlays').textContent = formatPlays(plays);
+    document.getElementById('gdPlaysRow').style.display = '';
+    document.getElementById('gamePlayBtn').onclick = async ()=>{
+      serverSet(playKey, plays + 1);
+      closeGameDetail();
+      if(g.kind === 'garden') openGardenGame(g);
+      else openMiniGame(g.id === null ? null : g.id, g);
+    };
+    document.getElementById('gameDetailOverlay').classList.add('open');
+    document.getElementById('gameDetailModal').classList.add('open');
+  }
+  function closeGameDetail(){
+    document.getElementById('gameDetailOverlay').classList.remove('open');
+    document.getElementById('gameDetailModal').classList.remove('open');
+  }
+  document.getElementById('gameDetailOverlay').addEventListener('click', closeGameDetail);
+  document.getElementById('gdClose').addEventListener('click', closeGameDetail);
 
   // ---- Ví GTR-Coin: bấm icon coin ở header để xem số dư + cách kiếm thêm ----
   document.getElementById('coinPill').addEventListener('click', ()=>{
@@ -6344,7 +6501,22 @@
   let currentMiniGameId = undefined; // undefined = chưa mở game nào lần nào; null = game mặc định
   let stopCurrentMiniGame = null;
   let miniGameFreshHTML = null;
-  function openMiniGame(gameId){
+  function populateLoadGate(thumbId, nameId, creatorId, gameInfo){
+    if(!gameInfo) return;
+    const thumbEl = document.getElementById(thumbId);
+    const nameEl = document.getElementById(nameId);
+    const creatorEl = document.getElementById(creatorId);
+    if(thumbEl){
+      let art;
+      if(gameInfo.kind === 'garden') art = gardenGameArt();
+      else art = gameInfo.thumbnailData ? `<img src="${gameInfo.thumbnailData}" alt="">` : speedGameArt();
+      thumbEl.innerHTML = art;
+    }
+    if(nameEl) nameEl.textContent = gameInfo.name;
+    if(creatorEl) creatorEl.textContent = 'bởi ' + gameInfo.creator;
+  }
+
+  function openMiniGame(gameId, gameInfo){
     gameId = gameId === undefined ? null : gameId;
     const view = document.getElementById('miniGameView');
     view.classList.add('open');
@@ -6354,6 +6526,7 @@
     function boot(){
       if(currentMiniGameId === undefined){
         currentMiniGameId = gameId;
+        populateLoadGate('loadThumb', 'loadGameName', 'loadGameCreator', gameInfo);
         initMiniGameApp(gameId);
         return;
       }
@@ -6363,6 +6536,7 @@
       if(stopCurrentMiniGame) stopCurrentMiniGame();
       view.innerHTML = miniGameFreshHTML;
       currentMiniGameId = gameId;
+      populateLoadGate('loadThumb', 'loadGameName', 'loadGameCreator', gameInfo);
       initMiniGameApp(gameId);
     }
 
@@ -6413,9 +6587,10 @@
     window._gardenToastTimer = setTimeout(()=>t.classList.remove('show'), 2000);
   }
 
-  function openGardenGame(){
+  function openGardenGame(gameInfo){
     document.getElementById('gardenView').classList.add('open');
     tryLockLandscapeForGame();
+    populateLoadGate('gardenLoadThumb', 'gardenLoadGameName', 'gardenLoadGameCreator', gameInfo);
     if(gardenInitialized) return;
     gardenInitialized = true;
     function boot(){
@@ -6502,14 +6677,14 @@
     }
     return new THREE.CanvasTexture(c);
   }
-  function buildGrassField(scene, halfSize, avoidFn){
+  function buildGrassField(scene, halfSize, avoidFn, count){
     const bladeTex = makeGrassBladeTexture();
     const bladeMat = new THREE.MeshStandardMaterial({
       map:bladeTex, transparent:true, alphaTest:0.28, side:THREE.DoubleSide,
       roughness:0.85, metalness:0,
     });
     const bladeGeo = new THREE.PlaneGeometry(0.6, 0.7);
-    const COUNT = 900;
+    const COUNT = count || 900;
     const mesh = new THREE.InstancedMesh(bladeGeo, bladeMat, COUNT);
     const dummy = new THREE.Object3D();
     let placed = 0, attempts = 0;
@@ -6531,225 +6706,1055 @@
     scene.add(mesh);
   }
 
+  // ==================== VƯỜN CÂY 3D — bản nâng cấp: nhiều người chơi + mô hình mới ====================
+  // Cách hoạt động nhiều người: mỗi phòng tối đa 8 người, mỗi người một ô đất riêng quanh quảng trường.
+  // Mọi người thấy nhau đi lại, thấy cây của nhau lớn lên, chat nhanh bằng câu có sẵn + biểu cảm,
+  // và có thể "tưới giúp" cây của người khác (chủ vườn được giảm thời gian chờ, người tưới nhận thưởng nhỏ).
+  // Cần thêm file garden.js vào server (xem hướng dẫn) — nếu server chưa có, game tự chuyển sang chơi một mình.
+  const GARDEN_MAX_PLAYERS = 8;
+  const GARDEN_RING_R = 15;
+  const GARDEN_WORLD_HALF = 46;
+  const GARDEN_PLANT_Y = 0.31;
+  const GARDEN_LOW = (navigator.hardwareConcurrency || 4) <= 4 && Math.min(screen.width, screen.height) < 700;
+  const GARDEN_QUICK_PHRASES = ['Xin chào! 👋', 'Cảm ơn bạn nhé!', 'Vườn bạn đẹp quá! 🌷', 'Giúp mình tưới cây với! 💧', 'Chơi cùng mình nhé!', 'Tạm biệt! 👋'];
+  const GARDEN_EMOTES = ['😄', '❤️', '👍', '😮', '🌱', '🎉'];
+
+  // ---- tiện ích dùng chung ----
+  function gardenRng(seed){ // số ngẫu nhiên cố định theo seed → mọi người chơi thấy cùng một thế giới
+    let a = seed >>> 0;
+    return function(){
+      let t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  const _gardenMats = {};
+  function gardenMat(color, o){
+    o = o || {};
+    const k = [color, o.r, o.e, o.ei, o.t, o.flat].join('|');
+    if(!_gardenMats[k]){
+      _gardenMats[k] = new THREE.MeshStandardMaterial({
+        color, roughness: o.r !== undefined ? o.r : 0.85, metalness: 0,
+        emissive: o.e || 0x000000, emissiveIntensity: o.ei || 0,
+        transparent: !!o.t, opacity: o.t || 1, flatShading: !!o.flat,
+      });
+    }
+    return _gardenMats[k];
+  }
+  const _gardenGeos = {};
+  function gardenGeo(key, make){ return _gardenGeos[key] || (_gardenGeos[key] = make()); }
+  function gardenMesh(geo, mat, x, y, z, o){
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(x || 0, y || 0, z || 0);
+    if(o){
+      if(o.cast) m.castShadow = true;
+      if(o.recv) m.receiveShadow = true;
+      if(o.rx) m.rotation.x = o.rx;
+      if(o.ry) m.rotation.y = o.ry;
+      if(o.rz) m.rotation.z = o.rz;
+      if(o.s) m.scale.set(o.s[0], o.s[1], o.s[2]);
+    }
+    return m;
+  }
+  function gardenMatrix(x, y, z, ry, sx, sy, sz){
+    const d = new THREE.Object3D();
+    d.position.set(x, y, z);
+    d.rotation.y = ry || 0;
+    d.scale.set(sx === undefined ? 1 : sx, sy === undefined ? (sx === undefined ? 1 : sx) : sy, sz === undefined ? (sx === undefined ? 1 : sx) : sz);
+    d.updateMatrix();
+    return d.matrix.clone();
+  }
+  function gardenInstanced(scene, geo, mat, matrices, o){
+    if(!matrices.length) return null;
+    const im = new THREE.InstancedMesh(geo, mat, matrices.length);
+    matrices.forEach((m, i)=> im.setMatrixAt(i, m));
+    im.instanceMatrix.needsUpdate = true;
+    im.castShadow = !!(o && o.cast);
+    im.receiveShadow = !!(o && o.recv);
+    scene.add(im);
+    return im;
+  }
+  function gardenSlotInfo(i){ // vị trí + hướng của ô đất số i (mặt cổng quay về quảng trường)
+    const a = (i / GARDEN_MAX_PLAYERS) * Math.PI * 2 + Math.PI / GARDEN_MAX_PLAYERS;
+    const x = Math.sin(a) * GARDEN_RING_R, z = Math.cos(a) * GARDEN_RING_R;
+    return { x, z, ry: Math.atan2(-x, -z) };
+  }
+  function gardenToWorld(info, lx, lz){
+    const c = Math.cos(info.ry), s = Math.sin(info.ry);
+    return { x: info.x + lx * c + lz * s, z: info.z - lx * s + lz * c };
+  }
+
+  // ---- nhãn chữ nổi trên đầu / trên cổng vườn / bong bóng chat ----
+  function gardenDrawLabel(canvas, text, o){
+    const fs = o.fontSize || 30;
+    const font = '700 ' + fs + 'px "Space Grotesk", Inter, sans-serif';
+    const ctx = canvas.getContext('2d');
+    ctx.font = font;
+    const tw = Math.ceil(ctx.measureText(text).width);
+    const h = fs + 24, w = Math.max(h, tw + 40);
+    canvas.width = w; canvas.height = h; // đổi kích thước sẽ reset ctx
+    ctx.clearRect(0, 0, w, h);
+    if(o.bg){
+      const r = h / 2;
+      ctx.fillStyle = o.bg;
+      ctx.beginPath();
+      ctx.moveTo(r, 0); ctx.lineTo(w - r, 0);
+      ctx.arc(w - r, r, r, -Math.PI / 2, Math.PI / 2);
+      ctx.lineTo(r, h);
+      ctx.arc(r, r, r, Math.PI / 2, Math.PI * 1.5);
+      ctx.closePath(); ctx.fill();
+    }
+    ctx.font = font;
+    ctx.fillStyle = o.color || '#ffffff';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(text, w / 2, h / 2 + 1);
+  }
+  function gardenLabelSprite(text, o){
+    o = o || {};
+    const canvas = document.createElement('canvas');
+    gardenDrawLabel(canvas, text, o);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.minFilter = THREE.LinearFilter; tex.generateMipmaps = false;
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, fog: false }));
+    sp.renderOrder = 20;
+    sp.userData.canvas = canvas; sp.userData.tex = tex; sp.userData.ppu = o.ppu || 110;
+    sp.scale.set(canvas.width / sp.userData.ppu, canvas.height / sp.userData.ppu, 1);
+    return sp;
+  }
+  function gardenSetLabel(sp, text, o){
+    gardenDrawLabel(sp.userData.canvas, text, o || {});
+    sp.userData.tex.needsUpdate = true;
+    sp.scale.set(sp.userData.canvas.width / sp.userData.ppu, sp.userData.canvas.height / sp.userData.ppu, 1);
+  }
+
+  // ---- texture vẽ tay ----
+  function gardenCobbleTexture(){
+    const c = document.createElement('canvas'); c.width = c.height = 256;
+    const x = c.getContext('2d');
+    x.fillStyle = '#8b8373'; x.fillRect(0, 0, 256, 256);
+    const rows = 8, sz = 256 / rows;
+    for(let r = 0; r < rows; r++){
+      const off = (r % 2) * sz / 2;
+      for(let k = -1; k < rows + 1; k++){
+        x.fillStyle = `hsl(${32 + Math.random() * 10}, ${10 + Math.random() * 10}%, ${56 + Math.random() * 18}%)`;
+        x.fillRect(k * sz + off + 2, r * sz + 2, sz - 4, sz - 4);
+      }
+    }
+    const t = new THREE.CanvasTexture(c);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(5, 5);
+    return t;
+  }
+  function gardenSoilTexture(){
+    const c = document.createElement('canvas'); c.width = c.height = 64;
+    const x = c.getContext('2d');
+    x.fillStyle = '#5a3a24'; x.fillRect(0, 0, 64, 64);
+    for(let i = 0; i < 6; i++){ x.fillStyle = 'rgba(30,18,10,0.35)'; x.fillRect(0, 4 + i * 10, 64, 3); }
+    for(let i = 0; i < 90; i++){ x.fillStyle = `rgba(${90 + Math.random() * 40},${60 + Math.random() * 30},${35},0.35)`; x.fillRect(Math.random() * 64, Math.random() * 64, 2, 2); }
+    return new THREE.CanvasTexture(c);
+  }
+  function gardenStripeTexture(){
+    const c = document.createElement('canvas'); c.width = 128; c.height = 32;
+    const x = c.getContext('2d');
+    for(let i = 0; i < 8; i++){ x.fillStyle = i % 2 ? '#fff6e6' : '#d94a4a'; x.fillRect(i * 16, 0, 16, 32); }
+    const t = new THREE.CanvasTexture(c);
+    t.wrapS = THREE.RepeatWrapping;
+    return t;
+  }
+  function gardenWaterTexture(){
+    const c = document.createElement('canvas'); c.width = c.height = 128;
+    const x = c.getContext('2d');
+    x.fillStyle = '#3f9fd8'; x.fillRect(0, 0, 128, 128);
+    x.strokeStyle = 'rgba(255,255,255,0.22)'; x.lineWidth = 2;
+    for(let i = 0; i < 12; i++){
+      x.beginPath();
+      x.arc(Math.random() * 128, Math.random() * 128, 6 + Math.random() * 14, 0, Math.PI * (0.6 + Math.random() * 0.8));
+      x.stroke();
+    }
+    const t = new THREE.CanvasTexture(c);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(3, 3);
+    return t;
+  }
+  let _gardenMelonTex = null;
+  function gardenMelonTexture(){
+    if(_gardenMelonTex) return _gardenMelonTex;
+    const c = document.createElement('canvas'); c.width = 128; c.height = 64;
+    const x = c.getContext('2d');
+    x.fillStyle = '#58b46f'; x.fillRect(0, 0, 128, 64);
+    x.fillStyle = '#2e7d4a';
+    for(let i = 0; i < 8; i++){ x.fillRect(i * 16 + 4, 0, 7, 64); }
+    return (_gardenMelonTex = new THREE.CanvasTexture(c));
+  }
+  let _gardenGlowTex = null;
+  function gardenGlowTexture(){
+    if(_gardenGlowTex) return _gardenGlowTex;
+    const c = document.createElement('canvas'); c.width = c.height = 64;
+    const x = c.getContext('2d');
+    const g = x.createRadialGradient(32, 32, 2, 32, 32, 32);
+    g.addColorStop(0, 'rgba(255,240,160,0.95)'); g.addColorStop(1, 'rgba(255,220,120,0)');
+    x.fillStyle = g; x.fillRect(0, 0, 64, 64);
+    return (_gardenGlowTex = new THREE.CanvasTexture(c));
+  }
+
+  // ---- mô hình từng loại cây (mỗi loại có dáng riêng, lớn dần rồi phát sáng khi chín) ----
+  function gardenCropModel(seed){
+    const g = new THREE.Group();
+    const leaf = gardenMat(0x3f9d4f, { r: 0.8 });
+    if(seed.id === 's1'){ // cà rốt: củ cam nhô lên + tán lá
+      const root = gardenMat(0xff8c2a, { r: 0.6 });
+      const rootGeo = gardenGeo('carrotRoot', ()=> new THREE.ConeGeometry(0.16, 0.5, 8));
+      const leafGeo = gardenGeo('carrotLeaf', ()=> new THREE.ConeGeometry(0.06, 0.55, 5));
+      g.add(gardenMesh(rootGeo, root, -0.12, 0.1, 0, { rx: Math.PI }));
+      g.add(gardenMesh(rootGeo, root, 0.22, 0.06, 0.12, { rx: Math.PI, s: [0.75, 0.75, 0.75] }));
+      g.add(gardenMesh(leafGeo, leaf, -0.12, 0.55, 0, { rz: 0.35 }));
+      g.add(gardenMesh(leafGeo, leaf, -0.12, 0.58, 0, { rz: -0.35 }));
+      g.add(gardenMesh(leafGeo, leaf, 0.2, 0.42, 0.12, { rx: 0.3 }));
+    } else if(seed.id === 's2'){ // cà chua: cọc + bụi lá + quả đỏ
+      g.add(gardenMesh(gardenGeo('tomatoStake', ()=> new THREE.CylinderGeometry(0.02, 0.02, 1.0, 6)), gardenMat(0x8a5a2a), 0, 0.5, 0));
+      g.add(gardenMesh(gardenGeo('tomatoBush', ()=> new THREE.IcosahedronGeometry(0.32, 0)), leaf, 0, 0.5, 0, { s: [1.1, 0.85, 1.1] }));
+      const red = gardenMat(0xe23d3d, { r: 0.4 });
+      const fruit = gardenGeo('tomatoFruit', ()=> new THREE.SphereGeometry(0.15, 10, 8));
+      g.add(gardenMesh(fruit, red, 0.24, 0.38, 0.06));
+      g.add(gardenMesh(fruit, red, -0.2, 0.62, 0.12));
+      g.add(gardenMesh(fruit, red, 0.06, 0.28, -0.24));
+    } else if(seed.id === 's3'){ // dưa hấu: dây lá + quả sọc
+      const leafFlat = gardenGeo('melonLeaf', ()=> new THREE.SphereGeometry(0.28, 8, 6));
+      g.add(gardenMesh(leafFlat, leaf, -0.36, 0.04, 0.2, { s: [1, 0.15, 0.8] }));
+      g.add(gardenMesh(leafFlat, leaf, 0.3, 0.04, -0.32, { s: [1, 0.15, 0.8] }));
+      const melonMat = new THREE.MeshStandardMaterial({ map: gardenMelonTexture(), roughness: 0.55 });
+      const melon = gardenGeo('melonBody', ()=> new THREE.SphereGeometry(1, 16, 12));
+      g.add(gardenMesh(melon, melonMat, 0, 0.34, 0, { s: [0.44, 0.34, 0.36] }));
+      g.add(gardenMesh(melon, melonMat, 0.42, 0.2, 0.3, { s: [0.22, 0.2, 0.2] }));
+    } else { // cây vàng: thân + tán vàng phát sáng + đốm sáng xoay
+      g.add(gardenMesh(gardenGeo('goldTrunk', ()=> new THREE.CylinderGeometry(0.07, 0.11, 0.8, 6)), gardenMat(0x7a4d22), 0, 0.4, 0));
+      const gold = gardenMat(0xffd166, { r: 0.35, e: 0x7a5200, ei: 0.7, flat: true });
+      g.add(gardenMesh(gardenGeo('goldCrown', ()=> new THREE.IcosahedronGeometry(0.42, 0)), gold, 0, 0.98, 0));
+      g.add(gardenMesh(gardenGeo('goldCrown2', ()=> new THREE.IcosahedronGeometry(0.28, 0)), gold, 0.25, 0.74, 0.15));
+      const spin = new THREE.Group();
+      const spark = gardenGeo('goldSpark', ()=> new THREE.OctahedronGeometry(0.07, 0));
+      for(let i = 0; i < 4; i++){
+        const a = i * Math.PI / 2;
+        spin.add(gardenMesh(spark, gardenMat(0xfff2b0, { r: 0.3, e: 0xffe066, ei: 1 }), Math.sin(a) * 0.62, 1.0 + (i % 2) * 0.12, Math.cos(a) * 0.62));
+      }
+      g.add(spin);
+      g.userData.spin = spin;
+    }
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: gardenGlowTexture(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+    glow.position.y = 0.7; glow.scale.set(1.2, 1.2, 1);
+    glow.visible = false;
+    g.add(glow);
+    g.userData.glow = glow;
+    g.scale.setScalar(0.06);
+    return g;
+  }
+
+  // ---- bầu trời, mây, đồi xa ----
+  function gardenBuildSky(scene){
+    const mat = new THREE.ShaderMaterial({
+      side: THREE.BackSide, depthWrite: false, fog: false,
+      uniforms: { top: { value: new THREE.Color(0x3d8fe0) }, mid: { value: new THREE.Color(0x9fd3f5) }, bottom: { value: new THREE.Color(0xcfe9f8) } },
+      vertexShader: 'varying float vH; void main(){ vH = normalize(position).y; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+      fragmentShader: 'uniform vec3 top; uniform vec3 mid; uniform vec3 bottom; varying float vH; void main(){ float h = clamp(vH, 0.0, 1.0); vec3 c = mix(bottom, mid, smoothstep(0.0, 0.25, h)); c = mix(c, top, smoothstep(0.2, 0.9, h)); gl_FragColor = vec4(c, 1.0); }',
+    });
+    const sky = new THREE.Mesh(new THREE.SphereGeometry(220, 24, 16), mat);
+    sky.renderOrder = -10;
+    scene.add(sky);
+    return sky;
+  }
+  function gardenBuildClouds(scene, rng){
+    const clouds = [];
+    const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.94, fog: false });
+    const geo = new THREE.SphereGeometry(1, 10, 8);
+    const count = GARDEN_LOW ? 6 : 10;
+    for(let i = 0; i < count; i++){
+      const g = new THREE.Group();
+      const n = 3 + Math.floor(rng() * 3);
+      for(let k = 0; k < n; k++){
+        const s = 3.2 + rng() * 3;
+        g.add(gardenMesh(geo, mat, (k - n / 2) * 3.6 + rng() * 1.5, rng() * 1.2, rng() * 2.2, { s: [s * 1.5, s * 0.7, s] }));
+      }
+      g.position.set((rng() * 2 - 1) * 110, 38 + rng() * 22, (rng() * 2 - 1) * 110);
+      g.userData.speed = 0.6 + rng() * 0.9;
+      scene.add(g);
+      clouds.push(g);
+    }
+    return clouds;
+  }
+  function gardenBuildHills(scene, rng){
+    const geo = new THREE.SphereGeometry(1, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+    for(let i = 0; i < 14; i++){
+      const a = (i / 14) * Math.PI * 2 + rng() * 0.3, r = 105 + rng() * 25, s = 22 + rng() * 20;
+      scene.add(gardenMesh(geo, gardenMat(i % 2 ? 0x5f9f55 : 0x6fae5f, { r: 1 }), Math.sin(a) * r, -0.5, Math.cos(a) * r, { ry: rng() * Math.PI, s: [s * 1.6, s * 0.55, s] }));
+    }
+  }
+
+  // ---- công trình ----
+  function gardenBuildStall(scene, cx, cz){
+    const g = new THREE.Group(); g.position.set(cx, 0, cz);
+    const wood = gardenMat(0x9a6636), woodD = gardenMat(0x6f4523), plank = gardenMat(0xc9924f), crate = gardenMat(0xb98246);
+    g.add(gardenMesh(new THREE.BoxGeometry(3.4, 2.1, 0.12), woodD, 0, 1.05, -0.85, { cast: true }));
+    g.add(gardenMesh(new THREE.BoxGeometry(3.2, 0.9, 1.0), wood, 0, 0.45, 0.15, { cast: true, recv: true }));
+    g.add(gardenMesh(new THREE.BoxGeometry(3.4, 0.08, 1.2), plank, 0, 0.94, 0.15, { recv: true }));
+    [[-1.6, -0.8], [1.6, -0.8], [-1.6, 0.95], [1.6, 0.95]].forEach(([x, z])=>{
+      g.add(gardenMesh(new THREE.CylinderGeometry(0.07, 0.07, 2.3, 8), woodD, x, 1.15, z, { cast: true }));
+    });
+    g.add(gardenMesh(new THREE.BoxGeometry(3.9, 0.1, 2.3), new THREE.MeshStandardMaterial({ map: gardenStripeTexture(), roughness: 0.8 }), 0, 2.35, 0.1, { cast: true, rx: 0.14 }));
+    [[-1.0, 0xe15a5a], [0.0, 0xff8c42], [1.0, 0x4fae6b]].forEach(([x, col])=>{
+      g.add(gardenMesh(new THREE.BoxGeometry(0.7, 0.22, 0.55), crate, x, 1.09, 0.2));
+      for(let i = 0; i < 3; i++) g.add(gardenMesh(new THREE.SphereGeometry(0.16, 10, 8), gardenMat(col, { r: 0.5 }), x - 0.2 + i * 0.2, 1.3, 0.2 + (i % 2 ? 0.06 : -0.06)));
+    });
+    const sign = gardenLabelSprite('CHỢ NÔNG SẢN', { bg: 'rgba(120,70,30,0.95)', color: '#fff3d6', fontSize: 30 });
+    sign.position.set(0, 3.05, 0.2);
+    g.add(sign);
+    scene.add(g);
+    return g;
+  }
+  function gardenBuildFountain(scene, cx, cz){
+    const g = new THREE.Group(); g.position.set(cx, 0, cz);
+    const stone = gardenMat(0xb9b3a6, { r: 0.9 });
+    g.add(gardenMesh(new THREE.CylinderGeometry(2.4, 2.6, 0.55, 24), stone, 0, 0.275, 0, { cast: true, recv: true }));
+    g.add(gardenMesh(new THREE.CylinderGeometry(2.1, 2.1, 0.1, 24), gardenMat(0x4aa8e0, { r: 0.15, t: 0.85 }), 0, 0.52, 0));
+    g.add(gardenMesh(new THREE.CylinderGeometry(0.28, 0.4, 1.2, 12), stone, 0, 1.1, 0, { cast: true }));
+    g.add(gardenMesh(new THREE.CylinderGeometry(0.9, 0.5, 0.25, 16), stone, 0, 1.75, 0, { cast: true }));
+    g.add(gardenMesh(new THREE.CylinderGeometry(0.75, 0.75, 0.06, 16), gardenMat(0x4aa8e0, { r: 0.15, t: 0.85 }), 0, 1.85, 0));
+    const drops = [];
+    const dGeo = new THREE.SphereGeometry(0.07, 6, 5), dMat = gardenMat(0xbfe6ff, { r: 0.2, t: 0.9 });
+    for(let i = 0; i < 10; i++){ const d = new THREE.Mesh(dGeo, dMat); g.add(d); drops.push(d); }
+    scene.add(g);
+    return { group: g, update(now){
+      drops.forEach((d, i)=>{
+        const t = ((now * 0.0008) + i * 0.1) % 1, a = i * 0.628;
+        const r = 0.2 + 1.7 * t;
+        d.position.set(Math.sin(a) * r, 1.9 + 2.2 * t - 3.6 * t * t, Math.cos(a) * r);
+      });
+    } };
+  }
+  function gardenBuildLamp(scene, x, z){
+    const g = new THREE.Group(); g.position.set(x, 0, z);
+    g.add(gardenMesh(new THREE.CylinderGeometry(0.07, 0.1, 2.6, 8), gardenMat(0x3b3b44, { r: 0.6 }), 0, 1.3, 0, { cast: true }));
+    g.add(gardenMesh(new THREE.SphereGeometry(0.26, 10, 8), gardenMat(0xfff0b0, { r: 0.3, e: 0xffd166, ei: 0.9 }), 0, 2.7, 0));
+    scene.add(g);
+  }
+  function gardenBuildWindmill(scene, x, z){
+    const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = Math.atan2(-x, -z);
+    g.add(gardenMesh(new THREE.CylinderGeometry(1.5, 2.3, 6.5, 12), gardenMat(0xe9dcc0), 0, 3.25, 0, { cast: true, recv: true }));
+    g.add(gardenMesh(new THREE.BoxGeometry(0.9, 1.6, 0.1), gardenMat(0x6f4523), 0, 0.8, 2.22));
+    g.add(gardenMesh(new THREE.ConeGeometry(1.95, 2.0, 12), gardenMat(0xb8452f), 0, 7.5, 0, { cast: true }));
+    for(let i = 0; i < 3; i++){
+      const wy = 2.4 + i * 1.5, rad = 2.3 - (wy / 6.5) * 0.8;
+      g.add(gardenMesh(new THREE.BoxGeometry(0.5, 0.5, 0.06), gardenMat(0x6f4523), 0, wy, rad * 0.966 + 0.03));
+    }
+    const blades = new THREE.Group(); blades.position.set(0, 6.3, 1.7);
+    for(let k = 0; k < 4; k++){
+      const arm = new THREE.Group(); arm.rotation.z = k * Math.PI / 2;
+      arm.add(gardenMesh(new THREE.BoxGeometry(0.16, 4.8, 0.1), gardenMat(0x7a5230), 0, 2.4, 0));
+      arm.add(gardenMesh(new THREE.BoxGeometry(0.85, 3.2, 0.05), gardenMat(0xf3ead2), 0.5, 2.9, 0.06));
+      blades.add(arm);
+    }
+    blades.add(gardenMesh(new THREE.SphereGeometry(0.3, 10, 8), gardenMat(0x6f4523), 0, 0, 0));
+    g.add(blades);
+    scene.add(g);
+    return { group: g, blades };
+  }
+  function gardenBuildBarn(scene, x, z){
+    const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = Math.atan2(-x, -z);
+    const red = gardenMat(0xb23a2e), trim = gardenMat(0xf5efe0);
+    g.add(gardenMesh(new THREE.BoxGeometry(6, 3.2, 5), red, 0, 1.6, 0, { cast: true, recv: true }));
+    const roof = new THREE.Group(); roof.position.set(0, 3.2 + 0.99, 0); roof.scale.set(1, 0.55, 1);
+    roof.add(gardenMesh(new THREE.CylinderGeometry(3.6, 3.6, 5.6, 3), gardenMat(0x5b5f68, { r: 0.7 }), 0, 0, 0, { rx: -Math.PI / 2, cast: true }));
+    g.add(roof);
+    g.add(gardenMesh(new THREE.BoxGeometry(2, 2.3, 0.1), gardenMat(0x7a2a20), 0, 1.15, 2.55));
+    g.add(gardenMesh(new THREE.BoxGeometry(2.2, 0.12, 0.12), trim, 0, 2.35, 2.6));
+    g.add(gardenMesh(new THREE.BoxGeometry(0.12, 2.4, 0.12), trim, -1.05, 1.2, 2.6));
+    g.add(gardenMesh(new THREE.BoxGeometry(0.12, 2.4, 0.12), trim, 1.05, 1.2, 2.6));
+    g.add(gardenMesh(new THREE.BoxGeometry(0.12, 2.3, 0.12), trim, 0, 1.15, 2.6));
+    scene.add(g);
+    const hay = gardenMat(0xe3c25a, { r: 0.95 });
+    [[-4.2, 3.4], [-4.8, 4.5], [5.0, 3.8]].forEach(([lx, lz])=>{
+      const p = new THREE.Group();
+      p.add(gardenMesh(new THREE.CylinderGeometry(0.6, 0.6, 0.9, 12), hay, 0, 0.6, 0, { rz: Math.PI / 2, cast: true }));
+      p.position.set(lx, 0, lz);
+      g.add(p);
+    });
+    return g;
+  }
+  function gardenBuildPond(scene, x, z){
+    const waterTex = gardenWaterTexture();
+    const g = new THREE.Group(); g.position.set(x, 0, z);
+    const shore = new THREE.Mesh(new THREE.CircleGeometry(6.6, 32), gardenMat(0xd9c99a, { r: 1 }));
+    shore.rotation.x = -Math.PI / 2; shore.position.y = 0.02; shore.receiveShadow = true; g.add(shore);
+    const water = new THREE.Mesh(new THREE.CircleGeometry(5.6, 32), new THREE.MeshStandardMaterial({ map: waterTex, roughness: 0.15, metalness: 0.1, transparent: true, opacity: 0.9 }));
+    water.rotation.x = -Math.PI / 2; water.position.y = 0.06; g.add(water);
+    for(let i = 0; i < 6; i++){
+      const a = i * 1.1, r = 1.2 + (i % 3) * 1.3;
+      const pad = new THREE.Mesh(new THREE.CircleGeometry(0.4, 10), gardenMat(0x3f9d4f, { r: 0.8 }));
+      pad.rotation.x = -Math.PI / 2; pad.position.set(Math.sin(a) * r, 0.08, Math.cos(a) * r); g.add(pad);
+    }
+    for(let i = 0; i < 12; i++){
+      const a = i * 0.52, r = 5.9 + (i % 2) * 0.3;
+      g.add(gardenMesh(new THREE.CylinderGeometry(0.03, 0.03, 1.1 + (i % 3) * 0.3, 5), gardenMat(0x6b8f3a), Math.sin(a) * r, 0.6, Math.cos(a) * r));
+    }
+    scene.add(g);
+    return { group: g, tex: waterTex };
+  }
+  function gardenBuildScarecrow(scene, x, z){
+    const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = 0.6;
+    const wood = gardenMat(0x7a5230), cloth = gardenMat(0x3f6fb0), straw = gardenMat(0xe3c25a, { r: 0.95 });
+    g.add(gardenMesh(new THREE.CylinderGeometry(0.06, 0.06, 2.4, 6), wood, 0, 1.2, 0, { cast: true }));
+    g.add(gardenMesh(new THREE.CylinderGeometry(0.05, 0.05, 1.7, 6), wood, 0, 1.6, 0, { rz: Math.PI / 2, cast: true }));
+    g.add(gardenMesh(new THREE.BoxGeometry(0.55, 0.7, 0.3), cloth, 0, 1.45, 0.02, { cast: true }));
+    g.add(gardenMesh(new THREE.SphereGeometry(0.28, 10, 8), straw, 0, 2.05, 0));
+    g.add(gardenMesh(new THREE.CylinderGeometry(0.34, 0.34, 0.06, 12), gardenMat(0x8a5a2a), 0, 2.28, 0));
+    g.add(gardenMesh(new THREE.CylinderGeometry(0.2, 0.24, 0.3, 12), gardenMat(0x8a5a2a), 0, 2.42, 0));
+    scene.add(g);
+  }
+  function gardenBuildButterflies(scene){
+    const list = [];
+    const geo = new THREE.PlaneGeometry(0.28, 0.22); geo.rotateX(-Math.PI / 2); geo.translate(0.14, 0, 0);
+    const cols = [0xffc94d, 0xff8fb1, 0xffffff, 0x9ad0ff];
+    const count = GARDEN_LOW ? 4 : 7;
+    for(let i = 0; i < count; i++){
+      const g = new THREE.Group();
+      const mat = new THREE.MeshBasicMaterial({ color: cols[i % cols.length], side: THREE.DoubleSide });
+      const wr = new THREE.Mesh(geo, mat), wl = new THREE.Mesh(geo, mat); wl.scale.x = -1;
+      g.add(wr, wl);
+      const a = (i / count) * Math.PI * 2;
+      g.userData = { wr, wl, cx: Math.sin(a) * 13, cz: Math.cos(a) * 13, sp: 0.35 + (i % 3) * 0.12, ph: i * 1.7 };
+      scene.add(g);
+      list.push(g);
+    }
+    return list;
+  }
+  function gardenBuildTrees(scene, rng, avoid, obstacles){
+    const pine = [], coneA = [], coneB = [], round = [], blobA = [], blobB = [];
+    const N = GARDEN_LOW ? 40 : 70;
+    let n = 0, tries = 0;
+    while(n < N && tries < N * 30){
+      tries++;
+      const x = (rng() * 2 - 1) * 43, z = (rng() * 2 - 1) * 43;
+      if(Math.hypot(x, z) < 25 || avoid(x, z, 2)) continue;
+      const s = 0.8 + rng() * 0.7;
+      if(rng() < 0.55){
+        pine.push(gardenMatrix(x, 1.1 * s, z, 0, s));
+        coneA.push(gardenMatrix(x, 2.7 * s, z, rng() * 6, s));
+        coneB.push(gardenMatrix(x, 4.1 * s, z, rng() * 6, s * 0.7));
+      } else {
+        round.push(gardenMatrix(x, 1.0 * s, z, 0, s));
+        (rng() < 0.5 ? blobA : blobB).push(gardenMatrix(x, 2.9 * s, z, rng() * 6, s * (0.9 + rng() * 0.4)));
+      }
+      obstacles.push({ x, z, r: 0.5 * s });
+      n++;
+    }
+    const trunk = gardenMat(0x6b4a2b);
+    gardenInstanced(scene, new THREE.CylinderGeometry(0.22, 0.32, 2.2, 6), trunk, pine, { cast: true });
+    gardenInstanced(scene, new THREE.ConeGeometry(1.5, 2.6, 7), gardenMat(0x2f7a45, { flat: true }), coneA, { cast: true });
+    gardenInstanced(scene, new THREE.ConeGeometry(1.1, 2.2, 7), gardenMat(0x3a8a4f, { flat: true }), coneB, { cast: true });
+    gardenInstanced(scene, new THREE.CylinderGeometry(0.25, 0.35, 2, 6), trunk, round, { cast: true });
+    gardenInstanced(scene, new THREE.IcosahedronGeometry(1.7, 0), gardenMat(0x56a64b, { flat: true }), blobA, { cast: true });
+    gardenInstanced(scene, new THREE.IcosahedronGeometry(1.7, 0), gardenMat(0x7ab94f, { flat: true }), blobB, { cast: true });
+  }
+  function gardenBuildFlowers(scene, rng, avoid){
+    const colors = [0xff6b81, 0xffd166, 0xffffff, 0xb388ff, 0xff9f43];
+    const heads = colors.map(()=> []), stems = [];
+    const patches = GARDEN_LOW ? 10 : 18;
+    for(let p = 0; p < patches; p++){
+      let cx = 0, cz = 0, tries = 0;
+      do {
+        const a = rng() * Math.PI * 2, r = p < 8 ? 12.5 + rng() * 10 : 22 + rng() * 20;
+        cx = Math.sin(a) * r; cz = Math.cos(a) * r; tries++;
+      } while(tries < 25 && avoid(cx, cz, 1.5));
+      if(avoid(cx, cz, 1.5)) continue;
+      const per = GARDEN_LOW ? 6 : 10, ci = p % colors.length;
+      for(let k = 0; k < per; k++){
+        const x = cx + (rng() * 2 - 1) * 1.6, z = cz + (rng() * 2 - 1) * 1.6;
+        heads[ci].push(gardenMatrix(x, 0.42, z, 0, 0.9 + rng() * 0.5));
+        stems.push(gardenMatrix(x, 0.2, z, 0, 1, 1, 1));
+      }
+    }
+    const headGeo = new THREE.SphereGeometry(0.12, 6, 5);
+    heads.forEach((m, i)=> gardenInstanced(scene, headGeo, gardenMat(colors[i], { r: 0.6 }), m));
+    gardenInstanced(scene, new THREE.CylinderGeometry(0.015, 0.015, 0.4, 4), gardenMat(0x3f8a3f), stems);
+  }
+  function gardenBuildRocksAndBushes(scene, rng, avoid, obstacles){
+    const rocks = [], bushes = [];
+    for(let i = 0, tries = 0; i < (GARDEN_LOW ? 14 : 26) && tries < 300; tries++){
+      const x = (rng() * 2 - 1) * 42, z = (rng() * 2 - 1) * 42;
+      if(Math.hypot(x, z) < 22 || avoid(x, z, 1.5)) continue;
+      const s = 0.5 + rng() * 0.8;
+      rocks.push(gardenMatrix(x, 0.25 * s, z, rng() * 6, s, s * 0.7, s));
+      obstacles.push({ x, z, r: 0.5 * s });
+      i++;
+    }
+    for(let i = 0, tries = 0; i < (GARDEN_LOW ? 12 : 22) && tries < 300; tries++){
+      const x = (rng() * 2 - 1) * 42, z = (rng() * 2 - 1) * 42;
+      if(Math.hypot(x, z) < 21 || avoid(x, z, 1.2)) continue;
+      const s = 0.7 + rng() * 0.6;
+      bushes.push(gardenMatrix(x, 0.4 * s, z, rng() * 6, s));
+      i++;
+    }
+    gardenInstanced(scene, new THREE.DodecahedronGeometry(0.5, 0), gardenMat(0x8d8d92, { r: 1, flat: true }), rocks, { cast: true });
+    gardenInstanced(scene, new THREE.IcosahedronGeometry(0.7, 0), gardenMat(0x4d9a45, { flat: true }), bushes, { cast: true });
+  }
+
+  // ==================== KHỞI TẠO CẢNH ====================
   function initGardenScene(playerOutfit){
     const container = document.getElementById('gardenView');
+    const rng = gardenRng(20260919);
+    const outfit = playerOutfit || {};
+
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
-    scene.fog = new THREE.Fog(0x000000, 30, 90);
-
-    const camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 200);
-    const renderer = new THREE.WebGLRenderer({ antialias:true });
+    scene.fog = new THREE.Fog(0xcfe9f8, 60, 170);
+    const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 500);
+    const renderer = new THREE.WebGLRenderer({ antialias: !GARDEN_LOW });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, GARDEN_LOW ? 1.25 : 1.75));
+    if(!GARDEN_LOW){ renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; }
     container.insertBefore(renderer.domElement, container.firstChild);
-
     window.addEventListener('resize', ()=>{
-      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.85));
-    const sun = new THREE.DirectionalLight(0xfff2d6, 1.0);
-    sun.position.set(12, 24, 8);
-    scene.add(sun);
-    (function(){
-      const s = new THREE.Mesh(new THREE.SphereGeometry(3,16,16), new THREE.MeshBasicMaterial({ color:0xFFE9A8 }));
-      s.position.set(-26, 22, -30);
-      scene.add(s);
-    })();
+    // ---- ánh sáng + trời + mặt trời ----
+    scene.add(new THREE.HemisphereLight(0xcfe9ff, 0x6a8f4b, 0.75));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+    const sun = new THREE.DirectionalLight(0xfff0d0, 0.95);
+    const SUN_OFFSET = new THREE.Vector3(26, 42, 18);
+    const SUN_DIR200 = SUN_OFFSET.clone().normalize().multiplyScalar(200);
+    if(!GARDEN_LOW){
+      sun.castShadow = true;
+      sun.shadow.mapSize.set(1024, 1024);
+      const sc = sun.shadow.camera; sc.left = -28; sc.right = 28; sc.top = 28; sc.bottom = -28; sc.near = 1; sc.far = 130;
+      sun.shadow.bias = -0.0006;
+    }
+    scene.add(sun, sun.target);
+    const sky = gardenBuildSky(scene);
+    const sunDisc = new THREE.Mesh(new THREE.SphereGeometry(6, 16, 12), new THREE.MeshBasicMaterial({ color: 0xfff3c4, fog: false, depthWrite: false }));
+    sunDisc.renderOrder = -9;
+    const sunGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: gardenGlowTexture(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+    sunGlow.scale.set(60, 60, 1); sunGlow.renderOrder = -8;
+    scene.add(sunDisc, sunGlow);
+    const clouds = gardenBuildClouds(scene, rng);
+    gardenBuildHills(scene, rng);
 
-    // ---- mặt đất cỏ chân thật ----
-    const GROUND_HALF = 34;
+    // ---- mặt đất + quảng trường ----
     const groundTex = makeGrassGroundTexture();
-    const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(GROUND_HALF*2, GROUND_HALF*2),
-      new THREE.MeshStandardMaterial({ map:groundTex, roughness:0.95, metalness:0 })
-    );
-    ground.rotation.x = -Math.PI/2;
+    groundTex.repeat.set(115, 115);
+    groundTex.anisotropy = 4;
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), new THREE.MeshStandardMaterial({ map: groundTex, roughness: 0.95, metalness: 0 }));
+    ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true;
     scene.add(ground);
+    const plazaMat = new THREE.MeshStandardMaterial({ map: gardenCobbleTexture(), roughness: 0.95, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+    const plaza = new THREE.Mesh(new THREE.CircleGeometry(11.2, 48), plazaMat);
+    plaza.rotation.x = -Math.PI / 2; plaza.position.y = 0.03; plaza.receiveShadow = true;
+    scene.add(plaza);
+    const rim = new THREE.Mesh(new THREE.RingGeometry(11.2, 11.8, 48), new THREE.MeshStandardMaterial({ color: 0x7d735f, roughness: 1, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+    rim.rotation.x = -Math.PI / 2; rim.position.y = 0.035;
+    scene.add(rim);
 
-    // ---- ô đất trồng cây (3x3) ngay gần điểm xuất phát ----
-    const GRID_N = 3, TILE_GAP = 1.5;
-    const gridOffset = (GRID_N-1)*TILE_GAP/2;
-    const plotCenter = { x:0, z:6 };
-    const soilGeo = new THREE.BoxGeometry(1.2, 0.2, 1.2);
-    const soilMat = new THREE.MeshStandardMaterial({ color:0x5a3a24, roughness:0.9 });
-    let tiles = [];
-    for(let ix=0; ix<GRID_N; ix++){
-      for(let iz=0; iz<GRID_N; iz++){
-        const x = plotCenter.x + ix*TILE_GAP - gridOffset, z = plotCenter.z + iz*TILE_GAP - gridOffset;
-        const soil = new THREE.Mesh(soilGeo, soilMat);
-        soil.position.set(x, 0.1, z);
-        scene.add(soil);
-        const key = `${ix}_${iz}`;
-        const saved = gardenState.tiles[key];
-        tiles.push({ key, x, z, plantMesh:null, seedId: saved ? saved.seedId : null, plantedAt: saved ? saved.plantedAt : null });
-      }
-    }
+    // ---- vật cản + vùng cấm mọc cây/cỏ ----
+    const obstacles = [];
+    const sellPointPos = { x: 0, z: -4.5 };
+    const fountainPos = { x: 0, z: 4.5 };
+    const features = [ { x: -34, z: -30, r: 5 }, { x: 33, z: -31, r: 7 }, { x: 32, z: 27, r: 8.5 }, { x: -20, z: 8, r: 2 } ];
+    const plotCenters = [];
+    for(let i = 0; i < GARDEN_MAX_PLAYERS; i++) plotCenters.push(gardenSlotInfo(i));
+    const avoid = (x, z, pad)=>{
+      pad = pad || 0;
+      if(Math.hypot(x, z) < 11.8 + pad) return true;
+      if(features.some(f => Math.hypot(x - f.x, z - f.z) < f.r + pad)) return true;
+      return plotCenters.some(c => Math.hypot(x - c.x, z - c.z) < 4.2 + pad);
+    };
 
-    function plantVisual(seed){
-      const g = new THREE.Group();
-      const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.07,0.5,6), new THREE.MeshStandardMaterial({color:0x3d8f52}));
-      stem.position.y = 0.25;
-      const fruit = new THREE.Mesh(new THREE.SphereGeometry(0.28,10,8), new THREE.MeshStandardMaterial({color:seed.color, roughness:0.5}));
-      fruit.position.y = 0.55;
-      g.add(stem, fruit);
-      g.userData.fruit = fruit;
-      g.scale.setScalar(0.05);
-      return g;
+    // ---- công trình cố định ----
+    gardenBuildStall(scene, sellPointPos.x, sellPointPos.z);
+    obstacles.push({ x: sellPointPos.x, z: sellPointPos.z, r: 1.9 });
+    const fountain = gardenBuildFountain(scene, fountainPos.x, fountainPos.z);
+    obstacles.push({ x: fountainPos.x, z: fountainPos.z, r: 2.6 });
+    for(let i = 0; i < GARDEN_MAX_PLAYERS; i++){
+      const a = (i / GARDEN_MAX_PLAYERS) * Math.PI * 2;
+      gardenBuildLamp(scene, Math.sin(a) * 10.4, Math.cos(a) * 10.4);
     }
-    tiles.forEach(t=>{
-      if(t.seedId){
-        const seed = SEEDS.find(s=>s.id===t.seedId);
-        if(seed){
-          const mesh = plantVisual(seed);
-          mesh.position.set(t.x, 0.2, t.z);
-          scene.add(mesh);
-          t.plantMesh = mesh;
+    const windmill = gardenBuildWindmill(scene, features[0].x, features[0].z);
+    obstacles.push({ x: features[0].x, z: features[0].z, r: 2.6 });
+    gardenBuildBarn(scene, features[1].x, features[1].z);
+    obstacles.push({ x: features[1].x, z: features[1].z, r: 4.2 });
+    const pond = gardenBuildPond(scene, features[2].x, features[2].z);
+    obstacles.push({ x: features[2].x, z: features[2].z, r: 5.8 });
+    gardenBuildScarecrow(scene, features[3].x, features[3].z);
+    obstacles.push({ x: features[3].x, z: features[3].z, r: 0.5 });
+    gardenBuildTrees(scene, rng, avoid, obstacles);
+    gardenBuildFlowers(scene, rng, avoid);
+    gardenBuildRocksAndBushes(scene, rng, avoid, obstacles);
+    buildGrassField(scene, GARDEN_WORLD_HALF - 2, (x, z)=> avoid(x, z, 0.3), GARDEN_LOW ? 700 : 1600);
+    const butterflies = gardenBuildButterflies(scene);
+
+    // ---- ô đất của từng người chơi (8 ô quanh quảng trường) + hàng rào ----
+    const fencePosts = [], fenceRails = [];
+    const soilTex = gardenSoilTexture();
+    function addPlotFence(info){
+      const H = 2.85, N = 6, step = (2 * H) / N;
+      const sides = [ { sx: -H, sz: -H, dx: 1, dz: 0 }, { sx: H, sz: -H, dx: 0, dz: 1 }, { sx: H, sz: H, dx: -1, dz: 0 }, { sx: -H, sz: H, dx: 0, dz: -1 } ];
+      sides.forEach((sd, si)=>{
+        const gateSide = si === 2; // cạnh có cổng, quay về quảng trường
+        for(let k = 0; k < N; k++){
+          const px = sd.sx + sd.dx * k * step, pz = sd.sz + sd.dz * k * step;
+          const qx = px + sd.dx * step, qz = pz + sd.dz * step;
+          const isGatePost = gateSide && Math.abs(px) < 1.0;
+          if(!(gateSide && Math.abs(px) < 0.01)){
+            const w = gardenToWorld(info, px, pz), h = isGatePost ? 1.65 : 0.9;
+            fencePosts.push(gardenMatrix(w.x, h / 2, w.z, info.ry, 1, h, 1));
+          }
+          const midx = (px + qx) / 2, midz = (pz + qz) / 2;
+          if(gateSide && Math.abs(midx) < 0.96) continue;
+          const w2 = gardenToWorld(info, midx, midz);
+          const yaw = Math.atan2(-sd.dz, sd.dx) + info.ry;
+          [0.36, 0.68].forEach(h => fenceRails.push(gardenMatrix(w2.x, h, w2.z, yaw, step, 1, 1)));
+        }
+      });
+    }
+    function buildPlot(slot){
+      const info = gardenSlotInfo(slot);
+      const group = new THREE.Group();
+      group.position.set(info.x, 0, info.z); group.rotation.y = info.ry;
+      scene.add(group);
+      group.add(gardenMesh(new THREE.BoxGeometry(4, 0.28, 4), new THREE.MeshStandardMaterial({ color: 0x4a3222, roughness: 1 }), 0, 0.14, 0, { recv: true }));
+      const plank = gardenMat(0x9a6b3c);
+      [[0, -2.09, 4.36, 0.18], [0, 2.09, 4.36, 0.18], [-2.09, 0, 0.18, 3.64], [2.09, 0, 0.18, 3.64]].forEach(([x, z, w, d])=>{
+        group.add(gardenMesh(new THREE.BoxGeometry(w, 0.3, d), plank, x, 0.15, z, { cast: true, recv: true }));
+      });
+      const moundGeo = new THREE.BoxGeometry(1.12, 0.05, 1.12);
+      const moundMat = new THREE.MeshStandardMaterial({ map: soilTex, roughness: 1 });
+      const tiles = [];
+      for(let ix = 0; ix < 3; ix++){
+        for(let iz = 0; iz < 3; iz++){
+          const lx = (ix - 1) * 1.5, lz = (iz - 1) * 1.5, w = gardenToWorld(info, lx, lz);
+          const mound = gardenMesh(moundGeo, moundMat, lx, 0.285, lz, { recv: true });
+          group.add(mound);
+          tiles.push({ key: `${ix}_${iz}`, lx, lz, wx: w.x, wz: w.z, plantMesh: null, seedId: null, plantedAt: null, waters: 0, pt: null });
         }
       }
-    });
-
-    // ---- quầy bán hàng ----
-    const sellPointPos = { x:0, z:-4 };
-    (function buildSellStall(){
-      const g = new THREE.Group();
-      const postMat = new THREE.MeshStandardMaterial({ color:0x8a5a2a, roughness:0.8 });
-      [[-1.3,-0.5],[1.3,-0.5],[-1.3,0.5],[1.3,0.5]].forEach(([x,z])=>{
-        const post = new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.07,1.6,8), postMat);
-        post.position.set(x,0.8,z);
-        g.add(post);
-      });
-      const roof = new THREE.Mesh(new THREE.BoxGeometry(3,0.15,1.6), new THREE.MeshStandardMaterial({ color:0xE15A5A, roughness:0.7 }));
-      roof.position.y = 1.65;
-      g.add(roof);
-      const counter = new THREE.Mesh(new THREE.BoxGeometry(2.8,0.7,1.2), new THREE.MeshStandardMaterial({ color:0xC77D3A, roughness:0.8 }));
-      counter.position.y = 0.35;
-      g.add(counter);
-      g.position.set(sellPointPos.x, 0, sellPointPos.z);
-      scene.add(g);
+      addPlotFence(info);
+      group.add(gardenMesh(new THREE.BoxGeometry(2.2, 0.14, 0.14), plank, 0, 1.65, 2.85, { cast: true }));
+      const label = gardenLabelSprite('Ô trống', { bg: 'rgba(60,60,60,0.7)', fontSize: 28 });
+      label.position.set(0, 2.25, 2.85);
+      group.add(label);
+      return { slot, info, group, tiles, label, ownerId: null, ownerName: null };
+    }
+    const plots = [];
+    for(let i = 0; i < GARDEN_MAX_PLAYERS; i++) plots.push(buildPlot(i));
+    // hàng rào bao quanh cả thế giới
+    (function(){
+      const P = GARDEN_WORLD_HALF - 0.5, n = 30, seg = (2 * P) / n;
+      for(let i = 0; i <= n; i++){
+        const t = -P + i * seg;
+        [[t, -P], [t, P], [-P, t], [P, t]].forEach(([x, z])=> fencePosts.push(gardenMatrix(x, 0.55, z, 0, 1, 1.1, 1)));
+        if(i < n){
+          const mid = t + seg / 2;
+          [0.45, 0.85].forEach(h=>{
+            fenceRails.push(gardenMatrix(mid, h, -P, 0, seg, 1, 1));
+            fenceRails.push(gardenMatrix(mid, h, P, 0, seg, 1, 1));
+            fenceRails.push(gardenMatrix(-P, h, mid, Math.PI / 2, seg, 1, 1));
+            fenceRails.push(gardenMatrix(P, h, mid, Math.PI / 2, seg, 1, 1));
+          });
+        }
+      }
     })();
+    gardenInstanced(scene, new THREE.BoxGeometry(0.12, 1, 0.12), gardenMat(0x8a5a2a), fencePosts, { cast: true });
+    gardenInstanced(scene, new THREE.BoxGeometry(1, 0.07, 0.06), gardenMat(0xb98246), fenceRails, { cast: true });
 
-    // ---- rải cỏ thật khắp bãi đất, né khu ô trồng + quầy bán ----
-    buildGrassField(scene, GROUND_HALF - 2, (x,z)=>{
-      const dPlot = Math.hypot(x-plotCenter.x, z-plotCenter.z);
-      const dStall = Math.hypot(x-sellPointPos.x, z-sellPointPos.z);
-      return dPlot < 3.4 || dStall < 2.6;
-    });
+    // ---- trạng thái cây trồng trên các ô ----
+    const SEED_BY_ID = {}; SEEDS.forEach(s => SEED_BY_ID[s.id] = s);
+    function clearTilePlant(plot, tile){
+      if(tile.plantMesh) plot.group.remove(tile.plantMesh);
+      tile.plantMesh = null; tile.seedId = null; tile.plantedAt = null; tile.waters = 0; tile.pt = null;
+    }
+    function setTilePlant(plot, tile, seedId, plantedAt){
+      clearTilePlant(plot, tile);
+      const seed = SEED_BY_ID[seedId];
+      if(!seed) return;
+      const mesh = gardenCropModel(seed);
+      mesh.position.set(tile.lx, GARDEN_PLANT_Y, tile.lz);
+      mesh.userData.phase = Math.random() * 6;
+      plot.group.add(mesh);
+      tile.plantMesh = mesh; tile.seedId = seedId; tile.plantedAt = plantedAt;
+    }
+    function tileProgress(t, now){
+      const s = SEED_BY_ID[t.seedId];
+      return s ? Math.max(0, Math.min(1, (now - t.plantedAt) / 1000 / s.growSec)) : 0;
+    }
+    function loadOwnTiles(plot){
+      plot.tiles.forEach(t=>{
+        const s = gardenState.tiles[t.key];
+        if(s && s.seedId && SEED_BY_ID[s.seedId]){
+          setTilePlant(plot, t, s.seedId, s.plantedAt);
+          t.waters = s.waters || 0; t.pt = s.pt || s.plantedAt;
+        } else clearTilePlant(plot, t);
+      });
+    }
+    function applyRemoteTiles(plot, tilesObj){
+      tilesObj = tilesObj || {};
+      plot.tiles.forEach(t=>{
+        const s = tilesObj[t.key];
+        if(!s || !s.seedId || !SEED_BY_ID[s.seedId]){ if(t.seedId) clearTilePlant(plot, t); return; }
+        const plantedAt = Date.now() - (Number(s.age) || 0) * 1000;
+        if(t.seedId !== s.seedId || t.pt !== s.pt){ setTilePlant(plot, t, s.seedId, plantedAt); t.pt = s.pt; }
+        else t.plantedAt = plantedAt; // đồng bộ lại thời gian lớn (sau khi được tưới giúp)
+      });
+    }
+    function exportTiles(){
+      const out = {};
+      plots[mySlot].tiles.forEach(t=>{
+        if(t.seedId) out[t.key] = { seedId: t.seedId, age: (Date.now() - t.plantedAt) / 1000, pt: t.pt || t.plantedAt };
+      });
+      return out;
+    }
 
-    // ---- nhân vật ----
-    const outfit = playerOutfit || {};
+    // ---- nhân vật của mình ----
     const builtChar = buildGtrCharacter({ headColor: outfit.head, torsoColor: outfit.torso, limbColor: outfit.limb, torsoTexture: outfit.torsoTexture });
     const player = builtChar.group;
-    player.position.set(0, 0, 10);
     scene.add(player);
+    const me = { group: player, bubble: null, bubbleTimer: null };
 
-    // ---- di chuyển bằng joystick + camera xoay tự do ----
-    let joyX=0, joyY=0, joyPointerId=null;
+    let mySlot = 0, myId = null, gRoomId = null, gSocket = null;
+    let camYaw = Math.PI, camPitch = 0.5, camDist = 8;
+    let facingAngle = 0;
+
+    function placePlayerAtSpawn(){
+      const info = plots[mySlot].info, w = gardenToWorld(info, 0, 4.4);
+      player.position.set(w.x, 0, w.z);
+      facingAngle = info.ry + Math.PI;
+      player.rotation.y = facingAngle;
+      camYaw = info.ry;
+    }
+    function refreshPlotLabels(){
+      plots.forEach((p, i)=>{
+        if(i === mySlot) gardenSetLabel(p.label, '🌱 Vườn của bạn', { bg: 'rgba(38,140,78,0.92)', fontSize: 28 });
+        else if(p.ownerName) gardenSetLabel(p.label, 'Vườn của ' + p.ownerName, { bg: 'rgba(30,38,48,0.85)', fontSize: 28 });
+        else gardenSetLabel(p.label, 'Ô trống', { bg: 'rgba(80,80,80,0.6)', fontSize: 26 });
+      });
+    }
+    function setMySlot(slot, teleport){
+      if(slot !== mySlot){
+        plots[mySlot].tiles.forEach(t => clearTilePlant(plots[mySlot], t));
+        plots[mySlot].ownerId = null; plots[mySlot].ownerName = null;
+        mySlot = slot;
+      }
+      loadOwnTiles(plots[mySlot]);
+      refreshPlotLabels();
+      if(teleport) placePlayerAtSpawn();
+    }
+    setMySlot(0, true);
+
+    // ---- bong bóng chat nhanh / biểu cảm trên đầu nhân vật ----
+    function hideBubble(ent){
+      if(ent.bubbleTimer){ clearTimeout(ent.bubbleTimer); ent.bubbleTimer = null; }
+      if(ent.bubble){ ent.group.remove(ent.bubble); ent.bubble.material.map.dispose(); ent.bubble.material.dispose(); ent.bubble = null; }
+    }
+    function showBubble(ent, kind, content){
+      hideBubble(ent);
+      const sp = kind === 'emote'
+        ? gardenLabelSprite(content, { fontSize: 64, ppu: 90 })
+        : gardenLabelSprite(content, { bg: 'rgba(255,255,255,0.96)', color: '#1d2a1d', fontSize: 26 });
+      sp.position.set(0, kind === 'emote' ? 3.7 : 3.75, 0);
+      ent.group.add(sp);
+      ent.bubble = sp;
+      ent.bubbleTimer = setTimeout(()=> hideBubble(ent), kind === 'emote' ? 2600 : 4200);
+    }
+
+    // ---- người chơi khác ----
+    const remotes = new Map(); // socketId -> entity
+    const helped = new Set();  // các cây đã tưới giúp (mỗi cây chỉ được thưởng 1 lần)
+    const elPlayers = document.getElementById('gardenPlayers');
+    const elNet = document.getElementById('gardenNet');
+    function updatePlayersChip(){ if(elPlayers) elPlayers.textContent = (remotes.size + 1) + '/' + GARDEN_MAX_PLAYERS; }
+    function setNet(text){ if(elNet) elNet.textContent = text; }
+    function nameColor(name){
+      let h = 0; for(let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+      return new THREE.Color(`hsl(${h % 360}, 65%, 55%)`).getHex();
+    }
+    function addRemote(p){
+      if(!p || remotes.has(p.id) || p.slot < 0 || p.slot >= GARDEN_MAX_PLAYERS) return;
+      const o = p.outfit || {};
+      const built = buildGtrCharacter({
+        headColor: o.head !== null && o.head !== undefined ? o.head : 0xF2E82E,
+        torsoColor: o.torso !== null && o.torso !== undefined ? o.torso : nameColor(p.username || '?'),
+        limbColor: o.limb !== null && o.limb !== undefined ? o.limb : 0x2ECC55,
+      });
+      const group = built.group;
+      const info = plots[p.slot].info, w = gardenToWorld(info, 0, 4.4);
+      const hasPos = typeof p.x === 'number' && typeof p.z === 'number' && (p.x !== 0 || p.z !== 0);
+      const x = hasPos ? p.x : w.x, z = hasPos ? p.z : w.z;
+      group.position.set(x, 0, z);
+      const label = gardenLabelSprite((p.username || '?').slice(0, 16), { bg: 'rgba(11,14,20,0.72)', fontSize: 26 });
+      label.position.set(0, 3.15, 0);
+      group.add(label);
+      scene.add(group);
+      const ent = { id: p.id, username: p.username, slot: p.slot, built, group, label, bubble: null, bubbleTimer: null, target: { x, z, ry: 0 }, moving: false };
+      remotes.set(p.id, ent);
+      const plot = plots[p.slot];
+      plot.ownerId = p.id; plot.ownerName = p.username;
+      applyRemoteTiles(plot, p.tiles);
+      refreshPlotLabels();
+      updatePlayersChip();
+    }
+    function removeRemote(id){
+      const r = remotes.get(id);
+      if(!r) return;
+      hideBubble(r);
+      scene.remove(r.group);
+      const plot = plots[r.slot];
+      if(plot && plot.ownerId === id){
+        plot.ownerId = null; plot.ownerName = null;
+        plot.tiles.forEach(t => clearTilePlant(plot, t));
+      }
+      remotes.delete(id);
+      refreshPlotLabels();
+      updatePlayersChip();
+    }
+    function clearRemotes(){ Array.from(remotes.keys()).forEach(removeRemote); }
+
+    // ---- kết nối máy chủ ----
+    let joinTimer = null, lastConnAttempt = -Infinity, onlineDisabled = false;
+    let lastSentX = null, lastSentZ = null, lastSentRy = null, lastSentAt = 0;
+    function broadcastPlots(){
+      if(gSocket && gSocket.connected && gRoomId) gSocket.emit('garden_plots', { tiles: exportTiles() });
+    }
+    function connectGarden(){
+      if(gSocket) return;
+      if(typeof io !== 'function'){ setNet('Một mình'); return; }
+      setNet('Đang kết nối…');
+      const sock = io(API_BASE, { transports: ['websocket', 'polling'], reconnectionAttempts: 6 });
+      gSocket = sock;
+      sock.on('connect', ()=>{
+        sock.emit('garden_join', {
+          username: currentUsername || 'Khách',
+          outfit: { head: toHexInt(outfit.head), torso: toHexInt(outfit.torso), limb: toHexInt(outfit.limb) },
+          tiles: exportTiles(),
+        });
+        clearTimeout(joinTimer);
+        joinTimer = setTimeout(()=>{
+          if(gRoomId || gSocket !== sock) return;
+          onlineDisabled = true;
+          setNet('Một mình');
+          gardenToast('ℹ️ Máy chủ chưa bật vườn nhiều người — bạn đang chơi một mình.');
+          try{ sock.disconnect(); }catch(e){}
+          gSocket = null;
+        }, 7000);
+      });
+      sock.on('garden_joined', (d)=>{
+        clearTimeout(joinTimer);
+        if(!d || typeof d.slot !== 'number') return;
+        myId = d.id; gRoomId = d.roomId;
+        clearRemotes();
+        setMySlot(d.slot, true);
+        (d.players || []).forEach(addRemote);
+        setNet('Phòng ' + d.roomId);
+        updatePlayersChip();
+      });
+      sock.on('garden_player_joined', addRemote);
+      sock.on('garden_player_left', (d)=>{ if(d) removeRemote(d.id); });
+      sock.on('garden_player_moved', (d)=>{
+        const r = d && remotes.get(d.id);
+        if(r) r.target = { x: d.x, z: d.z, ry: d.ry };
+      });
+      sock.on('garden_plots', (d)=>{
+        const r = d && remotes.get(d.id);
+        if(r) applyRemoteTiles(plots[r.slot], d.tiles);
+      });
+      sock.on('garden_said', (d)=>{
+        const r = d && remotes.get(d.id);
+        if(r && GARDEN_QUICK_PHRASES[d.p]) showBubble(r, 'text', GARDEN_QUICK_PHRASES[d.p]);
+      });
+      sock.on('garden_emoted', (d)=>{
+        const r = d && remotes.get(d.id);
+        if(r && GARDEN_EMOTES[d.e]) showBubble(r, 'emote', GARDEN_EMOTES[d.e]);
+      });
+      sock.on('garden_watered', (d)=>{ // có người tưới giúp cây của mình
+        if(!d) return;
+        const t = plots[mySlot].tiles.find(x => x.key === d.key);
+        if(!t || !t.seedId || t.waters >= 3) return;
+        const seed = SEED_BY_ID[t.seedId];
+        if(tileProgress(t, Date.now()) >= 1) return;
+        t.plantedAt -= seed.growSec * 150; t.waters += 1;
+        gardenState.tiles[t.key] = { seedId: t.seedId, plantedAt: t.plantedAt, waters: t.waters, pt: t.pt || t.plantedAt };
+        saveGardenState(); broadcastPlots();
+        showBubble(me, 'emote', '💧');
+        gardenToast(`💧 ${String(d.fromName || 'Một người bạn').slice(0, 16)} vừa tưới giúp cây của bạn!`);
+      });
+      sock.on('disconnect', ()=>{
+        clearRemotes(); gRoomId = null;
+        if(gSocket === sock) setNet('Mất kết nối…');
+      });
+    }
+    function leaveGarden(){
+      clearTimeout(joinTimer);
+      if(gSocket){ try{ gSocket.disconnect(); }catch(e){} }
+      gSocket = null; gRoomId = null; myId = null;
+      clearRemotes();
+      setMySlot(0, true);
+      setNet('Một mình'); updatePlayersChip();
+      lastConnAttempt = -Infinity; onlineDisabled = false;
+    }
+
+    // ---- chat nhanh + biểu cảm (chỉ dùng câu có sẵn: an toàn, không có nội dung tự gõ) ----
+    const quickPanel = document.getElementById('gardenQuickPanel');
+    let quickMode = null, lastSayAt = -Infinity;
+    function closeQuick(){ quickPanel.classList.remove('open'); quickMode = null; }
+    function say(kind, idx){
+      const now = performance.now();
+      if(now - lastSayAt < 1200) return;
+      lastSayAt = now;
+      if(kind === 'p') showBubble(me, 'text', GARDEN_QUICK_PHRASES[idx]);
+      else showBubble(me, 'emote', GARDEN_EMOTES[idx]);
+      if(gSocket && gSocket.connected && gRoomId) gSocket.emit(kind === 'p' ? 'garden_say' : 'garden_emote', kind === 'p' ? { p: idx } : { e: idx });
+    }
+    function openQuick(mode){
+      if(quickMode === mode){ closeQuick(); return; }
+      quickMode = mode;
+      quickPanel.className = 'garden-quick-panel open ' + (mode === 'p' ? 'phrases' : 'emotes');
+      const items = mode === 'p' ? GARDEN_QUICK_PHRASES : GARDEN_EMOTES;
+      quickPanel.innerHTML = items.map((t, i)=> `<button type="button" data-i="${i}">${t}</button>`).join('');
+      quickPanel.querySelectorAll('button').forEach(b=>{
+        b.addEventListener('click', ()=>{ say(mode, Number(b.dataset.i)); closeQuick(); });
+      });
+    }
+    document.getElementById('gardenChatBtn').addEventListener('click', ()=> openQuick('p'));
+    document.getElementById('gardenEmoteBtn').addEventListener('click', ()=> openQuick('e'));
+
+    // ---- điều khiển: joystick + camera xoay tự do (giữ nguyên như bản cũ) ----
+    let joyX = 0, joyY = 0, joyPointerId = null;
     const joyBase = document.getElementById('gardenJoystickBase');
     const joyKnob = document.getElementById('gardenJoystickKnob');
     const JOY_R = 60;
-    function joyStart(e){ if(joyPointerId!==null) return; joyPointerId=e.pointerId; joyBase.setPointerCapture(e.pointerId); }
+    function joyStart(e){ if(joyPointerId !== null) return; joyPointerId = e.pointerId; joyBase.setPointerCapture(e.pointerId); }
     function joyMove(e){
-      if(e.pointerId!==joyPointerId) return;
+      if(e.pointerId !== joyPointerId) return;
       const r = joyBase.getBoundingClientRect();
-      const cx=r.left+r.width/2, cy=r.top+r.height/2;
-      let dx=e.clientX-cx, dy=e.clientY-cy;
-      const d=Math.min(JOY_R, Math.sqrt(dx*dx+dy*dy));
-      const ang=Math.atan2(dy,dx);
-      dx=Math.cos(ang)*d; dy=Math.sin(ang)*d;
-      joyKnob.style.transform=`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-      joyX=dx/JOY_R; joyY=dy/JOY_R;
+      const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      let dx = e.clientX - cx, dy = e.clientY - cy;
+      const d = Math.min(JOY_R, Math.sqrt(dx * dx + dy * dy));
+      const ang = Math.atan2(dy, dx);
+      dx = Math.cos(ang) * d; dy = Math.sin(ang) * d;
+      joyKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+      joyX = dx / JOY_R; joyY = dy / JOY_R;
     }
-    function joyEnd(e){ if(e.pointerId!==joyPointerId) return; joyPointerId=null; joyX=0; joyY=0; joyKnob.style.transform='translate(-50%,-50%)'; }
+    function joyEnd(e){ if(e.pointerId !== joyPointerId) return; joyPointerId = null; joyX = 0; joyY = 0; joyKnob.style.transform = 'translate(-50%,-50%)'; }
     joyBase.addEventListener('pointerdown', joyStart);
     window.addEventListener('pointermove', joyMove);
     window.addEventListener('pointerup', joyEnd);
     window.addEventListener('pointercancel', joyEnd);
 
-    let camYaw = Math.PI, camPitch = 0.5, camDist = 8;
-    const camMinDist=4, camMaxDist=16;
+    const camMinDist = 4, camMaxDist = 16;
     const lookLayer = document.getElementById('gardenLookLayer');
     const lookPointers = new Map();
-    let pinchStartDist=null, pinchStartCamDist=camDist;
-    function pDist(){ const p=[...lookPointers.values()]; if(p.length<2) return null; return Math.hypot(p[0].x-p[1].x, p[0].y-p[1].y); }
+    let pinchStartDist = null, pinchStartCamDist = camDist;
+    function pDist(){ const p = [...lookPointers.values()]; if(p.length < 2) return null; return Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y); }
     lookLayer.addEventListener('pointerdown', (e)=>{
+      closeQuick();
       lookLayer.setPointerCapture(e.pointerId);
-      lookPointers.set(e.pointerId, {x:e.clientX,y:e.clientY});
-      if(lookPointers.size===2){ pinchStartDist=pDist(); pinchStartCamDist=camDist; }
+      lookPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if(lookPointers.size === 2){ pinchStartDist = pDist(); pinchStartCamDist = camDist; }
     });
     window.addEventListener('pointermove', (e)=>{
       if(!lookPointers.has(e.pointerId)) return;
       const prev = lookPointers.get(e.pointerId);
-      const cur = {x:e.clientX,y:e.clientY};
+      const cur = { x: e.clientX, y: e.clientY };
       lookPointers.set(e.pointerId, cur);
-      if(lookPointers.size>=2){
-        const d=pDist();
-        if(d && pinchStartDist) camDist = Math.max(camMinDist, Math.min(camMaxDist, pinchStartCamDist*(pinchStartDist/d)));
+      if(lookPointers.size >= 2){
+        const d = pDist();
+        if(d && pinchStartDist) camDist = Math.max(camMinDist, Math.min(camMaxDist, pinchStartCamDist * (pinchStartDist / d)));
         return;
       }
-      camYaw -= (cur.x-prev.x)*0.006;
-      camPitch = Math.max(0.15, Math.min(1.35, camPitch + (cur.y-prev.y)*0.004));
+      camYaw -= (cur.x - prev.x) * 0.006;
+      camPitch = Math.max(0.15, Math.min(1.35, camPitch + (cur.y - prev.y) * 0.004));
     });
-    window.addEventListener('pointerup', (e)=>{ lookPointers.delete(e.pointerId); if(lookPointers.size<2) pinchStartDist=null; });
-    lookLayer.addEventListener('wheel', (e)=>{ e.preventDefault(); camDist=Math.max(camMinDist, Math.min(camMaxDist, camDist+e.deltaY*0.01)); }, {passive:false});
+    window.addEventListener('pointerup', (e)=>{ lookPointers.delete(e.pointerId); if(lookPointers.size < 2) pinchStartDist = null; });
+    lookLayer.addEventListener('wheel', (e)=>{ e.preventDefault(); camDist = Math.max(camMinDist, Math.min(camMaxDist, camDist + e.deltaY * 0.01)); }, { passive: false });
 
-    let facingAngle = 0;
     const moveSpeed = 0.11;
-    const WORLD_HALF = GROUND_HALF - 1;
+    const WORLD_HALF = GARDEN_WORLD_HALF - 2;
 
-    // ---- trồng / thu hoạch ----
-    function nearestTile(){
-      let best=null, bestD=999;
-      tiles.forEach(t=>{
-        const d = Math.hypot(player.position.x-t.x, player.position.z-t.z);
-        if(d < bestD){ bestD=d; best=t; }
-      });
-      return bestD < 1.6 ? best : null;
+    // ---- trồng / thu hoạch / tưới giúp ----
+    function nearestOwnTile(){
+      const p = player.position; let best = null, bd = 99;
+      plots[mySlot].tiles.forEach(t=>{ const d = Math.hypot(p.x - t.wx, p.z - t.wz); if(d < bd){ bd = d; best = t; } });
+      return bd < 1.6 ? best : null;
     }
-    document.getElementById('gardenActionBtn').addEventListener('click', ()=>{
-      const t = nearestTile();
-      if(!t) return;
+    function nearestForeignTile(){
+      const p = player.position; let best = null, bd = 99, owner = null;
       const now = Date.now();
-      if(!t.seedId){
-        const seed = SEEDS.find(s=>s.id===gardenState.equippedSeed);
+      remotes.forEach(r=>{
+        plots[r.slot].tiles.forEach(t=>{
+          if(!t.seedId || helped.has(r.id + ':' + t.key + ':' + t.pt) || tileProgress(t, now) >= 1) return;
+          const d = Math.hypot(p.x - t.wx, p.z - t.wz);
+          if(d < bd){ bd = d; best = t; owner = r; }
+        });
+      });
+      return bd < 1.6 ? { tile: best, owner } : null;
+    }
+    function computeAction(){
+      const now = Date.now();
+      const t = nearestOwnTile();
+      if(t){
+        if(!t.seedId) return { type: 'plant', tile: t, label: '🌱 Trồng cây' };
+        const seed = SEED_BY_ID[t.seedId], prog = tileProgress(t, now);
+        if(prog >= 1) return { type: 'harvest', tile: t, label: '🌾 Thu hoạch' };
+        return { type: 'wait', tile: t, label: `⏳ ${Math.ceil((1 - prog) * seed.growSec)}s` };
+      }
+      const f = nearestForeignTile();
+      if(f) return { type: 'water', tile: f.tile, owner: f.owner, label: `💧 Tưới giúp ${f.owner.username.slice(0, 12)}` };
+      return null;
+    }
+    const actionBtn = document.getElementById('gardenActionBtn');
+    let lastBtnText = null;
+    actionBtn.addEventListener('click', ()=>{
+      const a = computeAction();
+      if(!a) return;
+      const now = Date.now();
+      if(a.type === 'plant'){
+        const seed = SEED_BY_ID[gardenState.equippedSeed];
         if(!seed || !gardenState.ownedSeeds.includes(seed.id)){
           gardenToast('⚠️ Bạn chưa có hạt giống nào — mở 🛒 Hạt giống để mua trước.');
           return;
         }
-        t.seedId = seed.id;
-        t.plantedAt = now;
-        const mesh = plantVisual(seed);
-        mesh.position.set(t.x, 0.2, t.z);
-        scene.add(mesh);
-        t.plantMesh = mesh;
-        gardenState.tiles[t.key] = { seedId:t.seedId, plantedAt:t.plantedAt };
-        saveGardenState();
+        setTilePlant(plots[mySlot], a.tile, seed.id, now);
+        a.tile.pt = now; a.tile.waters = 0;
+        gardenState.tiles[a.tile.key] = { seedId: seed.id, plantedAt: now, waters: 0, pt: now };
+        saveGardenState(); broadcastPlots();
         gardenToast(`🌱 Đã trồng ${seed.name}!`);
-      } else {
-        const seed = SEEDS.find(s=>s.id===t.seedId);
-        const progress = (now - t.plantedAt)/1000 / seed.growSec;
-        if(progress < 1){ gardenToast('⏳ Cây chưa chín, quay lại sau nhé.'); return; }
-        gardenState.basket[seed.id] = (gardenState.basket[seed.id]||0) + 1;
+      } else if(a.type === 'harvest'){
+        const seed = SEED_BY_ID[a.tile.seedId];
+        gardenState.basket[seed.id] = (gardenState.basket[seed.id] || 0) + 1;
         gardenState.harvests += 1;
         updateGardenBasketHUD();
         document.getElementById('gardenHarvests').textContent = gardenState.harvests;
         gardenToast(`🧺 Nhặt ${seed.name}! Mang tới chợ để bán.`);
-        scene.remove(t.plantMesh);
-        t.plantMesh = null; t.seedId = null; t.plantedAt = null;
-        delete gardenState.tiles[t.key];
+        clearTilePlant(plots[mySlot], a.tile);
+        delete gardenState.tiles[a.tile.key];
+        saveGardenState(); broadcastPlots();
+      } else if(a.type === 'wait'){
+        gardenToast('⏳ Cây chưa chín, quay lại sau nhé.');
+      } else if(a.type === 'water'){
+        if(!(gSocket && gSocket.connected && gRoomId)) return;
+        helped.add(a.owner.id + ':' + a.tile.key + ':' + a.tile.pt);
+        gSocket.emit('garden_water', { toId: a.owner.id, key: a.tile.key });
+        gardenState.coins += 5;
         saveGardenState();
+        document.getElementById('gardenCoins').textContent = gardenState.coins.toLocaleString('en-US');
+        showBubble(me, 'emote', '💧');
+        gardenToast(`💧 Đã tưới giúp ${a.owner.username}! +5 🪙`);
       }
     });
 
     document.getElementById('gardenSellBtn').addEventListener('click', ()=>{
-      const items = Object.entries(gardenState.basket || {}).filter(([,n])=>n>0);
+      const items = Object.entries(gardenState.basket || {}).filter(([, n]) => n > 0);
       if(items.length === 0) return;
       let total = 0;
       const parts = [];
       items.forEach(([seedId, count])=>{
-        const seed = SEEDS.find(s=>s.id===seedId);
+        const seed = SEED_BY_ID[seedId];
         if(!seed) return;
         total += seed.reward * count;
         parts.push(`${seed.emoji}×${count}`);
@@ -6763,7 +7768,7 @@
       gardenToast(`🏪 Đã bán ${parts.join(' ')} → +${total.toLocaleString('en-US')} 🪙 Xu Vườn!`);
     });
 
-    // ---- cửa hàng hạt giống ----
+    // ---- cửa hàng hạt giống (giữ nguyên) ----
     function renderGardenShop(){
       const grid = document.getElementById('gardenShopGrid');
       document.getElementById('gardenShopCoins').textContent = gardenState.coins.toLocaleString('en-US');
@@ -6773,7 +7778,7 @@
         const priceLabel = owned
           ? (equipped ? '<span class="lift-shop-price owned-tag">Đang cầm</span>' : '<span class="lift-shop-price owned-tag">Đã sở hữu</span>')
           : `<span class="lift-shop-price">${s.price.toLocaleString('en-US')} 🪙</span>`;
-        return `<div class="lift-shop-item ${owned?'owned':''} ${equipped?'equipped':''}" data-id="${s.id}">
+        return `<div class="lift-shop-item ${owned ? 'owned' : ''} ${equipped ? 'equipped' : ''}" data-id="${s.id}">
           <div class="lift-shop-emoji">${s.emoji}</div>
           <div class="lift-shop-name">${s.name}</div>
           <div class="lift-shop-desc">${s.growSec}s lớn · bán ${s.reward} 🪙</div>
@@ -6783,7 +7788,7 @@
       grid.querySelectorAll('.lift-shop-item').forEach(el=>{
         el.addEventListener('click', ()=>{
           const id = el.dataset.id;
-          const s = SEEDS.find(x=>x.id===id);
+          const s = SEED_BY_ID[id];
           const owned = gardenState.ownedSeeds.includes(id);
           if(owned){
             gardenState.equippedSeed = id;
@@ -6793,7 +7798,7 @@
             return;
           }
           if(gardenState.coins < s.price){
-            gardenToast(`Cần thêm ${(s.price-gardenState.coins).toLocaleString('en-US')} 🪙 Xu Vườn nữa (thu hoạch để kiếm thêm).`);
+            gardenToast(`Cần thêm ${(s.price - gardenState.coins).toLocaleString('en-US')} 🪙 Xu Vườn nữa (thu hoạch để kiếm thêm).`);
             return;
           }
           gardenState.coins -= s.price;
@@ -6819,67 +7824,143 @@
     document.getElementById('gardenShopOverlay').addEventListener('click', closeGardenShop);
     document.getElementById('gardenShopClose').addEventListener('click', closeGardenShop);
     document.getElementById('gardenBackChip').addEventListener('click', ()=>{
+      closeQuick();
       closeEmbeddedView('gardenView');
     });
 
-    camera.position.set(0, 3.4, 2);
-    camera.lookAt(0, 1.2, 10);
+    updatePlayersChip();
+    setNet('Một mình');
     document.getElementById('gardenLoadGate').classList.add('hidden');
 
-    let lastT = performance.now();
-    function loop(t){
-      const dt = Math.min(0.05, (t-lastT)/1000);
-      lastT = t;
-
-      const mag = Math.min(1, Math.hypot(joyX,joyY));
-      if(mag > 0.08){
-        const fwdX=-Math.sin(camYaw), fwdZ=-Math.cos(camYaw);
-        const rightX=Math.cos(camYaw), rightZ=-Math.sin(camYaw);
-        const moveX = rightX*joyX - fwdX*joyY, moveZ = rightZ*joyX - fwdZ*joyY;
-        const len = Math.hypot(moveX,moveZ)||1;
-        const nx=moveX/len, nz=moveZ/len;
-        player.position.x = Math.max(-WORLD_HALF, Math.min(WORLD_HALF, player.position.x + nx*moveSpeed*mag*(dt*60)));
-        player.position.z = Math.max(-WORLD_HALF, Math.min(WORLD_HALF, player.position.z + nz*moveSpeed*mag*(dt*60)));
-        const target = Math.atan2(nx,nz);
-        let diff = target - facingAngle;
-        while(diff>Math.PI) diff-=Math.PI*2; while(diff<-Math.PI) diff+=Math.PI*2;
-        facingAngle += diff*0.25;
-        player.rotation.y = facingAngle;
-      }
-
-      // hiện/ẩn nút hành động theo khoảng cách tới ô đất gần nhất
-      const t2 = nearestTile();
-      const actionBtn = document.getElementById('gardenActionBtn');
-      if(t2){
-        actionBtn.style.display = '';
-        if(!t2.seedId){
-          actionBtn.textContent = '🌱 Trồng cây';
-        } else {
-          const seed = SEEDS.find(s=>s.id===t2.seedId);
-          const progress = Math.min(1, (Date.now()-t2.plantedAt)/1000/seed.growSec);
-          if(progress >= 1){ actionBtn.textContent = '🌾 Thu hoạch'; }
-          else { actionBtn.textContent = `⏳ ${Math.ceil((1-progress)*seed.growSec)}s`; }
-          const scale = 0.05 + progress*0.95;
-          if(t2.plantMesh) t2.plantMesh.scale.setScalar(scale);
+    // ==================== VÒNG LẶP ====================
+    function resolveObstacles(pos){
+      for(let i = 0; i < obstacles.length; i++){
+        const o = obstacles[i], dx = pos.x - o.x, dz = pos.z - o.z, min = o.r + 0.45;
+        if(dx * dx + dz * dz < min * min){
+          const d = Math.hypot(dx, dz) || 0.0001;
+          pos.x = o.x + dx / d * min; pos.z = o.z + dz / d * min;
         }
-      } else {
-        actionBtn.style.display = 'none';
       }
-
-      const distToStall = Math.hypot(player.position.x-sellPointPos.x, player.position.z-sellPointPos.z);
-      const sellBtn = document.getElementById('gardenSellBtn');
-      const basketTotal = Object.values(gardenState.basket).reduce((a,b)=>a+b,0);
-      if(distToStall < 3.2 && basketTotal > 0){ sellBtn.style.display = ''; }
-      else { sellBtn.style.display = 'none'; }
-
-      const camX = player.position.x + camDist*Math.sin(camYaw)*Math.cos(camPitch);
-      const camY = player.position.y + 1.6 + camDist*Math.sin(camPitch);
-      const camZ = player.position.z + camDist*Math.cos(camYaw)*Math.cos(camPitch);
-      camera.position.set(camX, camY, camZ);
-      camera.lookAt(player.position.x, player.position.y+1.2, player.position.z);
-
-      renderer.render(scene, camera);
+    }
+    function lerpAngle(a, b, t){
+      let d = b - a;
+      while(d > Math.PI) d -= Math.PI * 2;
+      while(d < -Math.PI) d += Math.PI * 2;
+      return a + d * t;
+    }
+    let lastT = performance.now(), loopErrorLogged = false, wasOpen = true;
+    function loop(t){
       requestAnimationFrame(loop);
+      try{
+        const dt = Math.min(0.05, (t - lastT) / 1000);
+        lastT = t;
+        const now = Date.now();
+
+        // tạm dừng khi đang đóng màn hình vườn: ngắt mạng để không tốn pin/máy chủ
+        if(!container.classList.contains('open')){
+          if(wasOpen){ wasOpen = false; leaveGarden(); }
+          return;
+        }
+        if(!wasOpen){ wasOpen = true; onlineDisabled = false; lastConnAttempt = -Infinity; }
+        if(!gSocket && !onlineDisabled && t - lastConnAttempt > 15000){ lastConnAttempt = t; connectGarden(); }
+
+        // di chuyển
+        const mag = Math.min(1, Math.hypot(joyX, joyY));
+        let walking = false;
+        if(mag > 0.08){
+          walking = true;
+          const fwdX = -Math.sin(camYaw), fwdZ = -Math.cos(camYaw);
+          const rightX = Math.cos(camYaw), rightZ = -Math.sin(camYaw);
+          const moveX = rightX * joyX - fwdX * joyY, moveZ = rightZ * joyX - fwdZ * joyY;
+          const len = Math.hypot(moveX, moveZ) || 1;
+          const nx = moveX / len, nz = moveZ / len;
+          player.position.x = Math.max(-WORLD_HALF, Math.min(WORLD_HALF, player.position.x + nx * moveSpeed * mag * (dt * 60)));
+          player.position.z = Math.max(-WORLD_HALF, Math.min(WORLD_HALF, player.position.z + nz * moveSpeed * mag * (dt * 60)));
+          resolveObstacles(player.position);
+          const target = Math.atan2(nx, nz);
+          let diff = target - facingAngle;
+          while(diff > Math.PI) diff -= Math.PI * 2; while(diff < -Math.PI) diff += Math.PI * 2;
+          facingAngle += diff * 0.25;
+          player.rotation.y = facingAngle;
+        }
+        applyCharacterPose(builtChar, walking ? 'walk' : 'idle', t);
+
+        // gửi vị trí lên máy chủ tối đa 10 lần/giây, chỉ khi có thay đổi
+        if(gSocket && gSocket.connected && gRoomId && t - lastSentAt > 100){
+          const p = player.position;
+          if(lastSentX === null || Math.hypot(p.x - lastSentX, p.z - lastSentZ) > 0.02 || Math.abs(facingAngle - lastSentRy) > 0.05){
+            lastSentAt = t; lastSentX = p.x; lastSentZ = p.z; lastSentRy = facingAngle;
+            gSocket.emit('garden_move', { x: p.x, z: p.z, ry: facingAngle });
+          }
+        }
+
+        // người chơi khác: nội suy mượt + hoạt ảnh đi/đứng
+        const k = Math.min(1, dt * 10);
+        remotes.forEach(r=>{
+          const g = r.group;
+          const dx = r.target.x - g.position.x, dz = r.target.z - g.position.z;
+          const moving = dx * dx + dz * dz > 0.004;
+          g.position.x += dx * k; g.position.z += dz * k;
+          g.rotation.y = lerpAngle(g.rotation.y, r.target.ry, k);
+          applyCharacterPose(r.built, moving ? 'walk' : 'idle', t);
+        });
+
+        // cây: lớn dần, nhảy nhẹ + phát sáng khi chín (của mình và của người khác)
+        plots.forEach(plot=>{
+          plot.tiles.forEach(tl=>{
+            const m = tl.plantMesh;
+            if(!m) return;
+            const prog = tileProgress(tl, now);
+            m.scale.setScalar(0.06 + prog * 0.94);
+            const ripe = prog >= 1;
+            if(m.userData.glow){
+              m.userData.glow.visible = ripe;
+              if(ripe){ const s = 1.1 + Math.sin(now * 0.005 + m.userData.phase) * 0.15; m.userData.glow.scale.set(s, s, 1); }
+            }
+            m.position.y = GARDEN_PLANT_Y + (ripe ? Math.abs(Math.sin(now * 0.004 + m.userData.phase)) * 0.05 : 0);
+            if(m.userData.spin) m.userData.spin.rotation.y = now * 0.003;
+          });
+        });
+
+        // nút hành động + nút bán
+        const act = computeAction();
+        if(act){
+          if(actionBtn.style.display === 'none') actionBtn.style.display = '';
+          if(act.label !== lastBtnText){ actionBtn.textContent = act.label; lastBtnText = act.label; }
+        } else if(actionBtn.style.display !== 'none'){ actionBtn.style.display = 'none'; lastBtnText = null; }
+        const distToStall = Math.hypot(player.position.x - sellPointPos.x, player.position.z - sellPointPos.z);
+        const basketTotal = Object.values(gardenState.basket).reduce((a, b) => a + b, 0);
+        document.getElementById('gardenSellBtn').style.display = (distToStall < 3.2 && basketTotal > 0) ? '' : 'none';
+
+        // hoạt cảnh môi trường
+        fountain.update(now);
+        windmill.blades.rotation.z += dt * 0.5;
+        pond.tex.offset.x += dt * 0.02; pond.tex.offset.y += dt * 0.012;
+        clouds.forEach(c=>{ c.position.x += c.userData.speed * dt; if(c.position.x > 130) c.position.x = -130; });
+        butterflies.forEach(b=>{
+          const u = b.userData, tt = now * 0.001 * u.sp + u.ph;
+          b.position.set(u.cx + Math.sin(tt) * 4, 1.0 + Math.sin(tt * 1.7) * 0.35, u.cz + Math.cos(tt * 0.8) * 4);
+          b.rotation.y = tt + Math.PI / 2;
+          const f = Math.sin(now * 0.02 + u.ph) * 0.9;
+          u.wr.rotation.z = f; u.wl.rotation.z = -f;
+        });
+
+        // camera + ánh sáng/bóng đổ bám theo người chơi
+        const camX = player.position.x + camDist * Math.sin(camYaw) * Math.cos(camPitch);
+        const camY = player.position.y + 1.6 + camDist * Math.sin(camPitch);
+        const camZ = player.position.z + camDist * Math.cos(camYaw) * Math.cos(camPitch);
+        camera.position.set(camX, camY, camZ);
+        camera.lookAt(player.position.x, player.position.y + 1.2, player.position.z);
+        sun.position.copy(player.position).add(SUN_OFFSET);
+        sun.target.position.copy(player.position);
+        sky.position.copy(camera.position);
+        sunDisc.position.copy(camera.position).add(SUN_DIR200);
+        sunGlow.position.copy(sunDisc.position);
+
+        renderer.render(scene, camera);
+      }catch(err){
+        if(!loopErrorLogged){ loopErrorLogged = true; console.error('Lỗi vòng lặp Vườn Cây 3D:', err); }
+      }
     }
     requestAnimationFrame(loop);
   }
